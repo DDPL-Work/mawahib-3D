@@ -845,7 +845,7 @@ function AvatarVideoSection() {
 
       <div
         style={{
-          maxWidth: 1000,
+          maxWidth: 621,
           margin: "0 auto",
           padding: "0 40px",
           textAlign: "center",
@@ -903,7 +903,7 @@ function AvatarVideoSection() {
             style={{
               color: "#64748b",
               fontSize: 16,
-              maxWidth: 520,
+              maxWidth: 420,
               margin: "0 auto 60px",
               lineHeight: 1.7,
             }}
@@ -930,12 +930,12 @@ function AvatarVideoSection() {
           }}
         >
           <video
-            src="/videos/ai-avatar-demo.mp4"
+            src="./public/videos/mawahib-v.mp4"
             controls
             preload="metadata"
             style={{
               width: "100%",
-              height: "auto",
+              height: "50%",
               display: "block",
             }}
           />
