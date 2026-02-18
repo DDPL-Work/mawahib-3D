@@ -261,11 +261,12 @@ function AprioraHero() {
         </motion.div>
 
         <motion.h1 initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35, duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
-          style={{ fontSize: "clamp(42px, 7vw, 80px)", fontWeight: 800, letterSpacing: "-0.03em", lineHeight: 1.08, marginBottom: 24, padding: "0 24px" }}
+          style={{ fontSize: "clamp(35px, 7vw, 60px)", fontWeight: 800, letterSpacing: "-0.03em", lineHeight: 1.08, marginBottom: 24, padding: "0 24px" }}
         >
-          Hire the best<br />
-          <span style={{ fontFamily: "'DM Serif Display', Georgia, serif", fontStyle: "italic", fontWeight: 400, opacity: 0.75 }}>candidates</span>{" "}
-          <span className="shimmer-text">faster⁺</span>
+           Hiring, Re-Engineered.
+<br />
+          <span style={{ fontFamily: "'DM Serif Display', Georgia, serif", fontStyle: "italic", fontWeight: 400, opacity: 0.75 }}>Automated</span>{" "}
+          <span className="shimmer-text">Faster. More Accurate</span>
         </motion.h1>
 
         <motion.p initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5, duration: 0.8 }}
