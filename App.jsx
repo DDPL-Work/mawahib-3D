@@ -2,7 +2,7 @@ import { useRef, useEffect, useState, useCallback, useMemo } from "react";
 import { motion, useScroll, useTransform, useSpring, useInView, animate, useMotionValue } from "framer-motion";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
-
+import Logo from "./public/logo-m.png";
 // ─── FONTS ───────────────────────────────────────────────────────────────────
 const FontLink = () => (
   <>
@@ -1293,8 +1293,18 @@ function Footer() {
         <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr 1fr", gap: 40, marginBottom: 64 }}>
           <div>
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
-              <div style={{ width: 32, height: 32, borderRadius: 8, background: "linear-gradient(135deg, #1d4ed8, #3b82f6)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 900 }}>A</div>
-              <span style={{ fontWeight: 800, fontSize: 18, letterSpacing: "-0.03em" }}>Apriora</span>
+             <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+  <img
+    src={Logo}
+    alt="Asspriora Logo"
+    style={{
+      height: 200,
+      width: "auto",
+      objectFit: "contain"
+    }}
+  />
+</div>
+
             </div>
             <p style={{ color: "#475569", fontSize: 13, lineHeight: 1.75, maxWidth: 240 }}>AI-powered hiring intelligence for the modern enterprise. Hire faster, hire better.</p>
           </div>
@@ -1336,8 +1346,18 @@ function Nav() {
       style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 100, padding: "0 40px", display: "flex", alignItems: "center", justifyContent: "space-between", height: 64, background: scrolled ? "rgba(2,6,23,0.88)" : "transparent", backdropFilter: scrolled ? "blur(20px)" : "none", borderBottom: scrolled ? "1px solid rgba(255,255,255,0.06)" : "none", transition: "all 0.4s ease" }}
     >
       <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-        <div style={{ width: 28, height: 28, borderRadius: 7, background: "linear-gradient(135deg, #1d4ed8, #3b82f6)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 900 }}>A</div>
-        <span style={{ fontWeight: 800, fontSize: 16, letterSpacing: "-0.03em" }}>Apriora</span>
+       <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+  <img
+    src={Logo}
+    alt="Asspriora Logo"
+    style={{
+      height: 200,
+      width: "auto",
+      objectFit: "contain"
+    }}
+  />
+</div>
+
       </div>
       <div style={{ display: "flex", gap: 36, alignItems: "center" }}>
         {["Product", "Solutions", "Pricing", "Docs"].map(item => (
