@@ -1337,41 +1337,168 @@ function GlobalSection() {
    VIDEO / AI AVATAR SECTION
 ══════════════════════════════════════════════════════════════════════ */
 function VideoSection() {
-  const ref = useRef(), videoRef = useRef();
-  const inView = useInView(ref,{once:false,amount:.4});
-  const { scrollYProgress } = useScroll({target:ref,offset:["start end","end start"]});
-  const scale = useTransform(scrollYProgress,[0,.3,.7,1],[.93,1,1,.93]);
-  const [muted,setMuted] = useState(true);
-  useEffect(()=>{if(!videoRef.current)return;if(inView)videoRef.current.play().catch(()=>{});else videoRef.current.pause();},[inView]);
-  return(
-    <section ref={ref} style={{position:"relative",zIndex:10,padding:"clamp(80px,11vw,130px) clamp(28px,7vw,100px)",background:"rgba(3,6,16,.72)",backdropFilter:"blur(2px)"}}>
-      <div style={{maxWidth:1100,margin:"0 auto"}}>
-        <motion.div initial={{opacity:0,y:24}} animate={inView?{opacity:1,y:0}:{}} transition={{duration:.8}} style={{textAlign:"center",marginBottom:44}}>
+  const ref = useRef();
+  const videoRef = useRef();
+
+  const inView = useInView(ref, { once: false, amount: 0.4 });
+  const { scrollYProgress } = useScroll({
+    target: ref,
+    offset: ["start end", "end start"]
+  });
+
+  const scale = useTransform(scrollYProgress, [0, 0.3, 0.7, 1], [0.93, 1, 1, 0.93]);
+
+  const [muted, setMuted] = useState(false); // default try with sound
+
+  useEffect(() => {
+    if (!videoRef.current) return;
+
+    const video = videoRef.current;
+
+    if (inView) {
+      video.muted = false; // try with sound
+      video.play().catch(() => {
+        // If autoplay with sound fails → fallback to muted
+        video.muted = true;
+        setMuted(true);
+        video.play().catch(() => {});
+      });
+    } else {
+      video.pause();
+    }
+  }, [inView]);
+
+  const toggleMute = () => {
+    if (!videoRef.current) return;
+    const video = videoRef.current;
+    video.muted = !video.muted;
+    setMuted(video.muted);
+  };
+
+  return (
+    <section
+      ref={ref}
+      style={{
+        position: "relative",
+        zIndex: 10,
+        padding: "clamp(80px,11vw,130px) clamp(28px,7vw,100px)",
+        background: "rgba(3,6,16,.72)",
+        backdropFilter: "blur(2px)"
+      }}
+    >
+      <div style={{ maxWidth: 1100, margin: "0 auto" }}>
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          animate={inView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.8 }}
+          style={{ textAlign: "center", marginBottom: 44 }}
+        >
           <Label>AI AVATAR IN ACTION</Label>
-          <h2 style={{fontFamily:"'DM Serif Display',serif",fontStyle:"italic",fontSize:"clamp(2.4rem,4.5vw,4.2rem)",fontWeight:400,letterSpacing:"-.02em",lineHeight:1.08,color:"rgba(255,255,255,.95)",marginBottom:14}}>
-            Interviews that <span className="gold-shimmer" style={{fontFamily:"'DM Serif Display',serif",fontStyle:"italic"}}>scale with you.</span>
+
+          <h2
+            style={{
+              fontFamily: "'DM Serif Display', serif",
+              fontStyle: "italic",
+              fontSize: "clamp(2.4rem,4.5vw,4.2rem)",
+              fontWeight: 400,
+              letterSpacing: "-.02em",
+              lineHeight: 1.08,
+              color: "rgba(255,255,255,.95)",
+              marginBottom: 14
+            }}
+          >
+            Interviews that{" "}
+            <span className="gold-shimmer">
+              scale with you.
+            </span>
           </h2>
         </motion.div>
-        <motion.div style={{scale}} initial={{opacity:0,y:36}} animate={inView?{opacity:1,y:0}:{}} transition={{duration:1,delay:.14}}>
-          <div style={{borderRadius:22,overflow:"hidden",position:"relative",boxShadow:"0 40px 100px rgba(0,0,0,.6)",border:"1px solid rgba(255,255,255,.06)"}}>
-            <video ref={videoRef} src="./videos/IMG_2900.MOV" loop muted={muted} playsInline style={{width:"100%",display:"block"}}
-              poster="https://images.unsplash.com/photo-1551836022-d5d88e9218df?w=1400&q=90"/>
-            {/* Overlay badge */}
-            <div style={{position:"absolute",top:14,left:14,background:"rgba(3,6,16,.9)",border:"1px solid rgba(255,255,255,.08)",borderRadius:9,padding:"6px 13px",backdropFilter:"blur(16px)",display:"flex",alignItems:"center",gap:7}}>
-              <span style={{width:7,height:7,borderRadius:"50%",background:"#22c55e",boxShadow:"0 0 8px #22c55e",display:"inline-block",animation:"pulse-dot 1.8s ease-in-out infinite"}}/>
-              <span style={{fontSize:10,fontWeight:700,color:"#93c5fd",letterSpacing:".1em"}}>AI INTERVIEW LIVE</span>
+
+        <motion.div
+          style={{ scale }}
+          initial={{ opacity: 0, y: 36 }}
+          animate={inView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 1, delay: 0.14 }}
+        >
+          <div
+            style={{
+              borderRadius: 22,
+              overflow: "hidden",
+              position: "relative",
+              boxShadow: "0 40px 100px rgba(0,0,0,.6)",
+              border: "1px solid rgba(255,255,255,.06)"
+            }}
+          >
+            <video
+              ref={videoRef}
+              src="./videos/IMG_2900.MOV"
+              loop
+              playsInline
+              style={{ width: "100%", display: "block" }}
+              poster="https://images.unsplash.com/photo-1551836022-d5d88e9218df?w=1400&q=90"
+            />
+
+            {/* LIVE badge */}
+            <div
+              style={{
+                position: "absolute",
+                top: 14,
+                left: 14,
+                background: "rgba(3,6,16,.9)",
+                border: "1px solid rgba(255,255,255,.08)",
+                borderRadius: 9,
+                padding: "6px 13px",
+                backdropFilter: "blur(16px)",
+                display: "flex",
+                alignItems: "center",
+                gap: 7
+              }}
+            >
+              <span
+                style={{
+                  width: 7,
+                  height: 7,
+                  borderRadius: "50%",
+                  background: "#22c55e",
+                  boxShadow: "0 0 8px #22c55e",
+                  animation: "pulse-dot 1.8s ease-in-out infinite"
+                }}
+              />
+              <span
+                style={{
+                  fontSize: 10,
+                  fontWeight: 700,
+                  color: "#93c5fd",
+                  letterSpacing: ".1em"
+                }}
+              >
+                AI INTERVIEW LIVE
+              </span>
             </div>
-            <button onClick={()=>{if(!videoRef.current)return;const n=!muted;videoRef.current.muted=n;setMuted(n);}}
-              style={{position:"absolute",top:14,right:14,background:"rgba(3,6,16,.9)",border:"1px solid rgba(255,255,255,.08)",borderRadius:9,padding:"6px 13px",fontSize:10,fontWeight:700,color:"#94a3b8",display:"flex",alignItems:"center",gap:5,cursor:"pointer"}}>
-              {muted?"🔇 Unmute":"🔊 Mute"}
+
+            {/* Mute Button */}
+            <button
+              onClick={toggleMute}
+              style={{
+                position: "absolute",
+                top: 14,
+                right: 14,
+                background: "rgba(3,6,16,.9)",
+                border: "1px solid rgba(255,255,255,.08)",
+                borderRadius: 9,
+                padding: "6px 13px",
+                fontSize: 10,
+                fontWeight: 700,
+                color: "#94a3b8",
+                display: "flex",
+                alignItems: "center",
+                gap: 5,
+                cursor: "pointer"
+              }}
+            >
+              {muted ? "🔇 Unmute" : "🔊 Mute"}
             </button>
           </div>
-        </motion.div>
-        <motion.div initial={{opacity:0}} animate={inView?{opacity:1}:{}} transition={{delay:.55,duration:.7}}
-          style={{display:"flex",gap:8,justifyContent:"center",flexWrap:"wrap",marginTop:22}}>
-          {["24/7 Available","Structured Scoring","92% Accuracy","Auto Ranking","Multilingual"].map((t,i)=>(
-            <span key={i} style={{fontSize:10,fontWeight:700,color:"rgba(255,255,255,.3)",border:"1px solid rgba(255,255,255,.08)",borderRadius:9999,padding:"5px 14px",letterSpacing:".07em",background:"rgba(255,255,255,.03)"}}>{t}</span>
-          ))}
         </motion.div>
       </div>
     </section>
@@ -1654,43 +1781,211 @@ function CTASection() {
    FOOTER
 ══════════════════════════════════════════════════════════════════════ */
 function Footer() {
-  return(
-    <footer style={{position:"relative",zIndex:10,background:"rgba(2,4,12,.95)",padding:"clamp(44px,7vw,64px) clamp(28px,7vw,100px) clamp(24px,4vw,32px)",borderTop:"1px solid rgba(184,149,90,.1)"}}>
-      <div style={{maxWidth:1280,margin:"0 auto"}}>
-        <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",flexWrap:"wrap",gap:32,marginBottom:"clamp(30px,5vw,48px)"}}>
-          <div style={{maxWidth:220}}>
-            <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:12}}>
-              <MawahibLogo height={38} blend={false}/>
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
+
+  const sections = [
+    ["Product", ["Features", "How It Works", "Pricing"]],
+    ["Company", ["About", "Blog", "Careers"]],
+    ["Legal", ["Privacy", "Terms", "Security"]]
+  ];
+
+  return (
+    <footer
+      style={{
+        position: "relative",
+        zIndex: 10,
+        background: "rgba(2,4,12,.95)",
+        padding:
+          "clamp(50px,8vw,70px) clamp(24px,6vw,100px) clamp(30px,4vw,40px)",
+        borderTop: "1px solid rgba(184,149,90,.1)"
+      }}
+    >
+      <div style={{ maxWidth: 1280, margin: "0 auto" }}>
+        {/* TOP SECTION */}
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: isMobile ? "1fr" : "auto 1fr",
+            gap: isMobile ? 50 : 80,
+            marginBottom: "clamp(40px,6vw,60px)"
+          }}
+        >
+          {/* BRAND */}
+          <div
+            style={{
+              maxWidth: isMobile ? "100%" : 240,
+              textAlign: isMobile ? "center" : "left",
+              margin: isMobile ? "0 auto" : 0
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                justifyContent: isMobile ? "center" : "flex-start",
+                marginBottom: 16
+              }}
+            >
+              <MawahibLogo height={38} blend={false} />
             </div>
-            <p style={{color:"rgba(255,255,255,.22)",fontSize:12,lineHeight:1.8,marginBottom:18}}>
-              AI-powered hiring intelligence for modern recruitment teams worldwide.
+
+            <p
+              style={{
+                color: "rgba(255,255,255,.25)",
+                fontSize: 13,
+                lineHeight: 1.8,
+                marginBottom: 20
+              }}
+            >
+              AI-powered hiring intelligence for modern recruitment teams
+              worldwide.
             </p>
-            <a href="https://www.trustpilot.com/review/mawahib.ai" target="_blank" rel="noopener noreferrer"
-              style={{display:"inline-flex",alignItems:"center",gap:8,textDecoration:"none",background:"rgba(255,255,255,.04)",border:"1px solid rgba(255,255,255,.07)",borderRadius:9,padding:"6px 12px"}}>
-              <TrustpilotMark/>
-              <div style={{display:"flex",gap:1}}>{[...Array(5)].map((_,i)=>(<svg key={i} width={9} height={9} viewBox="0 0 24 24" fill="#00b67a"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>))}</div>
-              <span style={{fontSize:10,color:"rgba(255,255,255,.35)",fontWeight:700}}>4.9/5</span>
+
+            <a
+              href="https://www.trustpilot.com/review/mawahib.ai"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 8,
+                textDecoration: "none",
+                background: "rgba(255,255,255,.04)",
+                border: "1px solid rgba(255,255,255,.07)",
+                borderRadius: 10,
+                padding: "8px 14px"
+              }}
+            >
+              <TrustpilotMark />
+              <div style={{ display: "flex", gap: 1 }}>
+                {[...Array(5)].map((_, i) => (
+                  <svg
+                    key={i}
+                    width={10}
+                    height={10}
+                    viewBox="0 0 24 24"
+                    fill="#00b67a"
+                  >
+                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                  </svg>
+                ))}
+              </div>
+              <span
+                style={{
+                  fontSize: 11,
+                  color: "rgba(255,255,255,.4)",
+                  fontWeight: 700
+                }}
+              >
+                4.9/5
+              </span>
             </a>
           </div>
-          <div style={{display:"flex",gap:"clamp(24px,5vw,64px)",flexWrap:"wrap"}}>
-            {[["Product",["Features","How It Works","Pricing"]],["Company",["About","Blog","Careers"]],["Legal",["Privacy","Terms","Security"]]].map(([sect,items])=>(
+
+          {/* LINK SECTIONS */}
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: isMobile
+                ? "repeat(3,1fr)"
+                : "repeat(3,auto)",
+              gap: isMobile ? 40 : 80,
+              justifyContent: isMobile ? "center" : "flex-end"
+            }}
+          >
+            {sections.map(([sect, items]) => (
               <div key={sect}>
-                <p style={{fontSize:9,fontWeight:800,color:C.gold,letterSpacing:".15em",marginBottom:14,textTransform:"uppercase"}}>{sect}</p>
-                <div style={{display:"flex",flexDirection:"column",gap:11}}>
-                  {items.map(item=>(
-                    <motion.a key={item} href="#" whileHover={{color:"rgba(255,255,255,.6)",x:3}} transition={{duration:.2}}
-                      style={{color:"rgba(255,255,255,.22)",fontSize:13,textDecoration:"none"}}>{item}</motion.a>
+                <p
+                  style={{
+                    fontSize: 10,
+                    fontWeight: 800,
+                    color: C.gold,
+                    letterSpacing: ".15em",
+                    marginBottom: 16,
+                    textTransform: "uppercase"
+                  }}
+                >
+                  {sect}
+                </p>
+
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 12
+                  }}
+                >
+                  {items.map((item) => (
+                    <motion.a
+                      key={item}
+                      href="#"
+                      whileHover={{ color: "rgba(255,255,255,.7)", x: 4 }}
+                      transition={{ duration: 0.25 }}
+                      style={{
+                        color: "rgba(255,255,255,.3)",
+                        fontSize: 14,
+                        textDecoration: "none"
+                      }}
+                    >
+                      {item}
+                    </motion.a>
                   ))}
                 </div>
               </div>
             ))}
           </div>
         </div>
-        <div style={{borderTop:"1px solid rgba(255,255,255,.04)",paddingTop:18,display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:10}}>
-          <p style={{color:"rgba(255,255,255,.14)",fontSize:11}}>© 2026 Mawahib LLC. All rights reserved.</p>
-          <div style={{display:"flex",gap:6}}>
-            {["AI-Powered","SOC 2 Type II","GDPR Ready"].map(b=>(
-              <span key={b} style={{fontSize:10,color:"rgba(255,255,255,.16)",border:"1px solid rgba(255,255,255,.06)",borderRadius:9999,padding:"3px 10px",letterSpacing:".04em"}}>{b}</span>
+
+        {/* BOTTOM BAR */}
+        <div
+          style={{
+            borderTop: "1px solid rgba(255,255,255,.05)",
+            paddingTop: 22,
+            display: "flex",
+            flexDirection: isMobile ? "column" : "row",
+            justifyContent: "space-between",
+            alignItems: isMobile ? "center" : "center",
+            gap: 16,
+            textAlign: isMobile ? "center" : "left"
+          }}
+        >
+          <p
+            style={{
+              color: "rgba(255,255,255,.18)",
+              fontSize: 12
+            }}
+          >
+            © 2026 Mawahib LLC. All rights reserved.
+          </p>
+
+          <div
+            style={{
+              display: "flex",
+              flexWrap: "wrap",
+              justifyContent: "center",
+              gap: 10
+            }}
+          >
+            {["AI-Powered", "SOC 2 Type II", "GDPR Ready"].map((b) => (
+              <span
+                key={b}
+                style={{
+                  fontSize: 11,
+                  color: "rgba(255,255,255,.22)",
+                  border: "1px solid rgba(255,255,255,.07)",
+                  borderRadius: 9999,
+                  padding: "5px 12px",
+                  letterSpacing: ".05em"
+                }}
+              >
+                {b}
+              </span>
             ))}
           </div>
         </div>
@@ -1698,7 +1993,6 @@ function Footer() {
     </footer>
   );
 }
-
 /* ══════════════════════════════════════════════════════════════════════
    ROOT APP
 ══════════════════════════════════════════════════════════════════════ */
