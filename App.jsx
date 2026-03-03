@@ -707,6 +707,9 @@ function AnimCount({ val, suffix="" }) {
 ══════════════════════════════════════════════════════════════════════ */
 function Nav() {
   const [scrolled, setScrolled] = useState(false);
+
+
+  
   useEffect(()=>{const fn=()=>setScrolled(window.scrollY>60);window.addEventListener("scroll",fn);return()=>window.removeEventListener("scroll",fn);},[]);
   return(
     <motion.nav
@@ -744,87 +747,261 @@ function Nav() {
 ══════════════════════════════════════════════════════════════════════ */
 function HeroSection() {
   const { scrollYProgress } = useScroll();
-  const y = useTransform(scrollYProgress, [0,.25], [0, -80]);
-  const opacity = useTransform(scrollYProgress, [0,.22], [1,0]);
-  const scale = useTransform(scrollYProgress, [0,.25], [1,.94]);
+  const y = useTransform(scrollYProgress, [0, 0.25], [0, -80]);
+  const opacity = useTransform(scrollYProgress, [0, 0.22], [1, 0]);
+  const scale = useTransform(scrollYProgress, [0, 0.25], [1, 0.94]);
 
-  return(
-    <section style={{position:"relative",minHeight:"100vh",display:"flex",alignItems:"center",zIndex:10,
-      background:"linear-gradient(90deg,rgba(3,6,16,.82) 0%,rgba(3,6,16,.6) 45%,rgba(3,6,16,.1) 72%,transparent 100%)"}}>
-      <motion.div style={{y,opacity,scale,padding:"0 clamp(28px,7vw,100px)",paddingTop:90,maxWidth:"clamp(340px,48vw,640px)"}}>
-        <motion.div initial={{opacity:0,y:20}} animate={{opacity:1,y:0}} transition={{duration:.7,delay:.3,ease:[.16,1,.3,1]}}>
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
+
+  const stats = [
+    { val: "190+", sub: "Countries" },
+    { val: "92%", sub: "AI Accuracy" },
+    { val: "10×", sub: "Faster Hire" }
+  ];
+
+  return (
+    <section
+      style={{
+        position: "relative",
+        minHeight: "100vh",
+        display: "flex",
+        alignItems: "center",
+        zIndex: 10,
+        overflow: "hidden",
+        background:
+          "linear-gradient(90deg,rgba(3,6,16,.82) 0%,rgba(3,6,16,.6) 45%,rgba(3,6,16,.1) 72%,transparent 100%)"
+      }}
+    >
+      <motion.div
+        style={{
+          y,
+          opacity,
+          scale,
+          padding: "0 clamp(28px,7vw,100px)",
+          paddingTop: 90,
+          maxWidth: "clamp(340px,48vw,640px)",
+          width: "100%"
+        }}
+      >
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7, delay: 0.3 }}
+        >
           <Label>AI-POWERED HIRING INTELLIGENCE</Label>
         </motion.div>
+
+        {/* Heading Line 1 */}
         <motion.h1
-          initial={{opacity:0,y:30}} animate={{opacity:1,y:0}}
-          transition={{duration:.9,delay:.42,ease:[.16,1,.3,1]}}
-          style={{fontFamily:"'DM Serif Display',serif",fontStyle:"italic",
-            fontSize:"clamp(3rem,6.5vw,6rem)",fontWeight:400,letterSpacing:"-.02em",lineHeight:1.04,
-            color:"rgba(255,255,255,.95)",marginBottom:6}}>
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.9, delay: 0.42 }}
+          style={{
+            fontFamily: "'DM Serif Display', serif",
+            fontStyle: "italic",
+            fontSize: "clamp(2.6rem,7vw,6rem)",
+            fontWeight: 400,
+            letterSpacing: "-0.02em",
+            lineHeight: 1.05,
+            color: "rgba(255,255,255,.95)",
+            marginBottom: 6
+          }}
+        >
           Hiring.
         </motion.h1>
+
+        {/* Heading Line 2 */}
         <motion.h1
-          initial={{opacity:0,y:30}} animate={{opacity:1,y:0}}
-          transition={{duration:.9,delay:.52,ease:[.16,1,.3,1]}}
-          style={{fontFamily:"'DM Serif Display',serif",fontStyle:"italic",
-            fontSize:"clamp(3rem,6.5vw,6rem)",fontWeight:400,letterSpacing:"-.02em",lineHeight:1.04,
-            marginBottom:30,whiteSpace:"nowrap"}}>
-          <span className="gold-shimmer" style={{fontFamily:"'DM Serif Display',serif",fontStyle:"italic"}}>Re-engineered.</span>
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.9, delay: 0.52 }}
+          style={{
+            fontFamily: "'DM Serif Display', serif",
+            fontStyle: "italic",
+            fontSize: "clamp(2.6rem,7vw,6rem)",
+            fontWeight: 400,
+            letterSpacing: "-0.02em",
+            lineHeight: 1.05,
+            marginBottom: 30,
+            wordBreak: "break-word"
+          }}
+        >
+          <span className="gold-shimmer">Re-engineered.</span>
         </motion.h1>
+
+        {/* Description */}
         <motion.p
-          initial={{opacity:0,y:18}} animate={{opacity:1,y:0}}
-          transition={{duration:.75,delay:.66,ease:[.16,1,.3,1]}}
-          style={{color:"rgba(255,255,255,.5)",fontSize:"clamp(14px,1.6vw,17px)",lineHeight:1.85,marginBottom:38,maxWidth:440}}>
-          AI-powered candidate intelligence for modern teams. Automate screening, conduct structured interviews, and surface your best candidates — without manual effort.
+          initial={{ opacity: 0, y: 18 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.75, delay: 0.66 }}
+          style={{
+            color: "rgba(255,255,255,.5)",
+            fontSize: "clamp(14px,1.6vw,17px)",
+            lineHeight: 1.85,
+            marginBottom: 38,
+            maxWidth: 440
+          }}
+        >
+          AI-powered candidate intelligence for modern teams. Automate
+          screening, conduct structured interviews, and surface your best
+          candidates — without manual effort.
         </motion.p>
+
+        {/* CTA Buttons */}
         <motion.div
-          initial={{opacity:0,y:14}} animate={{opacity:1,y:0}}
-          transition={{duration:.65,delay:.8,ease:[.16,1,.3,1]}}
-          style={{display:"flex",gap:12,flexWrap:"wrap"}}>
-          <motion.a href="https://mawahib.ai/request-campaign" target="_blank"
-            whileHover={{scale:1.04,boxShadow:`0 14px 40px rgba(184,149,90,.45)`}}
-            whileTap={{scale:.96}}
-            style={{background:`linear-gradient(135deg,${C.gold},${C.goldBright})`,padding:"13px 30px",borderRadius:12,fontSize:14,fontWeight:700,color:C.bgDark,textDecoration:"none",boxShadow:`0 6px 24px rgba(184,149,90,.3)`}}>
+          initial={{ opacity: 0, y: 14 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.65, delay: 0.8 }}
+          style={{ display: "flex", gap: 12, flexWrap: "wrap" }}
+        >
+          <motion.a
+            href="https://mawahib.ai/request-campaign"
+            target="_blank"
+            whileHover={{ scale: 1.04 }}
+            whileTap={{ scale: 0.96 }}
+            style={{
+              background: `linear-gradient(135deg,${C.gold},${C.goldBright})`,
+              padding: "13px 30px",
+              borderRadius: 12,
+              fontSize: 14,
+              fontWeight: 700,
+              color: C.bgDark,
+              textDecoration: "none",
+              boxShadow: `0 6px 24px rgba(184,149,90,.3)`
+            }}
+          >
             Request Demo
           </motion.a>
-          <motion.a href="https://wa.me/962798056152" target="_blank"
-            whileHover={{scale:1.04,background:"rgba(255,255,255,.08)"}}
-            whileTap={{scale:.96}}
-            style={{background:"rgba(255,255,255,.05)",border:"1px solid rgba(255,255,255,.12)",padding:"13px 28px",borderRadius:12,fontSize:14,fontWeight:600,color:"rgba(255,255,255,.6)",textDecoration:"none",transition:"background .25s"}}>
+
+          <motion.a
+            href="https://wa.me/962798056152"
+            target="_blank"
+            whileHover={{ scale: 1.04 }}
+            whileTap={{ scale: 0.96 }}
+            style={{
+              background: "rgba(255,255,255,.05)",
+              border: "1px solid rgba(255,255,255,.12)",
+              padding: "13px 28px",
+              borderRadius: 12,
+              fontSize: 14,
+              fontWeight: 600,
+              color: "rgba(255,255,255,.6)",
+              textDecoration: "none"
+            }}
+          >
             See How It Works ↓
           </motion.a>
         </motion.div>
 
-        {/* Scroll hint */}
-        <motion.div
-          initial={{opacity:0}} animate={{opacity:1}} transition={{delay:1.5,duration:.8}}
-          style={{position:"absolute",bottom:40,left:"clamp(28px,7vw,100px)",display:"flex",flexDirection:"column",alignItems:"center",gap:8}}>
-          <span style={{fontSize:9,color:"rgba(255,255,255,.25)",letterSpacing:".18em",fontWeight:700}}>SCROLL</span>
-          <motion.div animate={{y:[0,10,0]}} transition={{duration:1.6,repeat:Infinity,ease:"easeInOut"}}
-            style={{width:1,height:40,background:`linear-gradient(to bottom,rgba(184,149,90,.6),transparent)`}}/>
-        </motion.div>
+        {/* Mobile Stats */}
+        {isMobile && (
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              gap: 10,
+              marginTop: 40
+            }}
+          >
+            {stats.map(({ val, sub }) => (
+              <div
+                key={val}
+                style={{
+                  flex: 1,
+                  background: "rgba(3,6,16,.7)",
+                  border: "1px solid rgba(184,149,90,.2)",
+                  borderRadius: 12,
+                  padding: "14px 10px",
+                  textAlign: "center",
+                  backdropFilter: "blur(20px)"
+                }}
+              >
+                <div
+                  style={{
+                    fontSize: 18,
+                    fontWeight: 800,
+                    color: "#fff"
+                  }}
+                >
+                  {val}
+                </div>
+                <div
+                  style={{
+                    fontSize: 9,
+                    color: C.gold,
+                    fontWeight: 700
+                  }}
+                >
+                  {sub}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </motion.div>
 
-      {/* Floating stat chips — top right area */}
-      <div style={{position:"absolute",right:"clamp(2%,5vw,8%)",top:"50%",transform:"translateY(-50%)",display:"flex",flexDirection:"column",gap:14,zIndex:20,pointerEvents:"none"}}>
-        {[
-          {val:"190+",sub:"Countries",delay:.9},
-          {val:"92%",sub:"AI Accuracy",delay:1.05},
-          {val:"10×",sub:"Faster Hire",delay:1.2},
-        ].map(({val,sub,delay})=>(
-          <motion.div key={val}
-            initial={{opacity:0,x:30}} animate={{opacity:1,x:0}}
-            transition={{delay,duration:.65,ease:[.16,1,.3,1]}}
-            style={{background:"rgba(3,6,16,.6)",border:"1px solid rgba(184,149,90,.2)",borderRadius:14,padding:"12px 18px",backdropFilter:"blur(20px)",animation:`float-1 ${3+delay}s ease-in-out infinite`,animationDelay:`${delay}s`,boxShadow:"0 8px 32px rgba(0,0,0,.3)"}}>
-            <div style={{fontSize:"clamp(18px,2.2vw,26px)",fontWeight:800,color:"#fff",letterSpacing:"-.04em",lineHeight:1}}>{val}</div>
-            <div style={{fontSize:9,color:C.gold,fontWeight:700,marginTop:3,letterSpacing:".08em"}}>{sub}</div>
-          </motion.div>
-        ))}
-      </div>
+      {/* Desktop Floating Stats */}
+      {!isMobile && (
+        <div
+          style={{
+            position: "absolute",
+            right: "clamp(2%,5vw,8%)",
+            top: "50%",
+            transform: "translateY(-50%)",
+            display: "flex",
+            flexDirection: "column",
+            gap: 14,
+            zIndex: 20,
+            pointerEvents: "none"
+          }}
+        >
+          {stats.map(({ val, sub }) => (
+            <motion.div
+              key={val}
+              initial={{ opacity: 0, x: 30 }}
+              animate={{ opacity: 1, x: 0 }}
+              style={{
+                background: "rgba(3,6,16,.6)",
+                border: "1px solid rgba(184,149,90,.2)",
+                borderRadius: 14,
+                padding: "12px 18px",
+                backdropFilter: "blur(20px)",
+                boxShadow: "0 8px 32px rgba(0,0,0,.3)"
+              }}
+            >
+              <div
+                style={{
+                  fontSize: "clamp(18px,2.2vw,26px)",
+                  fontWeight: 800,
+                  color: "#fff",
+                  letterSpacing: "-.04em"
+                }}
+              >
+                {val}
+              </div>
+              <div
+                style={{
+                  fontSize: 9,
+                  color: C.gold,
+                  fontWeight: 700
+                }}
+              >
+                {sub}
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      )}
     </section>
   );
 }
-
 /* ══════════════════════════════════════════════════════════════════════
    TICKER
 ══════════════════════════════════════════════════════════════════════ */
@@ -906,8 +1083,8 @@ function ProblemSection() {
         <motion.div initial={{opacity:0,x:40}} animate={inView?{opacity:1,x:0}:{}} transition={{duration:.9,delay:.15,ease:[.16,1,.3,1]}}>
           <Label color="#f87171" bg="rgba(248,113,113,.08)" border="rgba(248,113,113,.2)">THE PROBLEM</Label>
           <h2 style={{fontFamily:"'DM Serif Display',serif",fontStyle:"italic",fontSize:"clamp(2.4rem,4.5vw,4.2rem)",fontWeight:400,letterSpacing:"-.02em",lineHeight:1.08,color:"rgba(255,255,255,.95)",marginBottom:18}}>
-            Hiring is <span style={{color:"#f87171"}}>broken.</span>
-          </h2>
+            Hiring Today is a <span className="gold-shimmer">Challenge.</span>
+          </h2>  
           <p style={{color:"rgba(255,255,255,.4)",fontSize:"clamp(14px,1.5vw,16px)",lineHeight:1.85,marginBottom:44}}>
             Most companies rely on manual reviews, subjective opinions, and fragmented processes. The cost isn't just efficiency — it's the best candidates slipping through.
           </p>
@@ -938,63 +1115,217 @@ function ProblemSection() {
 ══════════════════════════════════════════════════════════════════════ */
 function GlobalSection() {
   const ref = useRef();
-  const inView = useInView(ref,{once:true,amount:.08});
-  const { scrollYProgress } = useScroll({target:ref,offset:["start end","end start"]});
-  const textY = useTransform(scrollYProgress,[0,1],[30,-30]);
+  const inView = useInView(ref, { once: true, amount: 0.08 });
+  const { scrollYProgress } = useScroll({
+    target: ref,
+    offset: ["start end", "end start"]
+  });
 
-  const stats = [{val:190,s:"+",lbl:"Countries"},{val:92,s:"%",lbl:"AI Accuracy"},{val:10,s:"×",lbl:"Faster Hiring"},{val:400,s:"+",lbl:"Clients"}];
+  const textY = useTransform(scrollYProgress, [0, 1], [40, -40]);
 
-  return(
-    <section ref={ref} style={{position:"relative",zIndex:10,padding:"clamp(90px,12vw,140px) clamp(28px,7vw,100px)",background:"linear-gradient(180deg,rgba(10,15,30,.85) 0%,rgba(3,6,16,.6) 100%)"}}>
-      <div style={{maxWidth:1280,margin:"0 auto",display:"grid",gridTemplateColumns:"1fr 1fr",gap:"clamp(50px,8vw,100px)",alignItems:"center"}} className="two-col">
-        <motion.div style={{y:textY}} initial={{opacity:0,x:-40}} animate={inView?{opacity:1,x:0}:{}} transition={{duration:.95,ease:[.16,1,.3,1]}}>
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
+
+  const stats = [
+    { val: 190, s: "+", lbl: "Countries" },
+    { val: 92, s: "%", lbl: "AI Accuracy" },
+    { val: 10, s: "×", lbl: "Faster Hiring" },
+    { val: 400, s: "+", lbl: "Clients" }
+  ];
+
+  return (
+    <section
+      ref={ref}
+      style={{
+        position: "relative",
+        zIndex: 10,
+        padding: "clamp(90px,12vw,140px) clamp(28px,7vw,100px)",
+        background:
+          "linear-gradient(180deg,rgba(10,15,30,.85) 0%,rgba(3,6,16,.6) 100%)",
+        overflow: "hidden"
+      }}
+    >
+      <div
+        style={{
+          maxWidth: 1280,
+          margin: "0 auto",
+          display: "grid",
+          gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
+          gap: "clamp(60px,8vw,100px)",
+          alignItems: "center"
+        }}
+      >
+        {/* LEFT CONTENT */}
+        <motion.div
+          style={{ y: textY }}
+          initial={{ opacity: 0, x: -60 }}
+          animate={inView ? { opacity: 1, x: 0 } : {}}
+          transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
+        >
           <Label>GLOBAL REACH</Label>
-          <h2 style={{fontFamily:"'DM Serif Display',serif",fontStyle:"italic",fontSize:"clamp(2.4rem,4.5vw,4.2rem)",fontWeight:400,letterSpacing:"-.02em",lineHeight:1.08,color:"rgba(255,255,255,.95)",marginBottom:18}}>
-            Global Talent.<br/><span className="gold-shimmer" style={{fontFamily:"'DM Serif Display',serif",fontStyle:"italic"}}>Structured Insight.</span>
+
+          <h2
+            style={{
+              fontFamily: "'DM Serif Display', serif",
+              fontStyle: "italic",
+              fontSize: "clamp(2.4rem,6vw,4.5rem)",
+              fontWeight: 400,
+              letterSpacing: "-.02em",
+              lineHeight: 1.08,
+              color: "rgba(255,255,255,.95)",
+              marginBottom: 22
+            }}
+          >
+            Global Talent.
+            <br />
+            <span className="gold-shimmer">
+              Structured Insight.
+            </span>
           </h2>
-          <p style={{color:"rgba(255,255,255,.4)",fontSize:"clamp(14px,1.5vw,16px)",lineHeight:1.85,marginBottom:44}}>
-            Mawahib evaluates, ranks, and presents the best candidates in minutes — not weeks. Every decision backed by structured AI data.
+
+          <p
+            style={{
+              color: "rgba(255,255,255,.4)",
+              fontSize: "clamp(14px,1.5vw,16px)",
+              lineHeight: 1.9,
+              marginBottom: 50,
+              maxWidth: 520
+            }}
+          >
+            Mawahib evaluates, ranks, and presents the best candidates in
+            minutes — not weeks. Every decision backed by structured AI data.
           </p>
 
-          {/* Stats grid */}
-          <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:16,marginBottom:44}}>
-            {stats.map((s,i)=>(
-              <motion.div key={s.lbl}
-                initial={{opacity:0,y:20}} animate={inView?{opacity:1,y:0}:{}} transition={{delay:.2+i*.1,duration:.6}}
-                whileHover={{scale:1.06,borderColor:"rgba(184,149,90,.4)"}}
-                style={{padding:"16px 12px",borderTop:`2px solid ${C.gold}`,borderRadius:4,transition:"all .3s",cursor:"default"}}>
-                <div style={{fontSize:"clamp(20px,2.4vw,28px)",fontWeight:800,letterSpacing:"-.04em",color:"#fff",lineHeight:1,marginBottom:5}}>
-                  <AnimCount val={s.val} suffix={s.s}/>
+          {/* 🔥 Animated Stats */}
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: isMobile
+                ? "repeat(2,1fr)"
+                : "repeat(4,1fr)",
+              gap: 20,
+              marginBottom: isMobile ? 60 : 0
+            }}
+          >
+            {stats.map((s, i) => (
+              <motion.div
+                key={s.lbl}
+                initial={{ opacity: 0, y: 40, scale: 0.9 }}
+                animate={
+                  inView ? { opacity: 1, y: 0, scale: 1 } : {}
+                }
+                transition={{
+                  delay: 0.25 + i * 0.12,
+                  duration: 0.8,
+                  type: "spring",
+                  stiffness: 120
+                }}
+                whileHover={{
+                  scale: 1.08,
+                  y: -6
+                }}
+                style={{
+                  position: "relative",
+                  padding: "24px 16px",
+                  borderRadius: 18,
+                  background:
+                    "linear-gradient(145deg,rgba(255,255,255,.05),rgba(255,255,255,.02))",
+                  border: "1px solid rgba(184,149,90,.18)",
+                  textAlign: "center",
+                  backdropFilter: "blur(18px)",
+                  overflow: "hidden",
+                  cursor: "default",
+                  boxShadow:
+                    "0 10px 40px rgba(0,0,0,.4)"
+                }}
+              >
+                {/* subtle glow pulse */}
+                <motion.div
+                  animate={{ opacity: [0.2, 0.5, 0.2] }}
+                  transition={{
+                    duration: 3 + i,
+                    repeat: Infinity,
+                    ease: "easeInOut"
+                  }}
+                  style={{
+                    position: "absolute",
+                    inset: "-30%",
+                    background:
+                      "radial-gradient(circle, rgba(184,149,90,.15) 0%, transparent 60%)",
+                    zIndex: 0
+                  }}
+                />
+
+                <div
+                  style={{
+                    position: "relative",
+                    zIndex: 2,
+                    fontSize: "clamp(22px,4vw,30px)",
+                    fontWeight: 800,
+                    letterSpacing: "-.04em",
+                    color: "#fff",
+                    marginBottom: 6
+                  }}
+                >
+                  <AnimCount val={s.val} suffix={s.s} />
                 </div>
-                <div style={{fontSize:9,color:"rgba(255,255,255,.3)",fontWeight:700,letterSpacing:".06em"}}>{s.lbl}</div>
+
+                <div
+                  style={{
+                    position: "relative",
+                    zIndex: 2,
+                    fontSize: 10,
+                    color: C.gold,
+                    fontWeight: 700,
+                    letterSpacing: ".08em"
+                  }}
+                >
+                  {s.lbl}
+                </div>
               </motion.div>
             ))}
           </div>
-
-          {["Smart AI Screening & Matching","Structured Scoring Model","Risk & Stability Analysis","Interview Automation Built-In"].map((item,i)=>(
-            <motion.div key={i}
-              initial={{opacity:0,x:-12}} animate={inView?{opacity:1,x:0}:{}} transition={{delay:.42+i*.09,duration:.55}}
-              whileHover={{x:8,color:"rgba(255,255,255,.75)"}}
-              style={{display:"flex",alignItems:"center",gap:13,padding:"10px 0",borderBottom:"1px solid rgba(255,255,255,.05)",cursor:"default",transition:"all .28s",color:"rgba(255,255,255,.4)",fontSize:"clamp(12px,1.3vw,14px)",fontWeight:500}}>
-              <div style={{width:20,height:1.5,background:`linear-gradient(90deg,${C.gold},${C.goldBright})`,flexShrink:0,borderRadius:1,boxShadow:`0 0 6px ${C.gold}`}}/>
-              {item}
-            </motion.div>
-          ))}
         </motion.div>
 
-        <motion.div initial={{opacity:0,x:40}} animate={inView?{opacity:1,x:0}:{}} transition={{duration:1.05,delay:.18,ease:[.16,1,.3,1]}} style={{position:"relative"}}>
-          <div style={{borderRadius:24,overflow:"hidden",aspectRatio:"4/5",boxShadow:"0 40px 100px rgba(0,0,0,.55)",border:"1px solid rgba(255,255,255,.06)",position:"relative"}}>
-            <img src="https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=1400&q=90"
-              alt="" loading="lazy" style={{width:"100%",height:"100%",objectFit:"cover",filter:"brightness(.7) saturate(.7)"}}/>
-            <div style={{position:"absolute",inset:0,background:"linear-gradient(135deg,transparent 50%,rgba(3,6,16,.85) 100%)"}}/>
-            {[{v:"190+",l:"Countries",pos:{top:"10%",left:"5%"}},{v:"92%",l:"AI Accuracy",pos:{top:"42%",right:"5%"}},{v:"10×",l:"Faster Hiring",pos:{bottom:"10%",left:"5%"}}].map(({v,l,pos},i)=>(
-              <motion.div key={l}
-                initial={{opacity:0,scale:.8}} animate={inView?{opacity:1,scale:1}:{}} transition={{delay:.55+i*.15,duration:.65}}
-                style={{position:"absolute",...pos,background:"rgba(3,6,16,.82)",border:"1px solid rgba(184,149,90,.22)",borderRadius:14,padding:"12px 18px",backdropFilter:"blur(20px)"}}>
-                <div style={{fontSize:"clamp(16px,2vw,22px)",fontWeight:800,color:"#fff",letterSpacing:"-.04em",lineHeight:1}}>{v}</div>
-                <div style={{fontSize:9,color:C.gold,fontWeight:700,marginTop:3,letterSpacing:".07em"}}>{l}</div>
-              </motion.div>
-            ))}
+        {/* IMAGE — ALWAYS VISIBLE */}
+        <motion.div
+          initial={{ opacity: 0, x: isMobile ? 0 : 60, y: isMobile ? 40 : 0 }}
+          animate={inView ? { opacity: 1, x: 0, y: 0 } : {}}
+          transition={{ duration: 1 }}
+          style={{
+            position: "relative",
+            width: "100%"
+          }}
+        >
+          <div
+            style={{
+              borderRadius: 28,
+              overflow: "hidden",
+              aspectRatio: isMobile ? "4/3" : "4/5",
+              boxShadow:
+                "0 50px 120px rgba(0,0,0,.6)",
+              border:
+                "1px solid rgba(255,255,255,.06)"
+            }}
+          >
+            <img
+              src="https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=1400&q=90"
+              alt=""
+              loading="lazy"
+              style={{
+                width: "100%",
+                height: "100%",
+                objectFit: "cover",
+                filter:
+                  "brightness(.75) saturate(.75)"
+              }}
+            />
           </div>
         </motion.div>
       </div>
@@ -1023,7 +1354,7 @@ function VideoSection() {
         </motion.div>
         <motion.div style={{scale}} initial={{opacity:0,y:36}} animate={inView?{opacity:1,y:0}:{}} transition={{duration:1,delay:.14}}>
           <div style={{borderRadius:22,overflow:"hidden",position:"relative",boxShadow:"0 40px 100px rgba(0,0,0,.6)",border:"1px solid rgba(255,255,255,.06)"}}>
-            <video ref={videoRef} src="./videos/mawahib-v.mp4" loop muted={muted} playsInline style={{width:"100%",display:"block"}}
+            <video ref={videoRef} src="./videos/IMG_2900.MOV" loop muted={muted} playsInline style={{width:"100%",display:"block"}}
               poster="https://images.unsplash.com/photo-1551836022-d5d88e9218df?w=1400&q=90"/>
             {/* Overlay badge */}
             <div style={{position:"absolute",top:14,left:14,background:"rgba(3,6,16,.9)",border:"1px solid rgba(255,255,255,.08)",borderRadius:9,padding:"6px 13px",backdropFilter:"blur(16px)",display:"flex",alignItems:"center",gap:7}}>
