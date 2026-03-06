@@ -862,7 +862,8 @@ function HeroSection() {
           style={{ display: "flex", gap: 12, flexWrap: "wrap" }}
         >
           <motion.a
-            href="https://mawahib.ai/request-campaign"
+            href="https://wa.me/966556919502"
+            // href="https://mawahib.ai/request-campaign"
             target="_blank"
             whileHover={{ scale: 1.04 }}
             whileTap={{ scale: 0.96 }}
@@ -880,24 +881,7 @@ function HeroSection() {
             Request Demo
           </motion.a>
 
-          <motion.a
-            href="https://wa.me/962798056152"
-            target="_blank"
-            whileHover={{ scale: 1.04 }}
-            whileTap={{ scale: 0.96 }}
-            style={{
-              background: "rgba(255,255,255,.05)",
-              border: "1px solid rgba(255,255,255,.12)",
-              padding: "13px 28px",
-              borderRadius: 12,
-              fontSize: 14,
-              fontWeight: 600,
-              color: "rgba(255,255,255,.6)",
-              textDecoration: "none"
-            }}
-          >
-            See How It Works ↓
-          </motion.a>
+        
         </motion.div>
 
         {/* Mobile Stats */}
@@ -1063,6 +1047,36 @@ function ProblemSection() {
       <div style={{maxWidth:1280,margin:"0 auto",display:"grid",gridTemplateColumns:"1fr 1fr",gap:"clamp(50px,8vw,100px)",alignItems:"center"}} className="two-col">
         {/* Left: image with parallax */}
         <motion.div style={{y:parallaxY,position:"relative"}} initial={{opacity:0,x:-40}} animate={inView?{opacity:1,x:0}:{}} transition={{duration:1,ease:[.16,1,.3,1]}}>
+         
+         {/* KEYWORDS */}
+<div
+  style={{
+    display: "flex",
+    gap: 14,
+    marginBottom: 18,
+    flexWrap: "wrap"
+  }}
+>
+  {["Automated", "Faster", "More Accurate"].map((k,i)=>(
+    <span
+      key={i}
+      style={{
+        fontSize: 10,
+        letterSpacing: ".12em",
+        fontWeight: 700,
+        textTransform: "uppercase",
+        color: C.gold,
+        border: "1px solid rgba(184,149,90,.35)",
+        background: "rgba(184,149,90,.08)",
+        padding: "6px 10px",
+        borderRadius: 999
+      }}
+    >
+      {k}
+    </span>
+  ))}
+</div>
+         
           <div style={{borderRadius:24,overflow:"hidden",aspectRatio:"3/4",boxShadow:"0 40px 100px rgba(0,0,0,.6)",border:"1px solid rgba(255,255,255,.06)",position:"relative"}}>
             <img src="https://images.unsplash.com/photo-1552664730-d307ca884978?w=1400&q=90"
               alt="" loading="lazy" style={{width:"100%",height:"100%",objectFit:"cover",filter:"brightness(.7) saturate(.7)"}}/>
@@ -1348,7 +1362,7 @@ function VideoSection() {
 
   const scale = useTransform(scrollYProgress, [0, 0.3, 0.7, 1], [0.93, 1, 1, 0.93]);
 
-  const [muted, setMuted] = useState(false); // default try with sound
+  const [muted, setMuted] = useState(false);
 
   useEffect(() => {
     if (!videoRef.current) return;
@@ -1356,9 +1370,8 @@ function VideoSection() {
     const video = videoRef.current;
 
     if (inView) {
-      video.muted = false; // try with sound
+      video.muted = false;
       video.play().catch(() => {
-        // If autoplay with sound fails → fallback to muted
         video.muted = true;
         setMuted(true);
         video.play().catch(() => {});
@@ -1369,8 +1382,9 @@ function VideoSection() {
   }, [inView]);
 
   const toggleMute = () => {
-    if (!videoRef.current) return;
     const video = videoRef.current;
+    if (!video) return;
+
     video.muted = !video.muted;
     setMuted(video.muted);
   };
@@ -1414,93 +1428,125 @@ function VideoSection() {
           </h2>
         </motion.div>
 
-        <motion.div
-          style={{ scale }}
-          initial={{ opacity: 0, y: 36 }}
-          animate={inView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 1, delay: 0.14 }}
+        {/* CONTROL BAR (OUTSIDE VIDEO) */}
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginBottom: 14
+          }}
         >
+          {/* LIVE badge */}
           <div
             style={{
-              borderRadius: 22,
-              overflow: "hidden",
-              position: "relative",
-              boxShadow: "0 40px 100px rgba(0,0,0,.6)",
-              border: "1px solid rgba(255,255,255,.06)"
+              background: "rgba(3,6,16,.9)",
+              border: "1px solid rgba(255,255,255,.08)",
+              borderRadius: 9,
+              padding: "6px 13px",
+              display: "flex",
+              alignItems: "center",
+              gap: 7
             }}
           >
-            <video
-              ref={videoRef}
-              src="./videos/IMG_2900.MOV"
-              loop
-              playsInline
-              style={{ width: "100%", display: "block" }}
-              poster="https://images.unsplash.com/photo-1551836022-d5d88e9218df?w=1400&q=90"
+            <span
+              style={{
+                width: 7,
+                height: 7,
+                borderRadius: "50%",
+                background: "#22c55e",
+                boxShadow: "0 0 8px #22c55e",
+                animation: "pulse-dot 1.8s ease-in-out infinite"
+              }}
             />
 
-            {/* LIVE badge */}
-            <div
+            <span
               style={{
-                position: "absolute",
-                top: 14,
-                left: 14,
-                background: "rgba(3,6,16,.9)",
-                border: "1px solid rgba(255,255,255,.08)",
-                borderRadius: 9,
-                padding: "6px 13px",
-                backdropFilter: "blur(16px)",
-                display: "flex",
-                alignItems: "center",
-                gap: 7
-              }}
-            >
-              <span
-                style={{
-                  width: 7,
-                  height: 7,
-                  borderRadius: "50%",
-                  background: "#22c55e",
-                  boxShadow: "0 0 8px #22c55e",
-                  animation: "pulse-dot 1.8s ease-in-out infinite"
-                }}
-              />
-              <span
-                style={{
-                  fontSize: 10,
-                  fontWeight: 700,
-                  color: "#93c5fd",
-                  letterSpacing: ".1em"
-                }}
-              >
-                AI INTERVIEW LIVE
-              </span>
-            </div>
-
-            {/* Mute Button */}
-            <button
-              onClick={toggleMute}
-              style={{
-                position: "absolute",
-                top: 14,
-                right: 14,
-                background: "rgba(3,6,16,.9)",
-                border: "1px solid rgba(255,255,255,.08)",
-                borderRadius: 9,
-                padding: "6px 13px",
                 fontSize: 10,
                 fontWeight: 700,
-                color: "#94a3b8",
-                display: "flex",
-                alignItems: "center",
-                gap: 5,
-                cursor: "pointer"
+                color: "#93c5fd",
+                letterSpacing: ".1em"
               }}
             >
-              {muted ? "🔇 Unmute" : "🔊 Mute"}
-            </button>
+              AI INTERVIEW LIVE
+            </span>
           </div>
-        </motion.div>
+
+          {/* MUTE BUTTON */}
+          <button
+            onClick={toggleMute}
+            style={{
+              background: "rgba(3,6,16,.9)",
+              border: "1px solid rgba(255,255,255,.08)",
+              borderRadius: 9,
+              padding: "6px 13px",
+              fontSize: 10,
+              fontWeight: 700,
+              color: "#94a3b8",
+              cursor: "pointer"
+            }}
+          >
+            {muted ? "🔇 Unmute" : "🔊 Mute"}
+          </button>
+        </div>
+
+        {/* VIDEO */}
+    <motion.div
+  style={{ scale }}
+  initial={{ opacity: 0, y: 36 }}
+  animate={inView ? { opacity: 1, y: 0 } : {}}
+  transition={{ duration: 1, delay: 0.14 }}
+>
+  <div
+    style={{
+      borderRadius: 22,
+      overflow: "hidden",
+      boxShadow: "0 40px 100px rgba(0,0,0,.6)",
+      border: "1px solid rgba(255,255,255,.06)"
+    }}
+  >
+    <video
+      ref={videoRef}
+      src="./videos/IMG_2900.MOV"
+      loop
+      playsInline
+      style={{ width: "100%", display: "block" }}
+      poster="https://images.unsplash.com/photo-1551836022-d5d88e9218df?w=1400&q=90"
+    />
+  </div>
+</motion.div>
+
+{/* BUTTON BELOW VIDEO */}
+<div
+  style={{
+    textAlign: "center",
+    marginTop: 28
+  }}
+>
+  <motion.a
+    href="https://wa.me/962798056152"
+    target="_blank"
+    whileHover={{ scale: 1.04 }}
+    whileTap={{ scale: 0.96 }}
+    style={{
+      display: "inline-block",
+      background: "rgba(255,255,255,.05)",
+      border: "1px solid rgba(255,255,255,.12)",
+      padding: "13px 28px",
+      borderRadius: 12,
+      fontSize: 14,
+      fontWeight: 600,
+      color: "rgba(255,255,255,.7)",
+      textDecoration: "none"
+    }}
+  >
+    See How It Works ↓
+  </motion.a>
+</div>
+         
       </div>
+     
+       
     </section>
   );
 }
