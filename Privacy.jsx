@@ -100,7 +100,7 @@ export default function Privacy() {
         <section style={{ maxWidth: 900, marginBottom: 40 }}>
           <h2 style={{ color: C.gold, fontSize: 22, marginBottom: 12 }}>Contact Us</h2>
           <p style={{ fontSize: 16, color: "rgba(255,255,255,.7)", lineHeight: 1.8 }}>
-            If you have any questions, concerns, or requests regarding this Privacy Policy or your personal data, please contact us at <a href="mailto:privacy@mawahib.ai" style={{ color: C.goldBright, textDecoration: "underline" }}>privacy@mawahib.ai</a>.
+            If you have any questions, concerns, or requests regarding this Privacy Policy or your personal data, please contact us at <a href="mailto:info@mawahib.ai" style={{ color: C.goldBright, textDecoration: "underline" }}>info@mawahib.ai</a>.
           </p>
         </section>
       </motion.div>

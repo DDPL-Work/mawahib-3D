@@ -30,16 +30,20 @@ const C = {
 
 const LOGO_SRC = "./IMG_2041.JPG-removebg-preview.png";
 
-function MawahibLogo({ blend = true }) {
+function MawahibLogo({ blend = true, width, height = "auto" }) {
+  const resolvedWidth =
+    width ?? (height === "auto" || height == null ? 167 : "auto");
   return (
     <img
       src={LOGO_SRC}
       alt="Mawahib"
       draggable={false}
       style={{
-        width: "167px",
-        height: "auoto",
-       
+        width:
+          typeof resolvedWidth === "number" ? `${resolvedWidth}px` : resolvedWidth,
+        height: typeof height === "number" ? `${height}px` : height,
+        objectFit: "contain",
+        display: "block"
       }}
     />
   );
@@ -616,7 +620,7 @@ function PageLoader({ onDone }) {
 
           <motion.div initial={{opacity:0,scale:.85}} animate={{opacity:1,scale:1}} transition={{duration:.8,ease:[.16,1,.3,1]}}
             >
-            <MawahibLogo height={46} blend={false}/>
+            <MawahibLogo height={200} blend={false}/>
           </motion.div>
 
           <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:12}}>
@@ -723,22 +727,29 @@ function AnimCount({ val, suffix="" }) {
 ══════════════════════════════════════════════════════════════════════ */
 function Nav() {
   const [scrolled, setScrolled] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   useEffect(()=>{const fn=()=>setScrolled(window.scrollY>60);window.addEventListener("scroll",fn);return()=>window.removeEventListener("scroll",fn);},[]);
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 640);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
   return(
     <motion.nav
       initial={{opacity:0,y:-18}} animate={{opacity:1,y:0}}
       transition={{duration:.8,ease:[.16,1,.3,1]}}
-      style={{position:"fixed",top:0,left:0,right:0,zIndex:500,height:64,
-        padding:"0 clamp(20px,5vw,60px)",display:"flex",alignItems:"center",justifyContent:"space-between",
+      style={{position:"fixed",top:0,left:0,right:0,zIndex:500,height:isMobile ? 60 : 64,
+        padding:isMobile ? "0 10px" : "0 clamp(20px,5vw,60px)",display:"flex",alignItems:"center",justifyContent:"space-between",
         background: scrolled ? "rgba(3,6,16,.82)" : "transparent",
         backdropFilter: scrolled ? "blur(24px) saturate(1.4)" : "none",
         borderBottom: scrolled ? "1px solid rgba(184,149,90,.12)" : "none",
         transition:"all .4s cubic-bezier(.16,1,.3,1)"}}>
       <motion.a href="/" style={{display:"flex",alignItems:"center",textDecoration:"none"}}
         whileHover={{scale:1.04}} whileTap={{scale:.96}}>
-          <MawahibLogo height={132} blend={false}/>
+          <MawahibLogo width={isMobile ? 116 : 148} blend={false}/>
       </motion.a>
-      <div style={{display:"flex",alignItems:"center",gap:12}}>
+      <div style={{display:"flex",alignItems:"center",gap:isMobile ? 8 : 12,flexShrink:0}}>
         {["Features","How it works","Pricing"].map(item=>(
           <motion.a key={item} href="#" whileHover={{color:C.goldLight}} transition={{duration:.2}}
             style={{fontSize:12,fontWeight:600,color:"rgba(255,255,255,.45)",textDecoration:"none",letterSpacing:".04em",display:"none"}}
@@ -750,14 +761,16 @@ function Nav() {
             style={{
               background: "rgba(255,255,255,.05)",
               border: "1px solid rgba(255,255,255,.18)",
-              borderRadius: 10,
-              padding: "8px 20px",
-              fontSize: 13,
+              borderRadius: isMobile ? 9 : 10,
+              padding: isMobile ? "8px 12px" : "8px 20px",
+              fontSize: isMobile ? 12 : 13,
               fontWeight: 700,
               color: "rgba(255,255,255,.82)",
               textDecoration: "none",
               display: "inline-flex",
-              alignItems: "center"
+              alignItems: "center",
+              lineHeight: 1,
+              whiteSpace: "nowrap"
             }}
           >
             Log In
@@ -766,7 +779,7 @@ function Nav() {
         <motion.a href="https://mawahib.ai/request-campaign" target="_blank" rel="noopener noreferrer"
           whileHover={{scale:1.04,boxShadow:`0 8px 28px rgba(184,149,90,.35)`}}
           whileTap={{scale:.96}}
-          style={{background:`linear-gradient(135deg,${C.gold},${C.goldBright})`,borderRadius:10,padding:"8px 20px",fontSize:13,fontWeight:700,color:C.bgDark,textDecoration:"none",boxShadow:`0 4px 18px rgba(184,149,90,.25)`}}>
+          style={{background:`linear-gradient(135deg,${C.gold},${C.goldBright})`,borderRadius:isMobile ? 9 : 10,padding:isMobile ? "8px 12px" : "8px 20px",fontSize:isMobile ? 12 : 13,fontWeight:700,color:C.bgDark,textDecoration:"none",boxShadow:`0 4px 18px rgba(184,149,90,.25)`,lineHeight:1,whiteSpace:"nowrap"}}>
           Get Started
         </motion.a>
       </div>
@@ -1067,6 +1080,14 @@ function ProblemSection() {
   const inView = useInView(ref,{once:true,amount:.08});
   const { scrollYProgress } = useScroll({target:ref,offset:["start end","end start"]});
   const parallaxY = useTransform(scrollYProgress,[0,1],[50,-50]);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
 
   const problems = [
     {n:"01",title:"Manual CV Screening",desc:"Recruiters spend 70% of time reading hundreds of applications with no structured framework to surface real signal."},
@@ -1113,14 +1134,48 @@ function ProblemSection() {
             <img src="https://images.unsplash.com/photo-1552664730-d307ca884978?w=1400&q=90"
               alt="" loading="lazy" style={{width:"100%",height:"100%",objectFit:"cover",filter:"brightness(.7) saturate(.7)"}}/>
             <div style={{position:"absolute",inset:0,background:"linear-gradient(160deg,transparent 45%,rgba(3,6,16,.9) 100%)"}}/>
-            {/* Animated stat badge */}
-            <motion.div
-              initial={{opacity:0,scale:.8}} animate={inView?{opacity:1,scale:1}:{}} transition={{delay:.6,duration:.7}}
-              style={{position:"absolute",bottom:"8%",right:"-8%",background:"rgba(3,6,16,.88)",border:"1px solid rgba(184,149,90,.3)",borderRadius:16,padding:"18px 22px",backdropFilter:"blur(24px)",boxShadow:"0 20px 60px rgba(0,0,0,.5)",animation:"glow-pulse 3s ease-in-out infinite"}}>
-              <div style={{fontSize:34,fontWeight:800,color:"#fff",letterSpacing:"-.05em",lineHeight:1}}>70%</div>
-              <div style={{fontSize:10,color:C.gold,fontWeight:700,letterSpacing:".1em",marginTop:4}}>TIME WASTED ON CVs</div>
-            </motion.div>
+            {/* Desktop stat badge */}
+            {!isMobile && (
+              <motion.div
+                initial={{opacity:0,scale:.8}} animate={inView?{opacity:1,scale:1}:{}} transition={{delay:.6,duration:.7}}
+                style={{
+                  position:"absolute",
+                  bottom:"clamp(14px,3vw,26px)",
+                  right:"clamp(14px,3vw,26px)",
+                  background:"rgba(3,6,16,.9)",
+                  border:"1px solid rgba(184,149,90,.34)",
+                  borderRadius:16,
+                  padding:"16px 20px",
+                  minWidth:200,
+                  backdropFilter:"blur(24px)",
+                  boxShadow:"0 20px 60px rgba(0,0,0,.45)",
+                  animation:"glow-pulse 3s ease-in-out infinite"
+                }}>
+                <div style={{fontSize:34,fontWeight:800,color:"#fff",letterSpacing:"-.05em",lineHeight:1}}>70%</div>
+                <div style={{fontSize:10,color:C.gold,fontWeight:700,letterSpacing:".1em",marginTop:6,whiteSpace:"nowrap"}}>TIME WASTED ON CVs</div>
+              </motion.div>
+            )}
           </div>
+          {/* Mobile stat card */}
+          {isMobile && (
+            <motion.div
+              initial={{opacity:0,y:14}} animate={inView?{opacity:1,y:0}:{}} transition={{delay:.55,duration:.65}}
+              style={{
+                marginTop:12,
+                background:"linear-gradient(135deg,rgba(3,6,16,.95),rgba(9,15,28,.92))",
+                border:"1px solid rgba(184,149,90,.34)",
+                borderRadius:14,
+                padding:"14px 16px",
+                display:"flex",
+                alignItems:"center",
+                justifyContent:"space-between",
+                gap:12,
+                boxShadow:"0 14px 36px rgba(0,0,0,.35)"
+              }}>
+              <div style={{fontSize:32,fontWeight:800,color:"#fff",letterSpacing:"-.04em",lineHeight:1}}>70%</div>
+              <div style={{fontSize:11,color:C.gold,fontWeight:800,letterSpacing:".1em",textAlign:"right",whiteSpace:"nowrap"}}>TIME WASTED ON CVs</div>
+            </motion.div>
+          )}
           {/* Decorative glow */}
           <div style={{position:"absolute",inset:"-10%",background:"radial-gradient(ellipse,rgba(184,149,90,.06) 0%,transparent 60%)",zIndex:-1,pointerEvents:"none"}}/>
         </motion.div>
@@ -1907,7 +1962,7 @@ function Footer() {
                 marginBottom: 16
               }}
             >
-              <MawahibLogo height={38} blend={false} />
+              <MawahibLogo height={180} blend={false} />
             </div>
             <p
               style={{
