@@ -1,6 +1,22 @@
+// Scroll to top on route change
+import { useLocation } from "react-router-dom";
+
+function ScrollToTop() {
+  const { pathname } = useLocation();
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+  return null;
+}
 import { useRef, useEffect, useState, useMemo, Suspense, useCallback } from "react";
+import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 import { motion, useScroll, useTransform, useSpring, useInView, AnimatePresence, useMotionValue, useVelocity } from "framer-motion";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
+import Pricing from "./Pricing";
+import About from "./About";
+import Privacy from "./Privacy";
+import Login from "./Login";
+import Signup from "./Signup";
 import * as THREE from "three";
 
 /* ─── Design Tokens ───────────────────────────────────────────────── */
@@ -707,9 +723,6 @@ function AnimCount({ val, suffix="" }) {
 ══════════════════════════════════════════════════════════════════════ */
 function Nav() {
   const [scrolled, setScrolled] = useState(false);
-
-
-  
   useEffect(()=>{const fn=()=>setScrolled(window.scrollY>60);window.addEventListener("scroll",fn);return()=>window.removeEventListener("scroll",fn);},[]);
   return(
     <motion.nav
@@ -731,6 +744,25 @@ function Nav() {
             style={{fontSize:12,fontWeight:600,color:"rgba(255,255,255,.45)",textDecoration:"none",letterSpacing:".04em",display:"none"}}
             className="nav-link">{item}</motion.a>
         ))}
+        <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}>
+          <Link
+            to="/login"
+            style={{
+              background: "rgba(255,255,255,.05)",
+              border: "1px solid rgba(255,255,255,.18)",
+              borderRadius: 10,
+              padding: "8px 20px",
+              fontSize: 13,
+              fontWeight: 700,
+              color: "rgba(255,255,255,.82)",
+              textDecoration: "none",
+              display: "inline-flex",
+              alignItems: "center"
+            }}
+          >
+            Log In
+          </Link>
+        </motion.div>
         <motion.a href="https://mawahib.ai/request-campaign" target="_blank" rel="noopener noreferrer"
           whileHover={{scale:1.04,boxShadow:`0 8px 28px rgba(184,149,90,.35)`}}
           whileTap={{scale:.96}}
@@ -1609,7 +1641,7 @@ function InterviewSection() {
               initial={{opacity:0,y:14}} animate={inView?{opacity:1,y:0}:{}} transition={{delay:.3+i*.14,duration:.65}}
               style={{padding:"20px 0",borderBottom:"1px solid rgba(255,255,255,.05)"}}>
               <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",marginBottom:8}}>
-                <span style={{fontSize:"clamp(14px,1.45vw,15px)",fontWeight:700,color:"rgba(255,255,255,.82)"}}>{f.lbl}</span>
+                <span style={{fontSize:11,color:"rgba(255,255,255,.82)"}}>{f.lbl}</span>
                 <span style={{fontSize:12,color:C.gold,fontWeight:700}}>{f.val}%</span>
               </div>
               <p style={{color:"rgba(255,255,255,.35)",fontSize:"clamp(12px,1.2vw,13px)",lineHeight:1.75,marginBottom:10}}>{f.desc}</p>
@@ -1828,20 +1860,17 @@ function CTASection() {
 ══════════════════════════════════════════════════════════════════════ */
 function Footer() {
   const [isMobile, setIsMobile] = useState(false);
-
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 768);
     check();
     window.addEventListener("resize", check);
     return () => window.removeEventListener("resize", check);
   }, []);
-
   const sections = [
-    ["Product", ["Features", "How It Works", "Pricing"]],
-    ["Company", ["About", "Blog", "Careers"]],
-    ["Legal", ["Privacy", "Terms", "Security"]]
+    ["Product", ["Pricing"]],
+    ["Company", ["About"]],
+    ["Legal", ["Privacy"]]
   ];
-
   return (
     <footer
       style={{
@@ -1880,7 +1909,6 @@ function Footer() {
             >
               <MawahibLogo height={38} blend={false} />
             </div>
-
             <p
               style={{
                 color: "rgba(255,255,255,.25)",
@@ -1892,7 +1920,6 @@ function Footer() {
               AI-powered hiring intelligence for modern recruitment teams
               worldwide.
             </p>
-
             <a
               href="https://www.trustpilot.com/review/mawahib.ai"
               target="_blank"
@@ -1933,7 +1960,6 @@ function Footer() {
               </span>
             </a>
           </div>
-
           {/* LINK SECTIONS */}
           <div
             style={{
@@ -1959,7 +1985,6 @@ function Footer() {
                 >
                   {sect}
                 </p>
-
                 <div
                   style={{
                     display: "flex",
@@ -1967,27 +1992,35 @@ function Footer() {
                     gap: 12
                   }}
                 >
-                  {items.map((item) => (
-                    <motion.a
-                      key={item}
-                      href="#"
-                      whileHover={{ color: "rgba(255,255,255,.7)", x: 4 }}
-                      transition={{ duration: 0.25 }}
-                      style={{
-                        color: "rgba(255,255,255,.3)",
-                        fontSize: 14,
-                        textDecoration: "none"
-                      }}
-                    >
-                      {item}
-                    </motion.a>
-                  ))}
+                  {items.map((item) => {
+                    if (item === "Pricing") {
+                      return (
+                        <motion.div key={item} whileHover={{ color: "rgba(255,255,255,.7)", x: 4 }} transition={{ duration: 0.25 }}>
+                          <Link to="/pricing" style={{ color: "rgba(255,255,255,.3)", fontSize: 14, textDecoration: "none" }}>{item}</Link>
+                        </motion.div>
+                      );
+                    }
+                    if (item === "About") {
+                      return (
+                        <motion.div key={item} whileHover={{ color: "rgba(255,255,255,.7)", x: 4 }} transition={{ duration: 0.25 }}>
+                          <Link to="/about" style={{ color: "rgba(255,255,255,.3)", fontSize: 14, textDecoration: "none" }}>{item}</Link>
+                        </motion.div>
+                      );
+                    }
+                    if (item === "Privacy") {
+                      return (
+                        <motion.div key={item} whileHover={{ color: "rgba(255,255,255,.7)", x: 4 }} transition={{ duration: 0.25 }}>
+                          <Link to="/privacy" style={{ color: "rgba(255,255,255,.3)", fontSize: 14, textDecoration: "none" }}>{item}</Link>
+                        </motion.div>
+                      );
+                    }
+                    return null;
+                  })}
                 </div>
               </div>
             ))}
           </div>
         </div>
-
         {/* BOTTOM BAR */}
         <div
           style={{
@@ -2039,42 +2072,49 @@ function Footer() {
     </footer>
   );
 }
+
 /* ══════════════════════════════════════════════════════════════════════
    ROOT APP
 ══════════════════════════════════════════════════════════════════════ */
 export default function App() {
   const [loaded, setLoaded] = useState(false);
   const handleDone = useCallback(() => setLoaded(true), []);
-  return(
-    <>
-      <FontLink/>
-      <GlobalStyles/>
-
-      {/* GLOBE IS THE BACKGROUND — renders behind everything */}
-      <GlobeBackground/>
-
-      <PageLoader onDone={handleDone}/>
-
+  return (
+    <Router>
+      <FontLink />
+      <GlobalStyles />
+      <GlobeBackground />
+      <ScrollToTop />
+      <PageLoader onDone={handleDone} />
       <motion.div
-        initial={{opacity:0}} animate={loaded?{opacity:1}:{}}
-        transition={{duration:.5}}
-        style={{position:"relative",zIndex:10}}>
-        <CustomCursor/>
-        <ScrollProgress/>
-        <Nav/>
-        <main>
-          <HeroSection/>
-          <Ticker/>
-          <ProblemSection/>
-          <GlobalSection/>
-          <VideoSection/>
-          <InterviewSection/>
-          <FeaturesSection/>
-          <TrustSection/>
-          <CTASection/>
-        </main>
-        <Footer/>
+        initial={{ opacity: 0 }}
+        animate={loaded ? { opacity: 1 } : {}}
+        transition={{ duration: .5 }}
+        style={{ position: "relative", zIndex: 10 }}>
+        <CustomCursor />
+        <ScrollProgress />
+        <Nav />
+        <Routes>
+          <Route path="/" element={
+            <main>
+              <HeroSection />
+              <Ticker />
+              <ProblemSection />
+              <GlobalSection />
+              <VideoSection />
+              <InterviewSection />
+              <TrustSection />
+              <CTASection />
+            </main>
+          } />
+          <Route path="/pricing" element={<Pricing />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/privacy" element={<Privacy />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
+        </Routes>
+        <Footer />
       </motion.div>
-    </>
+    </Router>
   );
 }
