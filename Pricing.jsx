@@ -1,168 +1,308 @@
-import { useState, useCallback } from "react";
 import { motion } from "framer-motion";
+import { CheckCircle2, Factory, Globe2, Briefcase, TrendingUp, Building2, Users, Building } from "lucide-react";
 
 const C = {
-	bg: "#f5f0eb",
-	bgDark: "#0a0f1e",
-	ink: "#0f172a",
-	inkMid: "#475569",
-	inkLight: "#94a3b8",
-	gold: "#b8955a",
-	goldLight: "#d4b483",
-	goldBright: "#f0c97a",
-	goldPale: "rgba(184,149,90,.10)",
-	goldBorder: "rgba(184,149,90,.22)",
-	white: "#ffffff",
-	border: "rgba(15,23,42,.08)",
-	borderMid: "rgba(15,23,42,.14)",
+  bg: "#f5f0eb",
+  bgDark: "#0a0f1e",
+  gold: "#b8955a",
+  goldLight: "#d4b483",
+  goldBright: "#f0c97a",
+  white: "#ffffff",
 };
 
 const FontLink = () => (
-	<>
-		<link rel="preconnect" href="https://fonts.googleapis.com" />
-		<link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-		<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet" />
-	</>
+  <>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet" />
+  </>
 );
 
 const GlobalStyles = () => (
-	<style>{`
-		*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-		html{scroll-behavior:smooth}
-		body{background:#0a0f1e;color:#f5f0eb;font-family:'Sora',sans-serif;overflow-x:hidden}
-		@media(min-width:769px){body,a,button{cursor:none}}
-		::-webkit-scrollbar{width:2px}
-		::-webkit-scrollbar-track{background:#0a0f1e}
-		::-webkit-scrollbar-thumb{background:#b8955a;border-radius:2px}
-		.gold-shimmer{
-			background:linear-gradient(90deg,#b8955a,#f0c97a,#b8955a,#d4b483,#f0c97a);
-			background-size:200% auto;
-			-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
-			animation:shimmer-gold 3s linear infinite
-		}
-		@keyframes shimmer-gold{
-			0%{background-position:-200% center}
-			100%{background-position:200% center}
-		}
-		@media(max-width:900px){.two-col{grid-template-columns:1fr!important}}
-		@media(max-width:1024px){.feat-grid{grid-template-columns:repeat(2,1fr)!important}}
-		@media(max-width:600px){.feat-grid{grid-template-columns:1fr!important}}
-	`}</style>
+  <style>{`
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html{scroll-behavior:smooth}
+    body{background:#0a0f1e;color:#f5f0eb;font-family:'Sora',sans-serif;overflow-x:hidden}
+    ::-webkit-scrollbar{width:8px}
+    ::-webkit-scrollbar-track{background:#0a0f1e}
+    ::-webkit-scrollbar-thumb{background:#b8955a;border-radius:4px}
+    .gold-shimmer{
+      background:linear-gradient(90deg,#b8955a,#f0c97a,#b8955a,#d4b483,#f0c97a);
+      background-size:200% auto;
+      -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+      animation:shimmer-gold 3s linear infinite
+    }
+    @keyframes shimmer-gold{
+      0%{background-position:-200% center}
+      100%{background-position:200% center}
+    }
+  `}</style>
 );
 
-const Label = ({ children, color = C.gold, bg = "rgba(184,149,90,.10)", border = C.goldBorder }) => (
-	<div style={{ display: "inline-flex", alignItems: "center", gap: 7, background: bg, border: `1px solid ${border}`, borderRadius: 9999, padding: "5px 14px", fontSize: 10, fontWeight: 700, color, letterSpacing: ".11em", marginBottom: 20 }}>
-		<span style={{ width: 4, height: 4, borderRadius: "50%", background: color, boxShadow: `0 0 6px ${color}`, display: "inline-block" }} />
-		{children}
-	</div>
+const Label = ({ children }) => (
+  <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "rgba(184,149,90,.10)", border: `1px solid rgba(184,149,90,.22)`, borderRadius: 9999, padding: "6px 16px", fontSize: 11, fontWeight: 700, color: C.goldBright, letterSpacing: "1.5px", textTransform: "uppercase", marginBottom: 24 }}>
+    <span style={{ width: 6, height: 6, borderRadius: "50%", background: C.goldBright, boxShadow: `0 0 8px ${C.goldBright}`, display: "inline-block" }} />
+    {children}
+  </div>
 );
 
-function PricingCard({ plan, price, features, highlight }) {
-	return (
-		<motion.div
-			whileHover={{ y: -8, scale: 1.03, borderColor: C.goldBright, boxShadow: `0 20px 60px rgba(0,0,0,.4)` }}
-			transition={{ duration: .3 }}
-			style={{
-				background: highlight ? "rgba(184,149,90,.06)" : "rgba(255,255,255,.03)",
-				border: `1px solid ${highlight ? C.goldBright : "rgba(255,255,255,.06)"}`,
-				borderRadius: 18,
-				padding: "clamp(22px,3vw,32px)",
-				overflow: "hidden",
-				backdropFilter: "blur(12px)",
-				cursor: "default",
-				boxShadow: highlight ? `0 0 40px ${C.goldBright}` : undefined,
-				color: highlight ? C.goldBright : "#fff",
-				margin: "0 auto",
-				maxWidth: 340,
-				width: "100%"
-			}}
-		>
-			<div style={{ fontSize: 12, fontWeight: 800, letterSpacing: ".1em", marginBottom: 14 }}>{plan}</div>
-			<div style={{ fontSize: 28, fontWeight: 800, color: highlight ? C.goldBright : "#fff", marginBottom: 10 }}>
-				{price}
-			</div>
-			<ul style={{ listStyle: "none", padding: 0, margin: 0, marginBottom: 18 }}>
-				{features.map((f, i) => (
-					<li key={i} style={{ fontSize: 13, color: "rgba(255,255,255,.32)", marginBottom: 8, lineHeight: 1.7 }}>{f}</li>
-				))}
-			</ul>
-			<motion.a
-				href="#"
-				whileHover={{ scale: 1.04, background: `linear-gradient(135deg,${C.gold},${C.goldBright})`, color: C.bgDark }}
-				style={{ display: "inline-block", background: highlight ? `linear-gradient(135deg,${C.gold},${C.goldBright})` : "rgba(255,255,255,.05)", borderRadius: 12, padding: "10px 24px", fontSize: 14, fontWeight: 700, color: highlight ? C.bgDark : "rgba(255,255,255,.7)", textDecoration: "none", marginTop: 8, boxShadow: highlight ? `0 6px 24px rgba(184,149,90,.3)` : undefined }}
-			>
-				Choose Plan
-			</motion.a>
-		</motion.div>
-	);
-}
+const InfoCard = ({ icon: Icon, title, description, delay }) => (
+  <motion.div
+    initial={{ opacity: 0, y: 20 }}
+    whileInView={{ opacity: 1, y: 0 }}
+    viewport={{ once: true, margin: "-50px" }}
+    transition={{ duration: 0.6, delay }}
+    whileHover={{ y: -5, background: "rgba(255,255,255,0.05)", borderColor: "rgba(184,149,90,0.4)" }}
+    style={{
+      background: "rgba(255,255,255,0.02)",
+      border: "1px solid rgba(255,255,255,0.05)",
+      borderRadius: 24,
+      padding: 32,
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "flex-start",
+      gap: 16,
+      transition: "all 0.3s ease",
+      backdropFilter: "blur(10px)",
+    }}
+  >
+    <div style={{
+      width: 56,
+      height: 56,
+      borderRadius: 16,
+      background: `linear-gradient(135deg, rgba(184,149,90,0.2), rgba(184,149,90,0.05))`,
+      color: C.goldBright,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      border: `1px solid rgba(184,149,90,0.2)`
+    }}>
+      <Icon size={28} strokeWidth={1.5} />
+    </div>
+    <h3 style={{ fontSize: 18, fontWeight: 600, color: "#fff", lineHeight: 1.4 }}>{title}</h3>
+    {description && (
+      <p style={{ fontSize: 14, color: "rgba(255,255,255,0.6)", lineHeight: 1.6 }}>{description}</p>
+    )}
+  </motion.div>
+);
 
 export default function Pricing() {
-	return (
-		<>
-			<FontLink />
-			<GlobalStyles />
-			<motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: .5 }} style={{ position: "relative", zIndex: 10 }}>
-				<main style={{ minHeight: "100vh", background: C.bgDark, color: C.bg, fontFamily: "'Sora',sans-serif", padding: "clamp(80px,10vw,120px) clamp(28px,7vw,100px)", display: "flex", flexDirection: "column", alignItems: "center" }}>
-					<Label>PRICING PLANS</Label>
-					<h1 style={{ fontFamily: "'DM Serif Display',serif", fontStyle: "italic", fontSize: "clamp(2.6rem,7vw,4rem)", fontWeight: 400, letterSpacing: "-0.02em", lineHeight: 1.05, color: "rgba(255,255,255,.95)", marginBottom: 6, textAlign: "center" }}>
-						<span className="gold-shimmer">Choose Your Plan</span>
-					</h1>
-					<p style={{ color: "rgba(255,255,255,.5)", fontSize: "clamp(14px,1.6vw,17px)", lineHeight: 1.85, marginBottom: 38, maxWidth: 440, textAlign: "center" }}>
-						Flexible pricing for teams of all sizes. All plans include AI-powered candidate intelligence, structured interviews, and instant ranking.
-					</p>
-					<div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(320px,1fr))", gap: "clamp(18px,3vw,32px)", width: "100%", maxWidth: 1100, margin: "0 auto" }}>
-						<PricingCard plan="Starter" price="$49/mo" features={["Up to 50 candidates/mo", "Basic AI screening", "Email support"]} />
-						<PricingCard plan="Pro" price="$129/mo" features={["Up to 200 candidates/mo", "Advanced AI interviews", "Priority support", "Custom branding"]} highlight />
-						<PricingCard plan="Enterprise" price="Contact Us" features={["Unlimited candidates", "Dedicated onboarding", "Custom integrations", "24/7 support"]} />
-					</div>
+  return (
+    <>
+      <FontLink />
+      <GlobalStyles />
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: .8 }} style={{ position: "relative", zIndex: 10 }}>
+        <main style={{ minHeight: "100vh", background: C.bgDark, color: C.bg, padding: "clamp(80px,10vw,120px) clamp(24px,5vw,40px)", display: "flex", flexDirection: "column", alignItems: "center", position: "relative", overflow: "hidden" }}>
+          
+          {/* subtle background glow */}
+          <div style={{
+            position: "absolute",
+            top: "-10%",
+            left: "50%",
+            transform: "translateX(-50%)",
+            width: "100vw",
+            height: "100vw",
+            maxWidth: "1000px",
+            maxHeight: "1000px",
+            background: `radial-gradient(circle, rgba(184, 149, 90, 0.05) 0%, transparent 60%)`,
+            pointerEvents: "none",
+            zIndex: 0
+          }} />
 
-					{/* Extended Content */}
-					<section style={{ marginTop: 60, width: "100%", maxWidth: 1100 }}>
-						<h2 style={{ fontFamily: "'DM Serif Display',serif", fontStyle: "italic", fontSize: "clamp(2rem,5vw,3rem)", color: C.goldBright, marginBottom: 24 }}>What's Included?</h2>
-						<ul style={{ color: "rgba(255,255,255,.7)", fontSize: 16, lineHeight: 2, marginBottom: 40 }}>
-							<li>AI-powered candidate screening and ranking</li>
-							<li>Structured voice interviews with AI avatar</li>
-							<li>Customizable scoring rubrics</li>
-							<li>Real-time analytics dashboard</li>
-							<li>Team collaboration tools</li>
-							<li>GDPR & SOC 2 compliance</li>
-							<li>Priority onboarding for Pro & Enterprise</li>
-							<li>24/7 support for Enterprise</li>
-						</ul>
-						<div style={{ background: "rgba(255,255,255,.04)", borderRadius: 18, padding: "32px 24px", marginBottom: 60 }}>
-							<h3 style={{ color: C.gold, fontSize: 22, marginBottom: 12 }}>Frequently Asked Questions</h3>
-							<div style={{ marginBottom: 18 }}>
-								<strong>Can I upgrade or downgrade my plan?</strong>
-								<p style={{ color: "rgba(255,255,255,.5)", fontSize: 15 }}>Yes, you can change your plan at any time from your dashboard. Changes take effect immediately.</p>
-							</div>
-							<div style={{ marginBottom: 18 }}>
-								<strong>Is there a free trial?</strong>
-								<p style={{ color: "rgba(255,255,255,.5)", fontSize: 15 }}>We offer a 14-day free trial for Starter and Pro plans. No credit card required.</p>
-							</div>
-							<div style={{ marginBottom: 18 }}>
-								<strong>How does onboarding work?</strong>
-								<p style={{ color: "rgba(255,255,255,.5)", fontSize: 15 }}>Enterprise customers receive dedicated onboarding and custom integrations. Pro users get priority onboarding.</p>
-							</div>
-							<div style={{ marginBottom: 18 }}>
-								<strong>Is my data secure?</strong>
-								<p style={{ color: "rgba(255,255,255,.5)", fontSize: 15 }}>Yes, Mawahib is fully GDPR and SOC 2 compliant. Your data is encrypted and protected.</p>
-							</div>
-						</div>
-						<div style={{ textAlign: "center", marginBottom: 80 }}>
-							<motion.a
-								href="https://mawahib.ai/request-campaign"
-								target="_blank"
-								whileHover={{ scale: 1.05, boxShadow: `0 16px 50px rgba(184,149,90,.5)` }}
-								whileTap={{ scale: .96 }}
-								style={{ background: `linear-gradient(135deg,${C.gold},${C.goldBright})`, borderRadius: 14, padding: "18px 44px", fontSize: 18, fontWeight: 700, color: C.bgDark, textDecoration: "none", boxShadow: `0 8px 30px rgba(184,149,90,.35)` }}
-							>
-								Request a Demo
-							</motion.a>
-						</div>
-					</section>
-				</main>
-			</motion.div>
-		</>
-	);
+          <div style={{ position: "relative", zIndex: 1, width: "100%", maxWidth: 1000, display: "flex", flexDirection: "column", alignItems: "center" }}>
+            
+            {/* Header Section */}
+            <Label>Pricing</Label>
+            <h1 style={{ fontFamily: "'DM Serif Display',serif", fontStyle: "italic", fontSize: "clamp(2.5rem,6vw,4rem)", fontWeight: 400, letterSpacing: "-0.02em", lineHeight: 1.1, color: "#fff", marginBottom: 24, textAlign: "center", maxWidth: 800 }}>
+              <span className="gold-shimmer">Flexible Pricing</span> Designed for Your Hiring Needs
+            </h1>
+            
+            <div style={{ color: "rgba(255,255,255,0.75)", fontSize: "clamp(16px, 1.8vw, 18px)", lineHeight: 1.8, marginBottom: 80, maxWidth: 760, textAlign: "center" }}>
+              <p style={{ marginBottom: 16 }}>
+                At Mawahib Talent Hub, we understand that every organization has unique hiring requirements. Recruitment volume, hiring complexity, and organizational needs can vary significantly across companies and industries.
+              </p>
+              <p style={{ marginBottom: 16, color: C.goldBright, fontWeight: 500 }}>
+                For this reason, Mawahib does not follow a one-size-fits-all pricing model.
+              </p>
+              <p>
+                Instead, we offer flexible and tailored pricing, designed to align with each organization’s hiring goals, operational needs, and market environment.
+              </p>
+            </div>
+
+            {/* What Influences Pricing Grid */}
+            <div style={{ width: "100%", marginBottom: 100 }}>
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                style={{ textAlign: "center", marginBottom: 40 }}
+              >
+                <h2 style={{ fontFamily: "'DM Serif Display',serif", fontStyle: "italic", fontSize: "clamp(2rem,4vw,2.5rem)", color: C.goldBright, marginBottom: 16 }}>
+                  What Influences Pricing?
+                </h2>
+                <p style={{ color: "rgba(255,255,255,0.6)", fontSize: 16, maxWidth: 600, margin: "0 auto" }}>
+                  Our pricing structure is customized based on several factors, ensuring you only pay for what you actually need.
+                </p>
+              </motion.div>
+
+              <div style={{ 
+                display: "grid", 
+                gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", 
+                gap: 24 
+              }}>
+                <InfoCard delay={0.1} icon={Briefcase} title="Number of Positions" description="The total volume of hiring campaigns or distinct roles you need to fill." />
+                <InfoCard delay={0.2} icon={Factory} title="Video Interviews" description="The number of AI-conducted video interviews required per campaign." />
+                <InfoCard delay={0.3} icon={Globe2} title="Market & Location" description="Pricing adjusts based on your geographical market or country of operation." />
+                <InfoCard delay={0.4} icon={Users} title="Management Level" description="The level of hands-on recruitment campaign management or support you require." />
+              </div>
+              
+              <motion.p 
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.6 }}
+                style={{ 
+                  textAlign: "center", 
+                  color: "rgba(255,255,255,0.7)", 
+                  fontSize: 16, 
+                  marginTop: 32,
+                  maxWidth: 800,
+                  margin: "32px auto 0",
+                  lineHeight: 1.7
+                }}
+              >
+                This approach allows organizations to benefit from a solution that is both efficient and cost-effective, while ensuring the platform is configured to match their specific hiring strategy.
+              </motion.p>
+            </div>
+
+            {/* Built for Organizations Grid */}
+            <div style={{ width: "100%", marginBottom: 100 }}>
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                style={{ textAlign: "center", marginBottom: 40 }}
+              >
+                <h2 style={{ fontFamily: "'DM Serif Display',serif", fontStyle: "italic", fontSize: "clamp(2rem,4vw,2.5rem)", color: C.goldBright, marginBottom: 16 }}>
+                  Built for Organizations of All Sizes
+                </h2>
+                <p style={{ color: "rgba(255,255,255,0.6)", fontSize: 16, maxWidth: 600, margin: "0 auto" }}>
+                  Our platform is designed to scale with your hiring needs while maintaining a structured and efficient recruitment process for:
+                </p>
+              </motion.div>
+
+              <div style={{ 
+                display: "grid", 
+                gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", 
+                gap: 20 
+              }}>
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: 0.1 }}
+                  style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(184,149,90,0.15)", borderRadius: 20, padding: "24px", display: "flex", alignItems: "center", gap: 16 }}
+                >
+                  <TrendingUp color={C.goldBright} size={24} />
+                  <span style={{ fontSize: 16, fontWeight: 500 }}>Growing startups</span>
+                </motion.div>
+                
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: 0.2 }}
+                  style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(184,149,90,0.15)", borderRadius: 20, padding: "24px", display: "flex", alignItems: "center", gap: 16 }}
+                >
+                  <Building color={C.goldBright} size={24} />
+                  <span style={{ fontSize: 16, fontWeight: 500 }}>Mid-sized companies</span>
+                </motion.div>
+
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: 0.3 }}
+                  style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(184,149,90,0.15)", borderRadius: 20, padding: "24px", display: "flex", alignItems: "center", gap: 16 }}
+                >
+                  <Building2 color={C.goldBright} size={24} />
+                  <span style={{ fontSize: 16, fontWeight: 500 }}>Large enterprises</span>
+                </motion.div>
+
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: 0.4 }}
+                  style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(184,149,90,0.15)", borderRadius: 20, padding: "24px", display: "flex", alignItems: "center", gap: 16 }}
+                >
+                  <Users color={C.goldBright} size={24} />
+                  <span style={{ fontSize: 16, fontWeight: 500 }}>High-volume recruitment</span>
+                </motion.div>
+              </div>
+            </div>
+
+            {/* CTA Section */}
+            <motion.div 
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
+              style={{ 
+                width: "100%",
+                background: `linear-gradient(135deg, rgba(184, 149, 90, 0.08) 0%, rgba(10, 15, 30, 0) 100%)`,
+                border: `1px solid rgba(184, 149, 90, 0.2)`,
+                borderRadius: 32,
+                padding: "clamp(40px, 6vw, 60px) clamp(24px, 5vw, 40px)",
+                textAlign: "center",
+                position: "relative",
+                overflow: "hidden"
+              }}
+            >
+              <div style={{
+                position: "absolute",
+                top: 0,
+                left: 0,
+                right: 0,
+                height: 4,
+                background: `linear-gradient(90deg, transparent, ${C.goldBright}, transparent)`
+              }} />
+              
+              <h2 style={{ fontFamily: "'DM Serif Display',serif", fontStyle: "italic", fontSize: "clamp(2rem,5vw,2.5rem)", color: "#fff", marginBottom: 20 }}>
+                Let's Design the Right Plan for You
+              </h2>
+              
+              <p style={{ color: "rgba(255,255,255,0.75)", fontSize: 16, lineHeight: 1.8, maxWidth: 640, margin: "0 auto 40px" }}>
+                Because every organization’s hiring process is different, our team works closely with clients to design a pricing structure that fits their recruitment workflow.
+                <br /><br />
+                If you would like to learn more about Mawahib and explore how the platform can support your hiring process, we invite you to connect with our team.
+              </p>
+
+              <motion.a
+                href="https://mawahib.ai/request-campaign"
+                target="_blank"
+                whileHover={{ scale: 1.05, boxShadow: `0 16px 40px rgba(184,149,90,.3)` }}
+                whileTap={{ scale: .96 }}
+                style={{ 
+                  display: "inline-block",
+                  background: `linear-gradient(135deg,${C.gold},${C.goldBright})`, 
+                  borderRadius: 50, 
+                  padding: "16px 40px", 
+                  fontSize: 16, 
+                  fontWeight: 600, 
+                  fontFamily: "'Sora',sans-serif",
+                  color: C.bgDark, 
+                  textDecoration: "none", 
+                  boxShadow: `0 8px 30px rgba(184,149,90,.2)` 
+                }}
+              >
+                Request a Demo
+              </motion.a>
+            </motion.div>
+
+          </div>
+        </main>
+      </motion.div>
+    </>
+  );
 }
