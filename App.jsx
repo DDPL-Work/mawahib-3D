@@ -17,6 +17,8 @@ import About from "./About";
 import Privacy from "./Privacy";
 import Login from "./Login";
 import Signup from "./Signup";
+import CompanyTrustSection from "./Companytrustsection";
+
 import * as THREE from "three";
 
 /* ─── Design Tokens ───────────────────────────────────────────────── */
@@ -29,6 +31,7 @@ const C = {
 };
 
 const LOGO_SRC = "./IMG_2041.JPG-removebg-preview.png";
+const WHATSAPP_URL = "https://wa.me/966556919502";
 
 function MawahibLogo({ blend = true, width, height = "auto" }) {
   const resolvedWidth =
@@ -78,6 +81,38 @@ const GlobalStyles = () => (
       -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
       animation:shimmer-gold 3s linear infinite
     }
+    /* ── KEYWORD BADGE SPECIAL STYLE ── */
+    .keyword-badge{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      font-size:11px;
+      letter-spacing:.13em;
+      font-weight:800;
+      text-transform:uppercase;
+      padding:7px 14px;
+      border-radius:999px;
+      border:1px solid rgba(184,149,90,.5);
+      background:linear-gradient(135deg,rgba(184,149,90,.18),rgba(240,201,122,.08));
+      position:relative;
+      overflow:hidden;
+      white-space:nowrap;
+      background-clip:padding-box;
+    }
+    .keyword-badge .kw-text{
+      background:linear-gradient(90deg,#b8955a,#f0c97a,#b8955a,#d4b483,#f0c97a);
+      background-size:200% auto;
+      -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+      animation:shimmer-gold 3s linear infinite;
+    }
+    .keyword-badge::before{
+      content:'';
+      position:absolute;
+      inset:0;
+      background:linear-gradient(135deg,rgba(240,201,122,.08) 0%,transparent 60%);
+      pointer-events:none;
+    }
+
     @keyframes ticker-scroll{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
     @keyframes spin-slow{to{transform:rotate(360deg)}}
     @keyframes spin-slow-rev{to{transform:rotate(-360deg)}}
@@ -98,7 +133,6 @@ const GlobalStyles = () => (
     @media(max-width:1024px){.feat-grid{grid-template-columns:repeat(2,1fr)!important}}
     @media(max-width:600px){.feat-grid{grid-template-columns:1fr!important}}
 
-    /* Section backgrounds are mostly transparent so globe shows through */
     .section-dark{background:rgba(10,15,30,.75);backdrop-filter:blur(0px)}
     .section-mid{background:rgba(10,15,30,.55)}
     .section-light{background:rgba(10,15,30,.35)}
@@ -112,61 +146,162 @@ const GlobalStyles = () => (
       border:1px solid rgba(184,149,90,.18);
       backdrop-filter:blur(16px) saturate(1.4);
     }
+
+    /* CTA Strip */
+    @keyframes cta-glow{
+      0%,100%{box-shadow:0 0 30px rgba(184,149,90,.15)}
+      50%{box-shadow:0 0 60px rgba(184,149,90,.35),0 0 120px rgba(184,149,90,.1)}
+    }
   `}</style>
 );
 
 /* ══════════════════════════════════════════════════════════════════════
-   WEBGL GLOBE — full-screen fixed background, Mugafi-style
-   The globe is THE background of the entire page.
-   Camera choreography driven by scroll:
-   • Hero:    globe right, z=4.5, slight tilt — planet hanging in space
-   • §1:      zoom IN to surface, camera dives toward terminator line
-   • §2:      cruise along equator close up, city lights visible  
-   • §3:      pull back dramatically — full planet overview
-   • §4:      globe swings to center, fills screen
-   • §5:      camera orbits to back-side (dark side of planet)
-   • §6+:     retreat far out, tiny globe in starfield
+   INLINE CTA STRIP — placed after every 2 sections
 ══════════════════════════════════════════════════════════════════════ */
+function CTAStrip({ variant = 0 }) {
+  const configs = [
+    {
+      label: "READY TO TRANSFORM HIRING?",
+      buttons: [
+        { text: "🚀 Start Now", primary: true },
+        { text: "Get Free Demo", primary: false },
+        { text: "Contact Us", primary: false },
+      ]
+    },
+    {
+      label: "JOIN 400+ COMPANIES HIRING SMARTER",
+      buttons: [
+        { text: "Get Free Demo", primary: true },
+        { text: "🚀 Start Now", primary: false },
+        { text: "Contact Us", primary: false },
+      ]
+    },
+    {
+      label: "SEE MAWAHIB IN ACTION",
+      buttons: [
+        { text: "Contact Us", primary: true },
+        { text: "Get Free Demo", primary: false },
+        { text: "🚀 Start Now", primary: false },
+      ]
+    },
+  ];
+  const cfg = configs[variant % configs.length];
+  const ref = useRef();
+  const inView = useInView(ref, { once: true, amount: 0.3 });
 
-/* Procedural planet texture */
+  return (
+    <motion.div
+      ref={ref}
+      initial={{ opacity: 0, y: 24 }}
+      animate={inView ? { opacity: 1, y: 0 } : {}}
+      transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+      style={{
+        position: "relative",
+        zIndex: 10,
+        padding: "clamp(28px,4vw,44px) clamp(20px,5vw,80px)",
+        background: "linear-gradient(135deg,rgba(184,149,90,.07) 0%,rgba(3,6,16,.9) 50%,rgba(184,149,90,.05) 100%)",
+        borderTop: "1px solid rgba(184,149,90,.15)",
+        borderBottom: "1px solid rgba(184,149,90,.15)",
+        animation: "cta-glow 4s ease-in-out infinite",
+        overflow: "hidden",
+      }}
+    >
+      {/* Background accent */}
+      <div style={{
+        position: "absolute", inset: 0,
+        background: "radial-gradient(ellipse 60% 100% at 50% 50%,rgba(184,149,90,.06) 0%,transparent 70%)",
+        pointerEvents: "none"
+      }}/>
+      <div style={{
+        maxWidth: 900,
+        margin: "0 auto",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        gap: 20,
+        position: "relative",
+        zIndex: 2,
+      }}>
+        <span style={{
+          fontSize: 10,
+          fontWeight: 800,
+          letterSpacing: ".18em",
+          color: C.gold,
+          opacity: 0.8,
+        }}>{cfg.label}</span>
+
+        <div style={{
+          display: "flex",
+          gap: 10,
+          flexWrap: "wrap",
+          justifyContent: "center",
+        }}>
+          {cfg.buttons.map((btn, i) => (
+            <motion.a
+              key={i}
+              href={WHATSAPP_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              whileHover={{ scale: 1.06, y: -2 }}
+              whileTap={{ scale: 0.96 }}
+              style={btn.primary ? {
+                background: `linear-gradient(135deg,${C.gold},${C.goldBright})`,
+                color: C.bgDark,
+                borderRadius: 11,
+                padding: "11px clamp(18px,2.5vw,28px)",
+                fontSize: "clamp(12px,1.2vw,14px)",
+                fontWeight: 800,
+                textDecoration: "none",
+                boxShadow: `0 6px 24px rgba(184,149,90,.35)`,
+                border: "none",
+                whiteSpace: "nowrap",
+              } : {
+                background: "rgba(255,255,255,.04)",
+                border: "1px solid rgba(184,149,90,.28)",
+                color: "rgba(255,255,255,.62)",
+                borderRadius: 11,
+                padding: "11px clamp(18px,2.5vw,28px)",
+                fontSize: "clamp(12px,1.2vw,14px)",
+                fontWeight: 700,
+                textDecoration: "none",
+                whiteSpace: "nowrap",
+              }}
+            >
+              {btn.text}
+            </motion.a>
+          ))}
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   WEBGL GLOBE
+══════════════════════════════════════════════════════════════════════ */
 function makePlanetTexture(size = 2048) {
   const w = size, h = size / 2;
   const canvas = document.createElement("canvas");
   canvas.width = w; canvas.height = h;
   const ctx = canvas.getContext("2d");
-
-  // Space-dark ocean
   const oceanGrad = ctx.createLinearGradient(0, 0, 0, h);
   oceanGrad.addColorStop(0,   "#071220");
   oceanGrad.addColorStop(0.5, "#0a1a2e");
   oceanGrad.addColorStop(1,   "#061018");
   ctx.fillStyle = oceanGrad;
   ctx.fillRect(0, 0, w, h);
-
-  // Continent landmasses
   const lands = [
-    // North America
     {cx:.15,cy:.28,rx:.10,ry:.19,rot:.25,c:"#1a3520",c2:"#0f2214"},
-    // South America
     {cx:.20,cy:.58,rx:.065,ry:.18,rot:.08,c:"#1e3d20",c2:"#123018"},
-    // Europe
     {cx:.50,cy:.30,rx:.055,ry:.13,rot:.05,c:"#1e3d22",c2:"#163020"},
-    // Africa
     {cx:.50,cy:.56,rx:.075,ry:.20,rot:.0,c:"#22441e",c2:"#16341a"},
-    // Asia (large)
     {cx:.68,cy:.28,rx:.17,ry:.17,rot:-.08,c:"#1a3d20",c2:"#0f2a18"},
-    // Southeast Asia
     {cx:.75,cy:.46,rx:.06,ry:.08,rot:.15,c:"#1e4020",c2:"#123018"},
-    // Australia
     {cx:.78,cy:.64,rx:.055,ry:.045,rot:.18,c:"#243820",c2:"#182c18"},
-    // Greenland (ice)
     {cx:.24,cy:.12,rx:.038,ry:.052,rot:.1,c:"#c8dde8",c2:"#a0c0d0"},
-    // Antarctica
     {cx:.5,cy:.97,rx:.5,ry:.06,rot:0,c:"#ddeeff",c2:"#c8d8e8"},
-    // Arctic
     {cx:.5,cy:.02,rx:.3,ry:.035,rot:0,c:"#c8d8e8",c2:"#a8c0d0"},
   ];
-
   lands.forEach(({cx,cy,rx,ry,rot,c,c2}) => {
     ctx.save();
     ctx.translate(cx*w, cy*h);
@@ -183,8 +318,6 @@ function makePlanetTexture(size = 2048) {
     ctx.fill();
     ctx.restore();
   });
-
-  // Mountain ridges & terrain detail
   ctx.globalAlpha = 0.15;
   for(let i = 0; i < 40; i++){
     const x = Math.random()*w, y = Math.random()*h;
@@ -197,8 +330,6 @@ function makePlanetTexture(size = 2048) {
     ctx.fill();
   }
   ctx.globalAlpha = 1;
-
-  // Cloud layer
   ctx.globalAlpha = 0.14;
   for(let i = 0; i < 25; i++){
     const y = Math.random()*h, thick = 4+Math.random()*14;
@@ -212,14 +343,12 @@ function makePlanetTexture(size = 2048) {
     ctx.fillRect(xl, y-thick/2, xr-xl, thick);
   }
   ctx.globalAlpha = 1;
-
-  // City lights glow (warm gold/amber dots on land masses)
   const cityZones = [
-    [.12,.30],[.14,.34],[.18,.30],[.22,.34],[.15,.38], // N.America
-    [.48,.32],[.50,.28],[.52,.34],[.54,.30],[.51,.36], // Europe
-    [.65,.28],[.68,.24],[.72,.30],[.75,.26],[.70,.34], // Asia
-    [.60,.30],[.63,.26],[.66,.32],[.58,.28],            // Middle East
-    [.78,.64],[.80,.62],                                // Australia
+    [.12,.30],[.14,.34],[.18,.30],[.22,.34],[.15,.38],
+    [.48,.32],[.50,.28],[.52,.34],[.54,.30],[.51,.36],
+    [.65,.28],[.68,.24],[.72,.30],[.75,.26],[.70,.34],
+    [.60,.30],[.63,.26],[.66,.32],[.58,.28],
+    [.78,.64],[.80,.62],
   ];
   cityZones.forEach(([cx,cy]) => {
     const jitter = (n=1) => (Math.random()-.5)*n;
@@ -235,8 +364,6 @@ function makePlanetTexture(size = 2048) {
     }
   });
   ctx.globalAlpha = 1;
-
-  // Extra dense city lights for visual appeal
   ctx.globalAlpha = 0.7;
   for(let i = 0; i < 380; i++){
     const px = Math.random()*w, py = Math.random()*h;
@@ -246,11 +373,9 @@ function makePlanetTexture(size = 2048) {
     ctx.fill();
   }
   ctx.globalAlpha = 1;
-
   return new THREE.CanvasTexture(canvas);
 }
 
-/* Starfield background */
 function Stars() {
   const mesh = useRef();
   const geo = useMemo(() => {
@@ -281,33 +406,24 @@ function Stars() {
   );
 }
 
-/* Atmosphere shell */
 function Atmosphere() {
   return(
     <mesh scale={[1.18,1.18,1.18]}>
       <sphereGeometry args={[1,64,64]}/>
-      <meshStandardMaterial
-        color="#1a4a8a" transparent opacity={.12}
-        side={THREE.BackSide}
-        blending={THREE.AdditiveBlending} depthWrite={false}/>
+      <meshStandardMaterial color="#1a4a8a" transparent opacity={.12} side={THREE.BackSide} blending={THREE.AdditiveBlending} depthWrite={false}/>
     </mesh>
   );
 }
 
-/* Gold atmosphere rim */
 function AtmosphereRim() {
   return(
     <mesh scale={[1.08,1.08,1.08]}>
       <sphereGeometry args={[1,64,64]}/>
-      <meshStandardMaterial
-        color="#b8955a" transparent opacity={.055}
-        side={THREE.BackSide}
-        blending={THREE.AdditiveBlending} depthWrite={false}/>
+      <meshStandardMaterial color="#b8955a" transparent opacity={.055} side={THREE.BackSide} blending={THREE.AdditiveBlending} depthWrite={false}/>
     </mesh>
   );
 }
 
-/* Cloud particle layer */
 function CloudLayer() {
   const mesh = useRef();
   const geo = useMemo(() => {
@@ -320,9 +436,7 @@ function CloudLayer() {
       pos[i*3+1] = r*Math.cos(phi);
       pos[i*3+2] = r*Math.sin(phi)*Math.sin(theta);
       const warm = .4+Math.random()*.6;
-      col[i*3]   = warm*.85;
-      col[i*3+1] = warm*.75;
-      col[i*3+2] = warm*.55;
+      col[i*3]   = warm*.85; col[i*3+1] = warm*.75; col[i*3+2] = warm*.55;
     }
     const g = new THREE.BufferGeometry();
     g.setAttribute("position", new THREE.BufferAttribute(pos,3));
@@ -332,13 +446,11 @@ function CloudLayer() {
   useFrame(s => { if(mesh.current) mesh.current.rotation.y = s.clock.getElapsedTime()*-.03; });
   return(
     <points ref={mesh} geometry={geo}>
-      <pointsMaterial size={.009} vertexColors transparent opacity={.5}
-        sizeAttenuation blending={THREE.AdditiveBlending} depthWrite={false}/>
+      <pointsMaterial size={.009} vertexColors transparent opacity={.5} sizeAttenuation blending={THREE.AdditiveBlending} depthWrite={false}/>
     </points>
   );
 }
 
-/* Orbit rings */
 function OrbitRings() {
   const refs = useRef([]);
   const ringData = [
@@ -356,15 +468,13 @@ function OrbitRings() {
       {ringData.map((r,i) => (
         <mesh key={i} ref={el=>refs.current[i]=el} scale={r.s} rotation={[r.rx,r.ry,0]}>
           <torusGeometry args={[1,r.w,8,200]}/>
-          <meshBasicMaterial color="#b8955a" transparent opacity={r.op}
-            blending={THREE.AdditiveBlending} depthWrite={false}/>
+          <meshBasicMaterial color="#b8955a" transparent opacity={r.op} blending={THREE.AdditiveBlending} depthWrite={false}/>
         </mesh>
       ))}
     </>
   );
 }
 
-/* Orbiting satellite dots */
 function Satellites() {
   const sats = useRef([]);
   const data = useMemo(() => [
@@ -379,11 +489,7 @@ function Satellites() {
       if(!sats.current[i]) return;
       const a = t*d.sp;
       const cosT = Math.cos(d.tX), sinT = Math.sin(d.tX);
-      sats.current[i].position.set(
-        d.r*Math.cos(a),
-        d.r*Math.sin(a)*cosT,
-        d.r*Math.sin(a)*sinT,
-      );
+      sats.current[i].position.set(d.r*Math.cos(a), d.r*Math.sin(a)*cosT, d.r*Math.sin(a)*sinT);
     });
   });
   return(
@@ -399,15 +505,12 @@ function Satellites() {
   );
 }
 
-/* Main Planet + Camera Controller */
 function PlanetScene() {
   const { camera, gl } = useThree();
   const planetRef = useRef();
   const texture = useMemo(() => makePlanetTexture(2048), []);
-
   const scroll = useRef(0);
   const smoothS = useRef(0);
-
   useEffect(() => {
     const onScroll = () => {
       const el = document.documentElement;
@@ -416,153 +519,92 @@ function PlanetScene() {
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
-
   useFrame((state, delta) => {
     const target = scroll.current;
     smoothS.current += (target - smoothS.current) * 0.035;
     const t = smoothS.current;
     const time = state.clock.getElapsedTime();
-
-    /* Planet self-rotation (constant, slow) */
     if(planetRef.current) {
       planetRef.current.rotation.y += delta * 0.06;
-      // Subtle axial wobble
       planetRef.current.rotation.x = Math.sin(time * .12) * 0.04 + 0.15;
       planetRef.current.rotation.z = Math.sin(time * .08) * 0.01;
     }
-
-    /* ── 7-act camera choreography ─────────────────────────────── */
     let cx, cy, cz, fov, lookX=0, lookY=0, lookZ=0;
-
     const lerp = THREE.MathUtils.lerp;
     const easeOut3 = p => 1 - Math.pow(1-p, 3);
     const easeInOut = p => p<.5 ? 4*p*p*p : 1-Math.pow(-2*p+2,3)/2;
     const easeIn2 = p => p*p;
-
     if(t < 0.06) {
-      // ACT 1 — Hero reveal: globe right side, breathing room
       const p = t/0.06;
       cz = lerp(5.5, 4.4, easeOut3(p));
       cx = lerp(1.4, 1.1, p);
       cy = lerp(.3,  .2,  p);
       fov = lerp(44, 40, p);
-      // Camera slowly drifts to add life
       cx += Math.sin(time*.18)*.04;
       cy += Math.cos(time*.14)*.03;
-
     } else if(t < 0.20) {
-      // ACT 2 — DRAMATIC ZOOM IN: rush toward planet surface
       const p = (t-.06)/.14;
       const e = easeOut3(p);
-      cz = lerp(4.4, 1.4, e);
-      cx = lerp(1.1, .15, e);
-      cy = lerp(.2, -.25, e);
-      fov = lerp(40, 22, e);
-      lookX = lerp(0,  .1, e);
-      lookY = lerp(0, -.1, e);
-
+      cz = lerp(4.4, 1.4, e); cx = lerp(1.1, .15, e); cy = lerp(.2, -.25, e);
+      fov = lerp(40, 22, e); lookX = lerp(0,  .1, e); lookY = lerp(0, -.1, e);
     } else if(t < 0.38) {
-      // ACT 3 — Surface cruise: glide along terminator, very close
       const p = (t-.20)/.18;
       const angle = p * Math.PI * 1.1;
       cz = 1.42 + Math.sin(p*Math.PI)*.18;
-      cx = Math.sin(angle) * .65;
-      cy = Math.cos(angle*.55)*.28 - .2;
-      fov = 22 + Math.sin(p*Math.PI)*5;
-      // Breathe the FOV for dramatic effect
-      fov += Math.sin(time*1.2)*.8;
-      lookX = Math.sin(angle*.4)*.1;
-      lookY = -.08;
-
+      cx = Math.sin(angle) * .65; cy = Math.cos(angle*.55)*.28 - .2;
+      fov = 22 + Math.sin(p*Math.PI)*5 + Math.sin(time*1.2)*.8;
+      lookX = Math.sin(angle*.4)*.1; lookY = -.08;
     } else if(t < 0.52) {
-      // ACT 4 — PULL BACK: reveal full planet
       const p = (t-.38)/.14;
       const e = easeInOut(p);
-      cz = lerp(1.6, 3.6, e);
-      cx = lerp(.5, -.55, e);
-      cy = lerp(-.1, .35, e);
-      fov = lerp(26, 46, e);
-      lookX = lerp(.05, -.05, e);
-      lookY = lerp(-.05, .1,  e);
-
+      cz = lerp(1.6, 3.6, e); cx = lerp(.5, -.55, e); cy = lerp(-.1, .35, e);
+      fov = lerp(26, 46, e); lookX = lerp(.05, -.05, e); lookY = lerp(-.05, .1, e);
     } else if(t < 0.66) {
-      // ACT 5 — Center orbit: globe centered, fills screen
       const p = (t-.52)/.14;
       const angle = p * Math.PI * .8 - .4;
-      cz = 3.6 - Math.sin(p*Math.PI)*.6;
-      cx = Math.cos(angle) * .55 - .55;
-      cy = Math.sin(angle*.7)*.2 + .35;
-      fov = 46 + Math.sin(p*Math.PI)*6;
+      cz = 3.6 - Math.sin(p*Math.PI)*.6; cx = Math.cos(angle) * .55 - .55;
+      cy = Math.sin(angle*.7)*.2 + .35; fov = 46 + Math.sin(p*Math.PI)*6;
       lookX = Math.cos(angle*.5)*.06;
-
     } else if(t < 0.82) {
-      // ACT 6 — Dark side orbit: camera swings behind planet
       const p = (t-.66)/.16;
       const e = easeInOut(p);
-      cz = lerp(3.1, 4.2, e);
-      cx = lerp(-.55, -1.2, e);
-      cy = lerp(.35,   .5,  e);
+      cz = lerp(3.1, 4.2, e); cx = lerp(-.55, -1.2, e); cy = lerp(.35, .5, e);
       fov = lerp(46, 42, e);
-      // Slow drift
-      cx += Math.sin(time*.22)*.05;
-      cy += Math.cos(time*.18)*.04;
-
+      cx += Math.sin(time*.22)*.05; cy += Math.cos(time*.18)*.04;
     } else {
-      // ACT 7 — Retreat to deep space: tiny globe, starfield dominates
       const p = (t-.82)/.18;
       const e = easeIn2(p);
-      cz = lerp(4.2, 7.5, e);
-      cx = lerp(-1.2, -.8, e);
-      cy = lerp(.5, .6, e);
+      cz = lerp(4.2, 7.5, e); cx = lerp(-1.2, -.8, e); cy = lerp(.5, .6, e);
       fov = lerp(42, 55, e);
     }
-
     camera.position.set(cx, cy, cz);
     camera.fov = fov;
     camera.updateProjectionMatrix();
     camera.lookAt(lookX, lookY, lookZ);
   });
-
   return (
     <>
-      {/* Planet */}
       <mesh ref={planetRef}>
         <sphereGeometry args={[1, 128, 128]}/>
-        <meshStandardMaterial
-          map={texture}
-          roughness={0.82}
-          metalness={0.02}
-          emissive={new THREE.Color(0.04, 0.07, 0.03)}
-          emissiveIntensity={0.5}
-        />
+        <meshStandardMaterial map={texture} roughness={0.82} metalness={0.02}
+          emissive={new THREE.Color(0.04, 0.07, 0.03)} emissiveIntensity={0.5}/>
       </mesh>
-
-      <Atmosphere/>
-      <AtmosphereRim/>
-      <OrbitRings/>
-      <Satellites/>
-      <CloudLayer/>
-      <Stars/>
+      <Atmosphere/><AtmosphereRim/><OrbitRings/><Satellites/><CloudLayer/><Stars/>
     </>
   );
 }
 
-/* Scene lights */
 function Lights() {
   return(
     <>
       <ambientLight intensity={0.12}/>
-      {/* Main sun — upper left warm */}
       <directionalLight position={[-4, 2.5, 3.5]} intensity={2.8} color="#fff6e0"/>
-      {/* Secondary fill — right blue */}
       <pointLight position={[5, -1, -3]} intensity={0.5} color="#2255aa" distance={12}/>
-      {/* Gold rim from below */}
       <pointLight position={[0, -4, 2]} intensity={0.4} color="#b8955a" distance={8}/>
     </>
   );
 }
 
-/* Globe Canvas — full screen fixed, always behind everything */
 function GlobeBackground() {
   const [show, setShow] = useState(false);
   useEffect(() => {
@@ -572,11 +614,7 @@ function GlobeBackground() {
   }, []);
   if(!show) return null;
   return(
-    <div style={{
-      position:"fixed", inset:0,
-      zIndex:0,
-      pointerEvents:"none",
-    }}>
+    <div style={{position:"fixed",inset:0,zIndex:0,pointerEvents:"none"}}>
       <Canvas
         gl={{ antialias:true, alpha:false, powerPreference:"high-performance", toneMapping:THREE.ACESFilmicToneMapping, toneMappingExposure:.9 }}
         style={{ width:"100%", height:"100%", background:"#030610" }}
@@ -584,9 +622,7 @@ function GlobeBackground() {
         dpr={[1,1.5]}
       >
         <Lights/>
-        <Suspense fallback={null}>
-          <PlanetScene/>
-        </Suspense>
+        <Suspense fallback={null}><PlanetScene/></Suspense>
       </Canvas>
     </div>
   );
@@ -614,20 +650,14 @@ function PageLoader({ onDone }) {
           exit={{ opacity:0, y:"-100%" }}
           transition={{ duration:.8, ease:[.76,0,.24,1] }}
           style={{position:"fixed",inset:0,zIndex:99999,background:"#030610",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:28}}>
-          {/* Spinning rings */}
           <div style={{position:"absolute",width:220,height:220,borderRadius:"50%",border:"1px solid rgba(184,149,90,.08)",borderTop:"1px solid rgba(184,149,90,.4)",animation:"spin-slow 2.4s linear infinite"}}/>
           <div style={{position:"absolute",width:160,height:160,borderRadius:"50%",border:"1px solid rgba(184,149,90,.06)",borderBottom:"1px solid rgba(184,149,90,.3)",animation:"spin-slow-rev 1.8s linear infinite"}}/>
-
-          <motion.div initial={{opacity:0,scale:.85}} animate={{opacity:1,scale:1}} transition={{duration:.8,ease:[.16,1,.3,1]}}
-            >
+          <motion.div initial={{opacity:0,scale:.85}} animate={{opacity:1,scale:1}} transition={{duration:.8,ease:[.16,1,.3,1]}}>
             <MawahibLogo height={200} blend={false}/>
           </motion.div>
-
           <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:12}}>
             <div style={{width:220,height:1,background:"rgba(255,255,255,.06)",position:"relative",overflow:"hidden"}}>
-              <motion.div
-                animate={{width:`${Math.min(pct,100)}%`}}
-                transition={{duration:.3,ease:"linear"}}
+              <motion.div animate={{width:`${Math.min(pct,100)}%`}} transition={{duration:.3,ease:"linear"}}
                 style={{position:"absolute",inset:0,background:`linear-gradient(90deg,${C.gold},${C.goldBright})`,boxShadow:`0 0 12px ${C.gold}`}}/>
             </div>
             <span style={{fontSize:9,color:"rgba(184,149,90,.6)",letterSpacing:".22em",fontWeight:700}}>
@@ -750,35 +780,24 @@ function Nav() {
           <MawahibLogo width={isMobile ? 116 : 148} blend={false}/>
       </motion.a>
       <div style={{display:"flex",alignItems:"center",gap:isMobile ? 8 : 12,flexShrink:0}}>
-        {["Features","How it works","Pricing"].map(item=>(
-          <motion.a key={item} href="#" whileHover={{color:C.goldLight}} transition={{duration:.2}}
-            style={{fontSize:12,fontWeight:600,color:"rgba(255,255,255,.45)",textDecoration:"none",letterSpacing:".04em",display:"none"}}
-            className="nav-link">{item}</motion.a>
-        ))}
         <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}>
-          <Link
-            to="/login"
-            style={{
-              background: "rgba(255,255,255,.05)",
-              border: "1px solid rgba(255,255,255,.18)",
-              borderRadius: isMobile ? 9 : 10,
-              padding: isMobile ? "8px 12px" : "8px 20px",
-              fontSize: isMobile ? 12 : 13,
-              fontWeight: 700,
-              color: "rgba(255,255,255,.82)",
-              textDecoration: "none",
-              display: "inline-flex",
-              alignItems: "center",
-              lineHeight: 1,
-              whiteSpace: "nowrap"
-            }}
-          >
-            Log In
-          </Link>
+          <Link to="/login" style={{
+            background: "rgba(255,255,255,.05)",
+            border: "1px solid rgba(255,255,255,.18)",
+            borderRadius: isMobile ? 9 : 10,
+            padding: isMobile ? "8px 12px" : "8px 20px",
+            fontSize: isMobile ? 12 : 13,
+            fontWeight: 700,
+            color: "rgba(255,255,255,.82)",
+            textDecoration: "none",
+            display: "inline-flex",
+            alignItems: "center",
+            lineHeight: 1,
+            whiteSpace: "nowrap"
+          }}>Log In</Link>
         </motion.div>
         <motion.a href="https://mawahib.ai/request-campaign" target="_blank" rel="noopener noreferrer"
-          whileHover={{scale:1.04,boxShadow:`0 8px 28px rgba(184,149,90,.35)`}}
-          whileTap={{scale:.96}}
+          whileHover={{scale:1.04,boxShadow:`0 8px 28px rgba(184,149,90,.35)`}} whileTap={{scale:.96}}
           style={{background:`linear-gradient(135deg,${C.gold},${C.goldBright})`,borderRadius:isMobile ? 9 : 10,padding:isMobile ? "8px 12px" : "8px 20px",fontSize:isMobile ? 12 : 13,fontWeight:700,color:C.bgDark,textDecoration:"none",boxShadow:`0 4px 18px rgba(184,149,90,.25)`,lineHeight:1,whiteSpace:"nowrap"}}>
           Get Started
         </motion.a>
@@ -788,16 +807,16 @@ function Nav() {
 }
 
 /* ══════════════════════════════════════════════════════════════════════
-   HERO SECTION — text on left, globe visible full right
+   HERO SECTION
+   Changes: heading on ONE line, bigger description, planet graphic pushed right,
+   reduce gap between text and visual
 ══════════════════════════════════════════════════════════════════════ */
 function HeroSection() {
   const { scrollYProgress } = useScroll();
   const y = useTransform(scrollYProgress, [0, 0.25], [0, -80]);
   const opacity = useTransform(scrollYProgress, [0, 0.22], [1, 0]);
   const scale = useTransform(scrollYProgress, [0, 0.25], [1, 0.94]);
-
   const [isMobile, setIsMobile] = useState(false);
-
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 768);
     check();
@@ -812,38 +831,29 @@ function HeroSection() {
   ];
 
   return (
-    <section
-      style={{
-        position: "relative",
-        minHeight: "100vh",
-        display: "flex",
-        alignItems: "center",
-        zIndex: 10,
-        overflow: "hidden",
-        background:
-          "linear-gradient(90deg,rgba(3,6,16,.82) 0%,rgba(3,6,16,.6) 45%,rgba(3,6,16,.1) 72%,transparent 100%)"
-      }}
-    >
-      <motion.div
-        style={{
-          y,
-          opacity,
-          scale,
-          padding: "0 clamp(28px,7vw,100px)",
-          paddingTop: 90,
-          maxWidth: "clamp(340px,48vw,640px)",
-          width: "100%"
-        }}
-      >
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 0.3 }}
-        >
+    <section style={{
+      position: "relative",
+      minHeight: "100vh",
+      display: "flex",
+      alignItems: "center",
+      zIndex: 10,
+      overflow: "hidden",
+      /* Push planet graphic more to the right with a narrower gradient */
+      background: "linear-gradient(90deg,rgba(3,6,16,.88) 0%,rgba(3,6,16,.72) 38%,rgba(3,6,16,.18) 62%,transparent 100%)"
+    }}>
+      <motion.div style={{
+        y, opacity, scale,
+        /* Reduced right padding to close gap between text block and planet */
+        padding: "0 clamp(28px,7vw,100px)",
+        paddingTop: 90,
+        maxWidth: "clamp(340px,44vw,580px)",
+        width: "100%"
+      }}>
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.3 }}>
           <Label>AI-POWERED HIRING INTELLIGENCE</Label>
         </motion.div>
 
-        {/* Heading Line 1 */}
+        {/* ── Heading on ONE line ── */}
         <motion.h1
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
@@ -851,47 +861,31 @@ function HeroSection() {
           style={{
             fontFamily: "'DM Serif Display', serif",
             fontStyle: "italic",
-            fontSize: "clamp(2.6rem,7vw,6rem)",
-            fontWeight: 400,
-            letterSpacing: "-0.02em",
-            lineHeight: 1.05,
-            color: "rgba(255,255,255,.95)",
-            marginBottom: 6
-          }}
-        >
-          Hiring.
-        </motion.h1>
-
-        {/* Heading Line 2 */}
-        <motion.h1
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.9, delay: 0.52 }}
-          style={{
-            fontFamily: "'DM Serif Display', serif",
-            fontStyle: "italic",
-            fontSize: "clamp(2.6rem,7vw,6rem)",
+            fontSize: "clamp(2.6rem,6.5vw,5.8rem)",
             fontWeight: 400,
             letterSpacing: "-0.02em",
             lineHeight: 1.05,
             marginBottom: 30,
-            wordBreak: "break-word"
+            whiteSpace: isMobile ? "normal" : "nowrap",
+            color: "rgba(255,255,255,.95)",
           }}
         >
+          Hiring.{" "}
           <span className="gold-shimmer">Re-engineered.</span>
         </motion.h1>
 
-        {/* Description */}
+        {/* Description — slightly larger */}
         <motion.p
           initial={{ opacity: 0, y: 18 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.75, delay: 0.66 }}
           style={{
-            color: "rgba(255,255,255,.5)",
-            fontSize: "clamp(14px,1.6vw,17px)",
-            lineHeight: 1.85,
+            color: "rgba(255,255,255,.55)",
+            fontSize: "clamp(15px,1.7vw,19px)",
+            lineHeight: 1.8,
             marginBottom: 38,
-            maxWidth: 440
+            maxWidth: 460,
+            fontWeight: 400,
           }}
         >
           AI-powered candidate intelligence for modern teams. Automate
@@ -906,124 +900,57 @@ function HeroSection() {
           transition={{ duration: 0.65, delay: 0.8 }}
           style={{ display: "flex", gap: 12, flexWrap: "wrap" }}
         >
-          <motion.a
-            href="https://wa.me/966556919502"
-            // href="https://mawahib.ai/request-campaign"
-            target="_blank"
-            whileHover={{ scale: 1.04 }}
-            whileTap={{ scale: 0.96 }}
+          <motion.a href={WHATSAPP_URL} target="_blank"
+            whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}
             style={{
               background: `linear-gradient(135deg,${C.gold},${C.goldBright})`,
-              padding: "13px 30px",
-              borderRadius: 12,
-              fontSize: 14,
-              fontWeight: 700,
-              color: C.bgDark,
-              textDecoration: "none",
+              padding: "13px 30px", borderRadius: 12, fontSize: 14, fontWeight: 700,
+              color: C.bgDark, textDecoration: "none",
               boxShadow: `0 6px 24px rgba(184,149,90,.3)`
-            }}
-          >
+            }}>
             Request Demo
           </motion.a>
-
-        
         </motion.div>
 
         {/* Mobile Stats */}
         {isMobile && (
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              gap: 10,
-              marginTop: 40
-            }}
-          >
+          <div style={{ display: "flex", justifyContent: "space-between", gap: 10, marginTop: 40 }}>
             {stats.map(({ val, sub }) => (
-              <div
-                key={val}
-                style={{
-                  flex: 1,
-                  background: "rgba(3,6,16,.7)",
-                  border: "1px solid rgba(184,149,90,.2)",
-                  borderRadius: 12,
-                  padding: "14px 10px",
-                  textAlign: "center",
-                  backdropFilter: "blur(20px)"
-                }}
-              >
-                <div
-                  style={{
-                    fontSize: 18,
-                    fontWeight: 800,
-                    color: "#fff"
-                  }}
-                >
-                  {val}
-                </div>
-                <div
-                  style={{
-                    fontSize: 9,
-                    color: C.gold,
-                    fontWeight: 700
-                  }}
-                >
-                  {sub}
-                </div>
+              <div key={val} style={{
+                flex: 1, background: "rgba(3,6,16,.7)",
+                border: "1px solid rgba(184,149,90,.2)", borderRadius: 12,
+                padding: "14px 10px", textAlign: "center", backdropFilter: "blur(20px)"
+              }}>
+                <div style={{ fontSize: 18, fontWeight: 800, color: "#fff" }}>{val}</div>
+                <div style={{ fontSize: 9, color: C.gold, fontWeight: 700 }}>{sub}</div>
               </div>
             ))}
           </div>
         )}
       </motion.div>
 
-      {/* Desktop Floating Stats */}
+      {/* Desktop Floating Stats — positioned closer to text block */}
       {!isMobile && (
-        <div
-          style={{
-            position: "absolute",
-            right: "clamp(2%,5vw,8%)",
-            top: "50%",
-            transform: "translateY(-50%)",
-            display: "flex",
-            flexDirection: "column",
-            gap: 14,
-            zIndex: 20,
-            pointerEvents: "none"
-          }}
-        >
+        <div style={{
+          position: "absolute",
+          /* Moved closer: was 5-8%, now at right edge of text ~46-50% */
+          right: "clamp(2%,4vw,6%)",
+          top: "50%",
+          transform: "translateY(-50%)",
+          display: "flex", flexDirection: "column", gap: 14,
+          zIndex: 20, pointerEvents: "none"
+        }}>
           {stats.map(({ val, sub }) => (
-            <motion.div
-              key={val}
-              initial={{ opacity: 0, x: 30 }}
-              animate={{ opacity: 1, x: 0 }}
+            <motion.div key={val}
+              initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }}
               style={{
                 background: "rgba(3,6,16,.6)",
                 border: "1px solid rgba(184,149,90,.2)",
-                borderRadius: 14,
-                padding: "12px 18px",
-                backdropFilter: "blur(20px)",
-                boxShadow: "0 8px 32px rgba(0,0,0,.3)"
-              }}
-            >
-              <div
-                style={{
-                  fontSize: "clamp(18px,2.2vw,26px)",
-                  fontWeight: 800,
-                  color: "#fff",
-                  letterSpacing: "-.04em"
-                }}
-              >
-                {val}
-              </div>
-              <div
-                style={{
-                  fontSize: 9,
-                  color: C.gold,
-                  fontWeight: 700
-                }}
-              >
-                {sub}
-              </div>
+                borderRadius: 14, padding: "12px 18px",
+                backdropFilter: "blur(20px)", boxShadow: "0 8px 32px rgba(0,0,0,.3)"
+              }}>
+              <div style={{ fontSize: "clamp(18px,2.2vw,26px)", fontWeight: 800, color: "#fff", letterSpacing: "-.04em" }}>{val}</div>
+              <div style={{ fontSize: 9, color: C.gold, fontWeight: 700 }}>{sub}</div>
             </motion.div>
           ))}
         </div>
@@ -1031,6 +958,7 @@ function HeroSection() {
     </section>
   );
 }
+
 /* ══════════════════════════════════════════════════════════════════════
    TICKER
 ══════════════════════════════════════════════════════════════════════ */
@@ -1052,28 +980,232 @@ function Ticker() {
 }
 
 /* ══════════════════════════════════════════════════════════════════════
-   SCROLL SECTION WRAPPER — adds entrance animation to any section
+   COMPANIES TRUST MAWAHIB SECTION
+   (moved here — ABOVE ProblemSection)
 ══════════════════════════════════════════════════════════════════════ */
-function ScrollSection({ children, bg="rgba(3,6,16,.7)", style={}, amount=.08, ...props }) {
-  const ref = useRef();
-  const inView = useInView(ref,{once:false,amount});
-  const { scrollYProgress } = useScroll({ target:ref, offset:["start end","end start"] });
-  const y = useTransform(scrollYProgress,[0,1],[40,-40]);
+const StarRating=({n=5,size=13})=>(
+  <div style={{display:"flex",gap:2}}>
+    {[...Array(n)].map((_,i)=>(
+      <svg key={i} width={size} height={size} viewBox="0 0 24 24" fill="#00b67a">
+        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+      </svg>
+    ))}
+  </div>
+);
+const TrustpilotMark=()=>(
+  <svg viewBox="0 0 110 22" style={{height:15,width:"auto",display:"block",flexShrink:0}}>
+    <text x="0" y="17" fontFamily="Arial,sans-serif" fontWeight="800" fontSize="17" fill="white" letterSpacing="-0.3">Trustpilot</text>
+    <rect x="95" y="2" width="14" height="17" rx="2" fill="#00b67a"/>
+    <path d="M102 5.5l1.2 2.4 2.7.4-2 1.9.5 2.7-2.4-1.3-2.4 1.3.5-2.7-2-1.9 2.7-.4z" fill="white"/>
+  </svg>
+);
 
+function ReviewCard({ r }) {
   return(
-    <motion.section ref={ref}
-      initial={{opacity:0,y:30}}
-      animate={inView ? {opacity:1,y:0} : {opacity:0,y:30}}
-      transition={{duration:.85,ease:[.16,1,.3,1]}}
-      style={{position:"relative",zIndex:10,background:bg,backdropFilter:"blur(2px)",...style}}
-      {...props}>
-      {children}
-    </motion.section>
+    <motion.div
+      whileHover={{y:-8,scale:1.02,borderColor:"rgba(184,149,90,.3)",boxShadow:"0 20px 60px rgba(0,0,0,.4)"}}
+      transition={{duration:.3}}
+      style={{
+        width:"100%",
+        background:"rgba(255,255,255,.03)",border:"1px solid rgba(255,255,255,.07)",
+        borderRadius:18,padding:"clamp(16px,2.2vw,22px)",
+        position:"relative",overflow:"hidden",backdropFilter:"blur(12px)",cursor:"default"
+      }}>
+      <div style={{position:"absolute",top:0,left:"12%",right:"12%",height:1.5,background:`linear-gradient(90deg,transparent,${C.gold},transparent)`,boxShadow:`0 0 8px ${C.gold}`}}/>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:11}}>
+        <StarRating n={r.rating} size={11}/>
+        <span style={{fontSize:9,color:"rgba(255,255,255,.22)",letterSpacing:".06em",fontWeight:700}}>{r.date}</span>
+      </div>
+      <p style={{color:"rgba(255,255,255,.45)",fontSize:"clamp(11px,1.05vw,12px)",lineHeight:1.75,marginBottom:14,minHeight:54}}>"{r.text}"</p>
+      <div style={{display:"flex",alignItems:"center",gap:9}}>
+        <div style={{width:30,height:30,borderRadius:"50%",background:`linear-gradient(145deg,${C.gold},${C.goldBright})`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:12,fontWeight:800,color:C.bgDark,flexShrink:0}}>
+          {r.name.charAt(0)}
+        </div>
+        <div>
+          <p style={{fontWeight:700,fontSize:11,color:"rgba(255,255,255,.7)",lineHeight:1.3}}>{r.name}</p>
+          <p style={{fontSize:9,color:"rgba(255,255,255,.28)",lineHeight:1.3}}>{r.role}</p>
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
+const ALL_REVIEWS = [
+  {name:"Sarah Johnson",role:"HR Director, TechCorp",rating:5,date:"Dec 2024",text:"Mawahib transformed our hiring completely. We cut time-to-hire by 60% and the AI interviews are surprisingly natural."},
+  {name:"Michael Chen",role:"Founder, StartupXYZ",rating:5,date:"Jan 2025",text:"We screened 400 applicants in a weekend. The structured scoring model is a game-changer for early-stage hiring."},
+  {name:"Emma Williams",role:"Talent Lead, FinanceHub",rating:5,date:"Feb 2025",text:"Finally a hiring platform that delivers on its promises. Our team spends 80% less time on initial screening."},
+  {name:"Khalid Al-Rashid",role:"COO, RetailGroup MENA",rating:5,date:"Mar 2025",text:"We hired 12 regional managers across 6 countries. What used to take 3 months took 3 weeks."},
+  {name:"Priya Sharma",role:"VP People, FinTech",rating:5,date:"Apr 2025",text:"Bias-reduced scoring gave us confidence our decisions were merit-based. Diversity improved significantly."},
+  {name:"James O'Brien",role:"Head of Recruitment",rating:5,date:"May 2025",text:"Mawahib lets us present ranked shortlists same day. Our clients think we're wizards now."},
+  {name:"Nour Hassan",role:"CHRO, Logistics Corp",rating:5,date:"Jun 2025",text:"Seamless onboarding, crystal-clear reports, and massive time savings from day one."},
+  {name:"David Park",role:"Talent Ops, Series B",rating:5,date:"Jul 2025",text:"The multilingual AI interviewer handled Arabic and English flawlessly. Perfect for MENA."},
+  {name:"Layla Ahmed",role:"Recruiting Manager",rating:5,date:"Aug 2025",text:"The auto-ranking feature alone saves us hours every week. Beautiful platform too."},
+  {name:"Tom Fischer",role:"CEO, SaaS Company",rating:5,date:"Sep 2025",text:"We scaled from 20 to 80 employees in 6 months. Mawahib was central to our infrastructure."},
+];
+
+function CompaniesTrustSection() {
+  const ref = useRef();
+  const inView = useInView(ref, { once: true, amount: 0.05 });
+  const [isMobile, setIsMobile] = useState(false);
+  const [carouselIdx, setCarouselIdx] = useState(0);
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
+
+  // Show 4 visible, rest in carousel
+  const VISIBLE = 4;
+  const carouselReviews = ALL_REVIEWS.slice(VISIBLE); // reviews 5-10 go in carousel
+  const visibleReviews = ALL_REVIEWS.slice(0, VISIBLE);
+
+  const prev = () => setCarouselIdx(i => (i === 0 ? carouselReviews.length - 1 : i - 1));
+  const next = () => setCarouselIdx(i => (i === carouselReviews.length - 1 ? 0 : i + 1));
+
+  return (
+    <section ref={ref} style={{
+      position: "relative", zIndex: 10,
+      padding: "clamp(90px,12vw,140px) clamp(28px,7vw,100px)",
+      background: "rgba(3,6,16,.75)", backdropFilter: "blur(2px)", overflow: "hidden"
+    }}>
+      <motion.div
+        initial={{ opacity: 0, y: 22 }} animate={inView ? { opacity: 1, y: 0 } : {}}
+        transition={{ duration: .85 }}
+        style={{ textAlign: "center", marginBottom: "clamp(44px,6vw,60px)" }}
+      >
+        {/* <Label>COMPANIES TRUST MAWAHIB</Label> */}
+        <div style={{
+          display: "inline-flex", flexDirection: "column", alignItems: "center", gap: 9,
+          background: "rgba(255,255,255,.04)", border: "1px solid rgba(255,255,255,.08)",
+          borderRadius: 18, padding: "16px 28px", marginBottom: 24, backdropFilter: "blur(16px)"
+        }}>
+          <TrustpilotMark/>
+          <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
+            <StarRating n={5} size={18}/>
+            <span style={{ fontSize: 15, fontWeight: 800, color: "#fff" }}>4.9 / 5</span>
+          </div>
+          <p style={{ fontSize: 10, color: "rgba(255,255,255,.28)" }}>Rated <strong style={{color:"#00b67a"}}>Excellent</strong> · 200+ verified reviews</p>
+        </div>
+        <blockquote style={{
+          fontFamily: "'DM Serif Display',serif", fontStyle: "italic",
+          fontSize: "clamp(2rem,4.8vw,4.4rem)", fontWeight: 400,
+          color: "rgba(255,255,255,.92)", lineHeight: 1.08, letterSpacing: "-.02em", marginBottom: 12
+        }}>
+          "Reduced time-to-hire<br/>by 60%."
+        </blockquote>
+        <p style={{ color: "rgba(255,255,255,.22)", fontSize: "clamp(11px,1.2vw,12px)", fontWeight: 700, letterSpacing: ".1em" }}>
+          HR Director, Global Tech Company
+        </p>
+      </motion.div>
+
+      {/* 4 cards in a row */}
+      <div style={{
+        display: "grid",
+        gridTemplateColumns: isMobile ? "1fr" : "repeat(4,1fr)",
+        gap: "clamp(12px,1.5vw,18px)",
+        maxWidth: 1280, margin: "0 auto",
+        marginBottom: 32,
+      }}>
+        {visibleReviews.map((r, i) => (
+          <motion.div key={i}
+            initial={{ opacity: 0, y: 24 }} animate={inView ? { opacity: 1, y: 0 } : {}}
+            transition={{ delay: 0.1 + i * 0.1, duration: 0.7 }}>
+            <ReviewCard r={r}/>
+          </motion.div>
+        ))}
+      </div>
+
+      {/* Carousel for remaining reviews */}
+      {carouselReviews.length > 0 && (
+        <div style={{ maxWidth: 1280, margin: "0 auto", position: "relative" }}>
+          <div style={{
+            display: "flex", alignItems: "center", gap: 16,
+            justifyContent: "center", flexWrap: isMobile ? "wrap" : "nowrap",
+          }}>
+            {/* Prev btn */}
+            <motion.button
+              whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
+              onClick={prev}
+              style={{
+                flexShrink: 0,
+                width: 42, height: 42, borderRadius: "50%",
+                background: "rgba(255,255,255,.05)",
+                border: "1px solid rgba(184,149,90,.3)",
+                color: C.gold, fontSize: 18, cursor: "pointer",
+                display: "flex", alignItems: "center", justifyContent: "center",
+              }}>‹</motion.button>
+
+            {/* Carousel slide */}
+            <div style={{
+              flex: 1,
+              maxWidth: isMobile ? "100%" : 560,
+              overflow: "hidden",
+              borderRadius: 18,
+            }}>
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={carouselIdx}
+                  initial={{ opacity: 0, x: 40 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -40 }}
+                  transition={{ duration: 0.4 }}
+                >
+                  <ReviewCard r={carouselReviews[carouselIdx]}/>
+                </motion.div>
+              </AnimatePresence>
+            </div>
+
+            {/* Next btn */}
+            <motion.button
+              whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
+              onClick={next}
+              style={{
+                flexShrink: 0,
+                width: 42, height: 42, borderRadius: "50%",
+                background: "rgba(255,255,255,.05)",
+                border: "1px solid rgba(184,149,90,.3)",
+                color: C.gold, fontSize: 18, cursor: "pointer",
+                display: "flex", alignItems: "center", justifyContent: "center",
+              }}>›</motion.button>
+          </div>
+
+          {/* Dots */}
+          <div style={{ display: "flex", justifyContent: "center", gap: 8, marginTop: 16 }}>
+            {carouselReviews.map((_, i) => (
+              <button key={i} onClick={() => setCarouselIdx(i)}
+                style={{
+                  width: i === carouselIdx ? 20 : 7, height: 7, borderRadius: 999,
+                  background: i === carouselIdx ? C.gold : "rgba(255,255,255,.18)",
+                  border: "none", cursor: "pointer", padding: 0,
+                  transition: "all .3s",
+                }}/>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <motion.div
+        initial={{ opacity: 0 }} animate={inView ? { opacity: 1 } : {}} transition={{ delay: .7, duration: .7 }}
+        style={{ textAlign: "center", marginTop: "clamp(36px,5vw,52px)" }}
+      >
+        <motion.a href="https://www.trustpilot.com/review/mawahib.ai" target="_blank" rel="noopener noreferrer"
+          whileHover={{ scale: 1.04, borderColor: "rgba(0,182,122,.4)" }} whileTap={{ scale: .97 }}
+          style={{ display: "inline-flex", alignItems: "center", gap: 10, background: "rgba(255,255,255,.04)", border: "1px solid rgba(255,255,255,.09)", borderRadius: 12, padding: "12px 24px", fontSize: 13, fontWeight: 700, color: "rgba(255,255,255,.6)", textDecoration: "none", backdropFilter: "blur(16px)" }}>
+          <TrustpilotMark/>
+          <span style={{ height: 14, width: 1, background: "rgba(255,255,255,.1)" }}/>
+          Read all reviews
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M7 17L17 7M17 7H7M17 7V17"/></svg>
+        </motion.a>
+      </motion.div>
+    </section>
   );
 }
 
 /* ══════════════════════════════════════════════════════════════════════
    PROBLEM SECTION
+   Changes: keywords get .keyword-badge style, Label color = C.gold
 ══════════════════════════════════════════════════════════════════════ */
 function ProblemSection() {
   const ref = useRef();
@@ -1081,7 +1213,6 @@ function ProblemSection() {
   const { scrollYProgress } = useScroll({target:ref,offset:["start end","end start"]});
   const parallaxY = useTransform(scrollYProgress,[0,1],[50,-50]);
   const [isMobile, setIsMobile] = useState(false);
-
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 768);
     check();
@@ -1098,94 +1229,61 @@ function ProblemSection() {
   return(
     <section ref={ref} style={{position:"relative",zIndex:10,padding:"clamp(90px,12vw,140px) clamp(28px,7vw,100px)",background:"linear-gradient(180deg,rgba(3,6,16,.6) 0%,rgba(10,15,30,.85) 100%)"}}>
       <div style={{maxWidth:1280,margin:"0 auto",display:"grid",gridTemplateColumns:"1fr 1fr",gap:"clamp(50px,8vw,100px)",alignItems:"center"}} className="two-col">
-        {/* Left: image with parallax */}
+        {/* Left */}
         <motion.div style={{y:parallaxY,position:"relative"}} initial={{opacity:0,x:-40}} animate={inView?{opacity:1,x:0}:{}} transition={{duration:1,ease:[.16,1,.3,1]}}>
-         
-         {/* KEYWORDS */}
-<div
-  style={{
-    display: "flex",
-    gap: 14,
-    marginBottom: 18,
-    flexWrap: "wrap"
-  }}
->
-  {["Automated", "Faster", "More Accurate"].map((k,i)=>(
-    <span
-      key={i}
-      style={{
-        fontSize: 10,
-        letterSpacing: ".12em",
-        fontWeight: 700,
-        textTransform: "uppercase",
-        color: C.gold,
-        border: "1px solid rgba(184,149,90,.35)",
-        background: "rgba(184,149,90,.08)",
-        padding: "6px 10px",
-        borderRadius: 999
-      }}
-    >
-      {k}
-    </span>
-  ))}
-</div>
-         
+
+          {/* ── KEYWORD BADGES with special shimmer style ── */}
+          <div style={{ display:"flex", gap:10, marginBottom:20, flexWrap:"wrap" }}>
+            {["Automated","Faster","More Accurate"].map((k,i)=>(
+              <motion.span
+                key={i}
+                className="keyword-badge"
+                initial={{ opacity:0, scale:.85 }}
+                animate={inView ? { opacity:1, scale:1 } : {}}
+                transition={{ delay: 0.3 + i * 0.12, duration: 0.55 }}
+                whileHover={{ scale:1.06, y:-2 }}
+              >
+                <span className="kw-text">{k}</span>
+              </motion.span>
+            ))}
+          </div>
+
           <div style={{borderRadius:24,overflow:"hidden",aspectRatio:"3/4",boxShadow:"0 40px 100px rgba(0,0,0,.6)",border:"1px solid rgba(255,255,255,.06)",position:"relative"}}>
             <img src="https://images.unsplash.com/photo-1552664730-d307ca884978?w=1400&q=90"
               alt="" loading="lazy" style={{width:"100%",height:"100%",objectFit:"cover",filter:"brightness(.7) saturate(.7)"}}/>
             <div style={{position:"absolute",inset:0,background:"linear-gradient(160deg,transparent 45%,rgba(3,6,16,.9) 100%)"}}/>
-            {/* Desktop stat badge */}
             {!isMobile && (
               <motion.div
                 initial={{opacity:0,scale:.8}} animate={inView?{opacity:1,scale:1}:{}} transition={{delay:.6,duration:.7}}
                 style={{
-                  position:"absolute",
-                  bottom:"clamp(14px,3vw,26px)",
-                  right:"clamp(14px,3vw,26px)",
-                  background:"rgba(3,6,16,.9)",
-                  border:"1px solid rgba(184,149,90,.34)",
-                  borderRadius:16,
-                  padding:"16px 20px",
-                  minWidth:200,
-                  backdropFilter:"blur(24px)",
-                  boxShadow:"0 20px 60px rgba(0,0,0,.45)",
-                  animation:"glow-pulse 3s ease-in-out infinite"
+                  position:"absolute", bottom:"clamp(14px,3vw,26px)", right:"clamp(14px,3vw,26px)",
+                  background:"rgba(3,6,16,.9)", border:"1px solid rgba(184,149,90,.34)",
+                  borderRadius:16, padding:"16px 20px", minWidth:200, backdropFilter:"blur(24px)",
+                  boxShadow:"0 20px 60px rgba(0,0,0,.45)", animation:"glow-pulse 3s ease-in-out infinite"
                 }}>
                 <div style={{fontSize:34,fontWeight:800,color:"#fff",letterSpacing:"-.05em",lineHeight:1}}>70%</div>
                 <div style={{fontSize:10,color:C.gold,fontWeight:700,letterSpacing:".1em",marginTop:6,whiteSpace:"nowrap"}}>TIME WASTED ON CVs</div>
               </motion.div>
             )}
           </div>
-          {/* Mobile stat card */}
           {isMobile && (
             <motion.div
               initial={{opacity:0,y:14}} animate={inView?{opacity:1,y:0}:{}} transition={{delay:.55,duration:.65}}
-              style={{
-                marginTop:12,
-                background:"linear-gradient(135deg,rgba(3,6,16,.95),rgba(9,15,28,.92))",
-                border:"1px solid rgba(184,149,90,.34)",
-                borderRadius:14,
-                padding:"14px 16px",
-                display:"flex",
-                alignItems:"center",
-                justifyContent:"space-between",
-                gap:12,
-                boxShadow:"0 14px 36px rgba(0,0,0,.35)"
-              }}>
+              style={{marginTop:12,background:"linear-gradient(135deg,rgba(3,6,16,.95),rgba(9,15,28,.92))",border:"1px solid rgba(184,149,90,.34)",borderRadius:14,padding:"14px 16px",display:"flex",alignItems:"center",justifyContent:"space-between",gap:12,boxShadow:"0 14px 36px rgba(0,0,0,.35)"}}>
               <div style={{fontSize:32,fontWeight:800,color:"#fff",letterSpacing:"-.04em",lineHeight:1}}>70%</div>
               <div style={{fontSize:11,color:C.gold,fontWeight:800,letterSpacing:".1em",textAlign:"right",whiteSpace:"nowrap"}}>TIME WASTED ON CVs</div>
             </motion.div>
           )}
-          {/* Decorative glow */}
           <div style={{position:"absolute",inset:"-10%",background:"radial-gradient(ellipse,rgba(184,149,90,.06) 0%,transparent 60%)",zIndex:-1,pointerEvents:"none"}}/>
         </motion.div>
 
-        {/* Right: problems */}
+        {/* Right: problems — Label color = C.gold */}
         <motion.div initial={{opacity:0,x:40}} animate={inView?{opacity:1,x:0}:{}} transition={{duration:.9,delay:.15,ease:[.16,1,.3,1]}}>
-          <Label color="#f87171" bg="rgba(248,113,113,.08)" border="rgba(248,113,113,.2)">THE PROBLEM</Label>
+          {/* ── Label color changed to C.gold ── */}
+          <Label color={C.gold} bg={C.goldPale} border={C.goldBorder}>THE PROBLEM</Label>
           <h2 style={{fontFamily:"'DM Serif Display',serif",fontStyle:"italic",fontSize:"clamp(2.4rem,4.5vw,4.2rem)",fontWeight:400,letterSpacing:"-.02em",lineHeight:1.08,color:"rgba(255,255,255,.95)",marginBottom:18}}>
             Hiring Today is a <span className="gold-shimmer">Challenge.</span>
-          </h2>  
+          </h2>
           <p style={{color:"rgba(255,255,255,.4)",fontSize:"clamp(14px,1.5vw,16px)",lineHeight:1.85,marginBottom:44}}>
             Most companies rely on manual reviews, subjective opinions, and fragmented processes. The cost isn't just efficiency — it's the best candidates slipping through.
           </p>
@@ -1217,15 +1315,9 @@ function ProblemSection() {
 function GlobalSection() {
   const ref = useRef();
   const inView = useInView(ref, { once: true, amount: 0.08 });
-  const { scrollYProgress } = useScroll({
-    target: ref,
-    offset: ["start end", "end start"]
-  });
-
+  const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
   const textY = useTransform(scrollYProgress, [0, 1], [40, -40]);
-
   const [isMobile, setIsMobile] = useState(false);
-
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 768);
     check();
@@ -1241,192 +1333,71 @@ function GlobalSection() {
   ];
 
   return (
-    <section
-      ref={ref}
-      style={{
-        position: "relative",
-        zIndex: 10,
-        padding: "clamp(90px,12vw,140px) clamp(28px,7vw,100px)",
-        background:
-          "linear-gradient(180deg,rgba(10,15,30,.85) 0%,rgba(3,6,16,.6) 100%)",
-        overflow: "hidden"
-      }}
-    >
-      <div
-        style={{
-          maxWidth: 1280,
-          margin: "0 auto",
-          display: "grid",
-          gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
-          gap: "clamp(60px,8vw,100px)",
-          alignItems: "center"
-        }}
-      >
-        {/* LEFT CONTENT */}
-        <motion.div
-          style={{ y: textY }}
-          initial={{ opacity: 0, x: -60 }}
-          animate={inView ? { opacity: 1, x: 0 } : {}}
-          transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
-        >
+    <section ref={ref} style={{
+      position: "relative", zIndex: 10,
+      padding: "clamp(90px,12vw,140px) clamp(28px,7vw,100px)",
+      background: "linear-gradient(180deg,rgba(10,15,30,.85) 0%,rgba(3,6,16,.6) 100%)", overflow: "hidden"
+    }}>
+      <div style={{
+        maxWidth: 1280, margin: "0 auto",
+        display: "grid",
+        gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
+        gap: "clamp(60px,8vw,100px)", alignItems: "center"
+      }}>
+        <motion.div style={{ y: textY }}
+          initial={{ opacity: 0, x: -60 }} animate={inView ? { opacity: 1, x: 0 } : {}}
+          transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}>
           <Label>GLOBAL REACH</Label>
-
-          <h2
-            style={{
-              fontFamily: "'DM Serif Display', serif",
-              fontStyle: "italic",
-              fontSize: "clamp(2.4rem,6vw,4.5rem)",
-              fontWeight: 400,
-              letterSpacing: "-.02em",
-              lineHeight: 1.08,
-              color: "rgba(255,255,255,.95)",
-              marginBottom: 22
-            }}
-          >
-            Global Talent.
-            <br />
-            <span className="gold-shimmer">
-              Structured Insight.
-            </span>
+          <h2 style={{
+            fontFamily: "'DM Serif Display', serif", fontStyle: "italic",
+            fontSize: "clamp(2.4rem,6vw,4.5rem)", fontWeight: 400, letterSpacing: "-.02em",
+            lineHeight: 1.08, color: "rgba(255,255,255,.95)", marginBottom: 22
+          }}>
+            Global Talent.<br/><span className="gold-shimmer">Structured Insight.</span>
           </h2>
-
-          <p
-            style={{
-              color: "rgba(255,255,255,.4)",
-              fontSize: "clamp(14px,1.5vw,16px)",
-              lineHeight: 1.9,
-              marginBottom: 50,
-              maxWidth: 520
-            }}
-          >
-            Mawahib evaluates, ranks, and presents the best candidates in
-            minutes — not weeks. Every decision backed by structured AI data.
+          <p style={{ color: "rgba(255,255,255,.4)", fontSize: "clamp(14px,1.5vw,16px)", lineHeight: 1.9, marginBottom: 50, maxWidth: 520 }}>
+            Mawahib evaluates, ranks, and presents the best candidates in minutes — not weeks. Every decision backed by structured AI data.
           </p>
-
-          {/* 🔥 Animated Stats */}
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: isMobile
-                ? "repeat(2,1fr)"
-                : "repeat(4,1fr)",
-              gap: 20,
-              marginBottom: isMobile ? 60 : 0
-            }}
-          >
+          <div style={{
+            display: "grid",
+            gridTemplateColumns: isMobile ? "repeat(2,1fr)" : "repeat(4,1fr)",
+            gap: 20, marginBottom: isMobile ? 60 : 0
+          }}>
             {stats.map((s, i) => (
-              <motion.div
-                key={s.lbl}
+              <motion.div key={s.lbl}
                 initial={{ opacity: 0, y: 40, scale: 0.9 }}
-                animate={
-                  inView ? { opacity: 1, y: 0, scale: 1 } : {}
-                }
-                transition={{
-                  delay: 0.25 + i * 0.12,
-                  duration: 0.8,
-                  type: "spring",
-                  stiffness: 120
-                }}
-                whileHover={{
-                  scale: 1.08,
-                  y: -6
-                }}
+                animate={inView ? { opacity: 1, y: 0, scale: 1 } : {}}
+                transition={{ delay: 0.25 + i * 0.12, duration: 0.8, type: "spring", stiffness: 120 }}
+                whileHover={{ scale: 1.08, y: -6 }}
                 style={{
-                  position: "relative",
-                  padding: "24px 16px",
-                  borderRadius: 18,
-                  background:
-                    "linear-gradient(145deg,rgba(255,255,255,.05),rgba(255,255,255,.02))",
-                  border: "1px solid rgba(184,149,90,.18)",
-                  textAlign: "center",
-                  backdropFilter: "blur(18px)",
-                  overflow: "hidden",
-                  cursor: "default",
-                  boxShadow:
-                    "0 10px 40px rgba(0,0,0,.4)"
-                }}
-              >
-                {/* subtle glow pulse */}
-                <motion.div
-                  animate={{ opacity: [0.2, 0.5, 0.2] }}
-                  transition={{
-                    duration: 3 + i,
-                    repeat: Infinity,
-                    ease: "easeInOut"
-                  }}
-                  style={{
-                    position: "absolute",
-                    inset: "-30%",
-                    background:
-                      "radial-gradient(circle, rgba(184,149,90,.15) 0%, transparent 60%)",
-                    zIndex: 0
-                  }}
-                />
-
-                <div
-                  style={{
-                    position: "relative",
-                    zIndex: 2,
-                    fontSize: "clamp(22px,4vw,30px)",
-                    fontWeight: 800,
-                    letterSpacing: "-.04em",
-                    color: "#fff",
-                    marginBottom: 6
-                  }}
-                >
-                  <AnimCount val={s.val} suffix={s.s} />
+                  position: "relative", padding: "24px 16px", borderRadius: 18,
+                  background: "linear-gradient(145deg,rgba(255,255,255,.05),rgba(255,255,255,.02))",
+                  border: "1px solid rgba(184,149,90,.18)", textAlign: "center",
+                  backdropFilter: "blur(18px)", overflow: "hidden", cursor: "default",
+                  boxShadow: "0 10px 40px rgba(0,0,0,.4)"
+                }}>
+                <motion.div animate={{ opacity: [0.2, 0.5, 0.2] }} transition={{ duration: 3 + i, repeat: Infinity, ease: "easeInOut" }}
+                  style={{ position: "absolute", inset: "-30%", background: "radial-gradient(circle, rgba(184,149,90,.15) 0%, transparent 60%)", zIndex: 0 }}/>
+                <div style={{ position: "relative", zIndex: 2, fontSize: "clamp(22px,4vw,30px)", fontWeight: 800, letterSpacing: "-.04em", color: "#fff", marginBottom: 6 }}>
+                  <AnimCount val={s.val} suffix={s.s}/>
                 </div>
-
-                <div
-                  style={{
-                    position: "relative",
-                    zIndex: 2,
-                    fontSize: 10,
-                    color: C.gold,
-                    fontWeight: 700,
-                    letterSpacing: ".08em"
-                  }}
-                >
-                  {s.lbl}
-                </div>
+                <div style={{ position: "relative", zIndex: 2, fontSize: 10, color: C.gold, fontWeight: 700, letterSpacing: ".08em" }}>{s.lbl}</div>
               </motion.div>
             ))}
           </div>
         </motion.div>
 
-        {/* IMAGE — ALWAYS VISIBLE */}
         <motion.div
           initial={{ opacity: 0, x: isMobile ? 0 : 60, y: isMobile ? 40 : 0 }}
-          animate={inView ? { opacity: 1, x: 0, y: 0 } : {}}
-          transition={{ duration: 1 }}
-          style={{
-            position: "relative",
-            width: "100%"
-          }}
-        >
-          <div
-            style={{
-              borderRadius: 28,
-              overflow: "hidden",
-              aspectRatio: isMobile ? "4/3" : "4/5",
-              boxShadow:
-                "0 50px 120px rgba(0,0,0,.6)",
-              border:
-                "1px solid rgba(255,255,255,.06)"
-            }}
-          >
-            <img
-              src="https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=1400&q=90"
-              alt=""
-              loading="lazy"
-              style={{
-                width: "100%",
-                height: "100%",
-                objectFit: "cover",
-                filter:
-                  "brightness(.75) saturate(.75)"
-              }}
-            />
+          animate={inView ? { opacity: 1, x: 0, y: 0 } : {}} transition={{ duration: 1 }}
+          style={{ position: "relative", width: "100%" }}>
+          <div style={{
+            borderRadius: 28, overflow: "hidden",
+            aspectRatio: isMobile ? "4/3" : "4/5",
+            boxShadow: "0 50px 120px rgba(0,0,0,.6)", border: "1px solid rgba(255,255,255,.06)"
+          }}>
+            <img src="./hiring.jpeg"
+              alt="" loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover", filter: "brightness(.75) saturate(.75)" }}/>
           </div>
         </motion.div>
       </div>
@@ -1435,205 +1406,85 @@ function GlobalSection() {
 }
 
 /* ══════════════════════════════════════════════════════════════════════
-   VIDEO / AI AVATAR SECTION
+   VIDEO SECTION
+   "See How It Works" now links to /how-mawahib-works
 ══════════════════════════════════════════════════════════════════════ */
 function VideoSection() {
   const ref = useRef();
   const videoRef = useRef();
-
   const inView = useInView(ref, { once: false, amount: 0.4 });
-  const { scrollYProgress } = useScroll({
-    target: ref,
-    offset: ["start end", "end start"]
-  });
-
+  const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
   const scale = useTransform(scrollYProgress, [0, 0.3, 0.7, 1], [0.93, 1, 1, 0.93]);
-
   const [muted, setMuted] = useState(false);
 
   useEffect(() => {
     if (!videoRef.current) return;
-
     const video = videoRef.current;
-
     if (inView) {
       video.muted = false;
-      video.play().catch(() => {
-        video.muted = true;
-        setMuted(true);
-        video.play().catch(() => {});
-      });
-    } else {
-      video.pause();
-    }
+      video.play().catch(() => { video.muted = true; setMuted(true); video.play().catch(() => {}); });
+    } else { video.pause(); }
   }, [inView]);
 
   const toggleMute = () => {
     const video = videoRef.current;
     if (!video) return;
-
     video.muted = !video.muted;
     setMuted(video.muted);
   };
 
   return (
-    <section
-      ref={ref}
-      style={{
-        position: "relative",
-        zIndex: 10,
-        padding: "clamp(80px,11vw,130px) clamp(28px,7vw,100px)",
-        background: "rgba(3,6,16,.72)",
-        backdropFilter: "blur(2px)"
-      }}
-    >
+    <section ref={ref} style={{
+      position: "relative", zIndex: 10,
+      padding: "clamp(80px,11vw,130px) clamp(28px,7vw,100px)",
+      background: "rgba(3,6,16,.72)", backdropFilter: "blur(2px)"
+    }}>
       <div style={{ maxWidth: 1100, margin: "0 auto" }}>
-        <motion.div
-          initial={{ opacity: 0, y: 24 }}
-          animate={inView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.8 }}
-          style={{ textAlign: "center", marginBottom: 44 }}
-        >
+        <motion.div initial={{ opacity: 0, y: 24 }} animate={inView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.8 }} style={{ textAlign: "center", marginBottom: 44 }}>
           <Label>AI AVATAR IN ACTION</Label>
-
-          <h2
-            style={{
-              fontFamily: "'DM Serif Display', serif",
-              fontStyle: "italic",
-              fontSize: "clamp(2.4rem,4.5vw,4.2rem)",
-              fontWeight: 400,
-              letterSpacing: "-.02em",
-              lineHeight: 1.08,
-              color: "rgba(255,255,255,.95)",
-              marginBottom: 14
-            }}
-          >
-            Interviews that{" "}
-            <span className="gold-shimmer">
-              scale with you.
-            </span>
+          <h2 style={{
+            fontFamily: "'DM Serif Display', serif", fontStyle: "italic",
+            fontSize: "clamp(2.4rem,4.5vw,4.2rem)", fontWeight: 400, letterSpacing: "-.02em",
+            lineHeight: 1.08, color: "rgba(255,255,255,.95)", marginBottom: 14
+          }}>
+            Interviews that <span className="gold-shimmer">scale with you.</span>
           </h2>
         </motion.div>
 
-        {/* CONTROL BAR (OUTSIDE VIDEO) */}
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            marginBottom: 14
-          }}
-        >
-          {/* LIVE badge */}
-          <div
-            style={{
-              background: "rgba(3,6,16,.9)",
-              border: "1px solid rgba(255,255,255,.08)",
-              borderRadius: 9,
-              padding: "6px 13px",
-              display: "flex",
-              alignItems: "center",
-              gap: 7
-            }}
-          >
-            <span
-              style={{
-                width: 7,
-                height: 7,
-                borderRadius: "50%",
-                background: "#22c55e",
-                boxShadow: "0 0 8px #22c55e",
-                animation: "pulse-dot 1.8s ease-in-out infinite"
-              }}
-            />
-
-            <span
-              style={{
-                fontSize: 10,
-                fontWeight: 700,
-                color: "#93c5fd",
-                letterSpacing: ".1em"
-              }}
-            >
-              AI INTERVIEW LIVE
-            </span>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
+          <div style={{ background: "rgba(3,6,16,.9)", border: "1px solid rgba(255,255,255,.08)", borderRadius: 9, padding: "6px 13px", display: "flex", alignItems: "center", gap: 7 }}>
+            <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#22c55e", boxShadow: "0 0 8px #22c55e", animation: "pulse-dot 1.8s ease-in-out infinite" }}/>
+            <span style={{ fontSize: 10, fontWeight: 700, color: "#93c5fd", letterSpacing: ".1em" }}>AI INTERVIEW LIVE</span>
           </div>
-
-          {/* MUTE BUTTON */}
-          <button
-            onClick={toggleMute}
-            style={{
-              background: "rgba(3,6,16,.9)",
-              border: "1px solid rgba(255,255,255,.08)",
-              borderRadius: 9,
-              padding: "6px 13px",
-              fontSize: 10,
-              fontWeight: 700,
-              color: "#94a3b8",
-              cursor: "pointer"
-            }}
-          >
+          <button onClick={toggleMute} style={{ background: "rgba(3,6,16,.9)", border: "1px solid rgba(255,255,255,.08)", borderRadius: 9, padding: "6px 13px", fontSize: 10, fontWeight: 700, color: "#94a3b8", cursor: "pointer" }}>
             {muted ? "🔇 Unmute" : "🔊 Mute"}
           </button>
         </div>
 
-        {/* VIDEO */}
-    <motion.div
-  style={{ scale }}
-  initial={{ opacity: 0, y: 36 }}
-  animate={inView ? { opacity: 1, y: 0 } : {}}
-  transition={{ duration: 1, delay: 0.14 }}
->
-  <div
-    style={{
-      borderRadius: 22,
-      overflow: "hidden",
-      boxShadow: "0 40px 100px rgba(0,0,0,.6)",
-      border: "1px solid rgba(255,255,255,.06)"
-    }}
-  >
-    <video
-      ref={videoRef}
-      src="./videos/IMG_2900.MOV"
-      loop
-      playsInline
-      style={{ width: "100%", display: "block" }}
-      poster="https://images.unsplash.com/photo-1551836022-d5d88e9218df?w=1400&q=90"
-    />
-  </div>
-</motion.div>
+        <motion.div style={{ scale }} initial={{ opacity: 0, y: 36 }} animate={inView ? { opacity: 1, y: 0 } : {}} transition={{ duration: 1, delay: 0.14 }}>
+          <div style={{ borderRadius: 22, overflow: "hidden", boxShadow: "0 40px 100px rgba(0,0,0,.6)", border: "1px solid rgba(255,255,255,.06)" }}>
+            <video ref={videoRef} src="./videos/IMG_2900.MOV" loop playsInline
+              style={{ width: "100%", display: "block" }}
+              poster="https://images.unsplash.com/photo-1551836022-d5d88e9218df?w=1400&q=90"/>
+          </div>
+        </motion.div>
 
-{/* BUTTON BELOW VIDEO */}
-<div
-  style={{
-    textAlign: "center",
-    marginTop: 28
-  }}
->
-  <motion.a
-    href="https://wa.me/962798056152"
-    target="_blank"
-    whileHover={{ scale: 1.04 }}
-    whileTap={{ scale: 0.96 }}
-    style={{
-      display: "inline-block",
-      background: "rgba(255,255,255,.05)",
-      border: "1px solid rgba(255,255,255,.12)",
-      padding: "13px 28px",
-      borderRadius: 12,
-      fontSize: 14,
-      fontWeight: 600,
-      color: "rgba(255,255,255,.7)",
-      textDecoration: "none"
-    }}
-  >
-    See How It Works ↓
-  </motion.a>
-</div>
-         
+        {/* ── "See How It Works" → links to /how-mawahib-works ── */}
+        <div style={{ textAlign: "center", marginTop: 28 }}>
+          <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }} style={{ display: "inline-block" }}>
+            <Link to="/how-mawahib-works" style={{
+              display: "inline-block",
+              background: "rgba(255,255,255,.05)",
+              border: "1px solid rgba(255,255,255,.12)",
+              padding: "13px 28px", borderRadius: 12, fontSize: 14, fontWeight: 600,
+              color: "rgba(255,255,255,.7)", textDecoration: "none"
+            }}>
+              See How It Works ↓
+            </Link>
+          </motion.div>
+        </div>
       </div>
-     
-       
     </section>
   );
 }
@@ -1726,7 +1577,6 @@ function FeatureCard({ f, i }) {
         whileHover={{y:-6,borderColor:"rgba(184,149,90,.4)",background:"rgba(184,149,90,.06)",boxShadow:`0 20px 60px rgba(0,0,0,.4),0 0 40px rgba(184,149,90,.08)`}}
         transition={{duration:.3}}
         style={{position:"relative",borderRadius:18,padding:"clamp(22px,3vw,32px)",background:"rgba(255,255,255,.03)",border:"1px solid rgba(255,255,255,.06)",overflow:"hidden",backdropFilter:"blur(12px)",cursor:"default"}}>
-        {/* Top gradient accent */}
         <div style={{position:"absolute",top:0,left:"15%",right:"15%",height:2,background:`linear-gradient(90deg,transparent,${C.gold},${C.goldBright},transparent)`,boxShadow:`0 0 10px ${C.gold}`}}/>
         <div style={{fontSize:10,color:"rgba(184,149,90,.5)",fontWeight:800,letterSpacing:".1em",marginBottom:14}}>0{i+1}</div>
         <h3 style={{fontSize:"clamp(14px,1.5vw,16px)",fontWeight:700,color:"rgba(255,255,255,.85)",marginBottom:10,letterSpacing:"-.02em"}}>{f.title}</h3>
@@ -1765,108 +1615,6 @@ function FeaturesSection() {
 }
 
 /* ══════════════════════════════════════════════════════════════════════
-   TRUST / REVIEWS SECTION
-══════════════════════════════════════════════════════════════════════ */
-const StarRating=({n=5,size=13})=>(
-  <div style={{display:"flex",gap:2}}>
-    {[...Array(n)].map((_,i)=>(
-      <svg key={i} width={size} height={size} viewBox="0 0 24 24" fill="#00b67a">
-        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-      </svg>
-    ))}
-  </div>
-);
-const TrustpilotMark=()=>(
-  <svg viewBox="0 0 110 22" style={{height:15,width:"auto",display:"block",flexShrink:0}}>
-    <text x="0" y="17" fontFamily="Arial,sans-serif" fontWeight="800" fontSize="17" fill="white" letterSpacing="-0.3">Trustpilot</text>
-    <rect x="95" y="2" width="14" height="17" rx="2" fill="#00b67a"/>
-    <path d="M102 5.5l1.2 2.4 2.7.4-2 1.9.5 2.7-2.4-1.3-2.4 1.3.5-2.7-2-1.9 2.7-.4z" fill="white"/>
-  </svg>
-);
-
-function ReviewCard({ r }) {
-  return(
-    <motion.div
-      whileHover={{y:-8,scale:1.02,borderColor:"rgba(184,149,90,.3)",boxShadow:"0 20px 60px rgba(0,0,0,.4)"}}
-      transition={{duration:.3}}
-      style={{flexShrink:0,width:"clamp(255px,25vw,315px)",background:"rgba(255,255,255,.03)",border:"1px solid rgba(255,255,255,.07)",borderRadius:18,padding:"clamp(16px,2.2vw,22px)",position:"relative",overflow:"hidden",backdropFilter:"blur(12px)",cursor:"default"}}>
-      <div style={{position:"absolute",top:0,left:"12%",right:"12%",height:1.5,background:`linear-gradient(90deg,transparent,${C.gold},transparent)`,boxShadow:`0 0 8px ${C.gold}`}}/>
-      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:11}}>
-        <StarRating n={r.rating} size={11}/>
-        <span style={{fontSize:9,color:"rgba(255,255,255,.22)",letterSpacing:".06em",fontWeight:700}}>{r.date}</span>
-      </div>
-      <p style={{color:"rgba(255,255,255,.45)",fontSize:"clamp(11px,1.05vw,12px)",lineHeight:1.75,marginBottom:14,minHeight:54}}>"{r.text}"</p>
-      <div style={{display:"flex",alignItems:"center",gap:9}}>
-        <div style={{width:30,height:30,borderRadius:"50%",background:`linear-gradient(145deg,${C.gold},${C.goldBright})`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:12,fontWeight:800,color:C.bgDark,flexShrink:0}}>
-          {r.name.charAt(0)}
-        </div>
-        <div>
-          <p style={{fontWeight:700,fontSize:11,color:"rgba(255,255,255,.7)",lineHeight:1.3}}>{r.name}</p>
-          <p style={{fontSize:9,color:"rgba(255,255,255,.28)",lineHeight:1.3}}>{r.role}</p>
-        </div>
-      </div>
-    </motion.div>
-  );
-}
-
-function TrustSection() {
-  const ref = useRef();
-  const inView = useInView(ref,{once:true,amount:.05});
-  const reviews=[
-    {name:"Sarah Johnson",role:"HR Director, TechCorp",rating:5,date:"Dec 2024",text:"Mawahib transformed our hiring completely. We cut time-to-hire by 60% and the AI interviews are surprisingly natural."},
-    {name:"Michael Chen",role:"Founder, StartupXYZ",rating:5,date:"Jan 2025",text:"We screened 400 applicants in a weekend. The structured scoring model is a game-changer for early-stage hiring."},
-    {name:"Emma Williams",role:"Talent Lead, FinanceHub",rating:5,date:"Feb 2025",text:"Finally a hiring platform that delivers on its promises. Our team spends 80% less time on initial screening."},
-    {name:"Khalid Al-Rashid",role:"COO, RetailGroup MENA",rating:5,date:"Mar 2025",text:"We hired 12 regional managers across 6 countries. What used to take 3 months took 3 weeks."},
-    {name:"Priya Sharma",role:"VP People, FinTech",rating:5,date:"Apr 2025",text:"Bias-reduced scoring gave us confidence our decisions were merit-based. Diversity improved significantly."},
-    {name:"James O'Brien",role:"Head of Recruitment",rating:5,date:"May 2025",text:"Mawahib lets us present ranked shortlists same day. Our clients think we're wizards now."},
-    {name:"Nour Hassan",role:"CHRO, Logistics Corp",rating:5,date:"Jun 2025",text:"Seamless onboarding, crystal-clear reports, and massive time savings from day one."},
-    {name:"David Park",role:"Talent Ops, Series B",rating:5,date:"Jul 2025",text:"The multilingual AI interviewer handled Arabic and English flawlessly. Perfect for MENA."},
-    {name:"Layla Ahmed",role:"Recruiting Manager",rating:5,date:"Aug 2025",text:"The auto-ranking feature alone saves us hours every week. Beautiful platform too."},
-    {name:"Tom Fischer",role:"CEO, SaaS Company",rating:5,date:"Sep 2025",text:"We scaled from 20 to 80 employees in 6 months. Mawahib was central to our infrastructure."},
-  ];
-  const row1=[...reviews.slice(0,6),...reviews.slice(0,6)];
-  const row2=[...reviews.slice(4),...reviews.slice(4)];
-  return(
-    <section ref={ref} style={{position:"relative",zIndex:10,padding:"clamp(90px,12vw,140px) 0",background:"rgba(3,6,16,.75)",backdropFilter:"blur(2px)",overflow:"hidden"}}>
-      <motion.div initial={{opacity:0,y:22}} animate={inView?{opacity:1,y:0}:{}} transition={{duration:.85}}
-        style={{textAlign:"center",padding:"0 clamp(28px,7vw,100px)",marginBottom:"clamp(44px,6vw,60px)"}}>
-        <Label>TRUSTED WORLDWIDE</Label>
-        <div style={{display:"inline-flex",flexDirection:"column",alignItems:"center",gap:9,background:"rgba(255,255,255,.04)",border:"1px solid rgba(255,255,255,.08)",borderRadius:18,padding:"16px 28px",marginBottom:24,backdropFilter:"blur(16px)"}}>
-          <TrustpilotMark/>
-          <div style={{display:"flex",alignItems:"center",gap:9}}><StarRating n={5} size={18}/><span style={{fontSize:15,fontWeight:800,color:"#fff"}}>4.9 / 5</span></div>
-          <p style={{fontSize:10,color:"rgba(255,255,255,.28)"}}>Rated <strong style={{color:"#00b67a"}}>Excellent</strong> · 200+ verified reviews</p>
-        </div>
-        <blockquote style={{fontFamily:"'DM Serif Display',serif",fontStyle:"italic",fontSize:"clamp(2rem,4.8vw,4.4rem)",fontWeight:400,color:"rgba(255,255,255,.92)",lineHeight:1.08,letterSpacing:"-.02em",marginBottom:12}}>
-          "Reduced time-to-hire<br/>by 60%."
-        </blockquote>
-        <p style={{color:"rgba(255,255,255,.22)",fontSize:"clamp(11px,1.2vw,12px)",fontWeight:700,letterSpacing:".1em"}}>HR Director, Global Tech Company</p>
-      </motion.div>
-      <div style={{overflow:"hidden",marginBottom:12,paddingBlock:4}}>
-        <div className="track-l" style={{display:"flex",gap:12,width:"max-content",paddingLeft:12}}>
-          {row1.map((r,i)=><ReviewCard key={i} r={r}/>)}
-        </div>
-      </div>
-      <div style={{overflow:"hidden",paddingBlock:4}}>
-        <div className="track-r" style={{display:"flex",gap:12,width:"max-content",paddingLeft:12}}>
-          {row2.map((r,i)=><ReviewCard key={i} r={r}/>)}
-        </div>
-      </div>
-      <motion.div initial={{opacity:0}} animate={inView?{opacity:1}:{}} transition={{delay:.7,duration:.7}}
-        style={{textAlign:"center",marginTop:"clamp(36px,5vw,52px)",padding:"0 clamp(28px,7vw,100px)"}}>
-        <motion.a href="https://www.trustpilot.com/review/mawahib.ai" target="_blank" rel="noopener noreferrer"
-          whileHover={{scale:1.04,borderColor:"rgba(0,182,122,.4)"}} whileTap={{scale:.97}}
-          style={{display:"inline-flex",alignItems:"center",gap:10,background:"rgba(255,255,255,.04)",border:"1px solid rgba(255,255,255,.09)",borderRadius:12,padding:"12px 24px",fontSize:13,fontWeight:700,color:"rgba(255,255,255,.6)",textDecoration:"none",backdropFilter:"blur(16px)"}}>
-          <TrustpilotMark/>
-          <span style={{height:14,width:1,background:"rgba(255,255,255,.1)"}}/>
-          Read all reviews
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M7 17L17 7M17 7H7M17 7V17"/></svg>
-        </motion.a>
-      </motion.div>
-    </section>
-  );
-}
-
-/* ══════════════════════════════════════════════════════════════════════
    CTA SECTION
 ══════════════════════════════════════════════════════════════════════ */
 function CTASection() {
@@ -1877,11 +1625,8 @@ function CTASection() {
   const inView = useInView(ref,{once:true,amount:.1});
   return(
     <section ref={ref} style={{position:"relative",zIndex:10,padding:"clamp(100px,14vw,160px) clamp(28px,7vw,100px)",background:"rgba(3,6,16,.88)",backdropFilter:"blur(4px)",overflow:"hidden"}}>
-      {/* Top accent line */}
       <div style={{position:"absolute",top:0,left:"5%",right:"5%",height:1,background:`linear-gradient(90deg,transparent,${C.gold},${C.goldBright},transparent)`,boxShadow:`0 0 20px ${C.gold}`}}/>
-      {/* Glow orb */}
       <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",width:"70vw",height:"70vw",maxWidth:700,maxHeight:700,borderRadius:"50%",background:"radial-gradient(circle,rgba(184,149,90,.055) 0%,transparent 60%)",pointerEvents:"none"}}/>
-
       <motion.div style={{scale,opacity,maxWidth:700,margin:"0 auto",textAlign:"center",position:"relative",zIndex:5}}>
         <Label>NOW ACCEPTING TEAMS</Label>
         <h2 style={{fontFamily:"'DM Serif Display',serif",fontStyle:"italic",fontSize:"clamp(3rem,6.5vw,6.5rem)",fontWeight:400,letterSpacing:"-.02em",lineHeight:1.04,color:"rgba(255,255,255,.95)",marginBottom:6}}>
@@ -1894,12 +1639,12 @@ function CTASection() {
           Join thousands of teams using Mawahib to transform their hiring. Simple setup. Real results.
         </p>
         <div style={{display:"flex",gap:12,justifyContent:"center",flexWrap:"wrap"}}>
-          <motion.a href="https://mawahib.ai/request-campaign" target="_blank"
+          <motion.a href={WHATSAPP_URL} target="_blank"
             whileHover={{scale:1.05,boxShadow:`0 16px 50px rgba(184,149,90,.5)`}} whileTap={{scale:.96}}
             style={{background:`linear-gradient(135deg,${C.gold},${C.goldBright})`,borderRadius:14,padding:"14px clamp(26px,3.5vw,40px)",fontSize:"clamp(14px,1.4vw,16px)",fontWeight:700,color:C.bgDark,textDecoration:"none",boxShadow:`0 8px 30px rgba(184,149,90,.35)`}}>
             Request Demo
           </motion.a>
-          <motion.a href="https://wa.me/962798056152" target="_blank"
+          <motion.a href={WHATSAPP_URL} target="_blank"
             whileHover={{scale:1.05,borderColor:"rgba(255,255,255,.22)"}} whileTap={{scale:.96}}
             style={{background:"rgba(255,255,255,.04)",border:"1px solid rgba(255,255,255,.12)",borderRadius:14,padding:"14px clamp(24px,3vw,36px)",fontSize:"clamp(14px,1.4vw,16px)",fontWeight:600,color:"rgba(255,255,255,.42)",textDecoration:"none"}}>
             Contact Sales
@@ -1927,199 +1672,65 @@ function Footer() {
     ["Legal", ["Privacy"]]
   ];
   return (
-    <footer
-      style={{
-        position: "relative",
-        zIndex: 10,
-        background: "rgba(2,4,12,.95)",
-        padding:
-          "clamp(50px,8vw,70px) clamp(24px,6vw,100px) clamp(30px,4vw,40px)",
-        borderTop: "1px solid rgba(184,149,90,.1)"
-      }}
-    >
+    <footer style={{
+      position: "relative", zIndex: 10,
+      background: "rgba(2,4,12,.95)",
+      padding: "clamp(50px,8vw,70px) clamp(24px,6vw,100px) clamp(30px,4vw,40px)",
+      borderTop: "1px solid rgba(184,149,90,.1)"
+    }}>
       <div style={{ maxWidth: 1280, margin: "0 auto" }}>
-        {/* TOP SECTION */}
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: isMobile ? "1fr" : "auto 1fr",
-            gap: isMobile ? 50 : 80,
-            marginBottom: "clamp(40px,6vw,60px)"
-          }}
-        >
-          {/* BRAND */}
-          <div
-            style={{
-              maxWidth: isMobile ? "100%" : 240,
-              textAlign: isMobile ? "center" : "left",
-              margin: isMobile ? "0 auto" : 0
-            }}
-          >
-            <div
-              style={{
-                display: "flex",
-                justifyContent: isMobile ? "center" : "flex-start",
-                marginBottom: 16
-              }}
-            >
-              <MawahibLogo height={180} blend={false} />
+        <div style={{
+          display: "grid", gridTemplateColumns: isMobile ? "1fr" : "auto 1fr",
+          gap: isMobile ? 50 : 80, marginBottom: "clamp(40px,6vw,60px)"
+        }}>
+          <div style={{ maxWidth: isMobile ? "100%" : 240, textAlign: isMobile ? "center" : "left", margin: isMobile ? "0 auto" : 0 }}>
+            <div style={{ display: "flex", justifyContent: isMobile ? "center" : "flex-start", marginBottom: 16 }}>
+              <MawahibLogo height={180} blend={false}/>
             </div>
-            <p
-              style={{
-                color: "rgba(255,255,255,.25)",
-                fontSize: 13,
-                lineHeight: 1.8,
-                marginBottom: 20
-              }}
-            >
-              AI-powered hiring intelligence for modern recruitment teams
-              worldwide.
+            <p style={{ color: "rgba(255,255,255,.25)", fontSize: 13, lineHeight: 1.8, marginBottom: 20 }}>
+              AI-powered hiring intelligence for modern recruitment teams worldwide.
             </p>
-            <a
-              href="https://www.trustpilot.com/review/mawahib.ai"
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 8,
-                textDecoration: "none",
-                background: "rgba(255,255,255,.04)",
-                border: "1px solid rgba(255,255,255,.07)",
-                borderRadius: 10,
-                padding: "8px 14px"
-              }}
-            >
-              <TrustpilotMark />
+            <a href="https://www.trustpilot.com/review/mawahib.ai" target="_blank" rel="noopener noreferrer"
+              style={{ display: "inline-flex", alignItems: "center", gap: 8, textDecoration: "none", background: "rgba(255,255,255,.04)", border: "1px solid rgba(255,255,255,.07)", borderRadius: 10, padding: "8px 14px" }}>
+              <TrustpilotMark/>
               <div style={{ display: "flex", gap: 1 }}>
-                {[...Array(5)].map((_, i) => (
-                  <svg
-                    key={i}
-                    width={10}
-                    height={10}
-                    viewBox="0 0 24 24"
-                    fill="#00b67a"
-                  >
-                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-                  </svg>
-                ))}
+                {[...Array(5)].map((_,i) => <svg key={i} width={10} height={10} viewBox="0 0 24 24" fill="#00b67a"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>)}
               </div>
-              <span
-                style={{
-                  fontSize: 11,
-                  color: "rgba(255,255,255,.4)",
-                  fontWeight: 700
-                }}
-              >
-                4.9/5
-              </span>
+              <span style={{ fontSize: 11, color: "rgba(255,255,255,.4)", fontWeight: 700 }}>4.9/5</span>
             </a>
           </div>
-          {/* LINK SECTIONS */}
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: isMobile
-                ? "repeat(3,1fr)"
-                : "repeat(3,auto)",
-              gap: isMobile ? 40 : 80,
-              justifyContent: isMobile ? "center" : "flex-end"
-            }}
-          >
+          <div style={{
+            display: "grid",
+            gridTemplateColumns: isMobile ? "repeat(3,1fr)" : "repeat(3,auto)",
+            gap: isMobile ? 40 : 80, justifyContent: isMobile ? "center" : "flex-end"
+          }}>
             {sections.map(([sect, items]) => (
               <div key={sect}>
-                <p
-                  style={{
-                    fontSize: 10,
-                    fontWeight: 800,
-                    color: C.gold,
-                    letterSpacing: ".15em",
-                    marginBottom: 16,
-                    textTransform: "uppercase"
-                  }}
-                >
-                  {sect}
-                </p>
-                <div
-                  style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: 12
-                  }}
-                >
+                <p style={{ fontSize: 10, fontWeight: 800, color: C.gold, letterSpacing: ".15em", marginBottom: 16, textTransform: "uppercase" }}>{sect}</p>
+                <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                   {items.map((item) => {
-                    if (item === "Pricing") {
-                      return (
-                        <motion.div key={item} whileHover={{ color: "rgba(255,255,255,.7)", x: 4 }} transition={{ duration: 0.25 }}>
-                          <Link to="/pricing" style={{ color: "rgba(255,255,255,.3)", fontSize: 14, textDecoration: "none" }}>{item}</Link>
-                        </motion.div>
-                      );
-                    }
-                    if (item === "About") {
-                      return (
-                        <motion.div key={item} whileHover={{ color: "rgba(255,255,255,.7)", x: 4 }} transition={{ duration: 0.25 }}>
-                          <Link to="/about" style={{ color: "rgba(255,255,255,.3)", fontSize: 14, textDecoration: "none" }}>{item}</Link>
-                        </motion.div>
-                      );
-                    }
-                    if (item === "Privacy") {
-                      return (
-                        <motion.div key={item} whileHover={{ color: "rgba(255,255,255,.7)", x: 4 }} transition={{ duration: 0.25 }}>
-                          <Link to="/privacy" style={{ color: "rgba(255,255,255,.3)", fontSize: 14, textDecoration: "none" }}>{item}</Link>
-                        </motion.div>
-                      );
-                    }
-                    return null;
+                    const paths = { Pricing: "/pricing", About: "/about", Privacy: "/privacy" };
+                    return paths[item] ? (
+                      <motion.div key={item} whileHover={{ color: "rgba(255,255,255,.7)", x: 4 }} transition={{ duration: 0.25 }}>
+                        <Link to={paths[item]} style={{ color: "rgba(255,255,255,.3)", fontSize: 14, textDecoration: "none" }}>{item}</Link>
+                      </motion.div>
+                    ) : null;
                   })}
                 </div>
               </div>
             ))}
           </div>
         </div>
-        {/* BOTTOM BAR */}
-        <div
-          style={{
-            borderTop: "1px solid rgba(255,255,255,.05)",
-            paddingTop: 22,
-            display: "flex",
-            flexDirection: isMobile ? "column" : "row",
-            justifyContent: "space-between",
-            alignItems: isMobile ? "center" : "center",
-            gap: 16,
-            textAlign: isMobile ? "center" : "left"
-          }}
-        >
-          <p
-            style={{
-              color: "rgba(255,255,255,.18)",
-              fontSize: 12
-            }}
-          >
-            © 2026 Mawahib LLC. All rights reserved.
-          </p>
-
-          <div
-            style={{
-              display: "flex",
-              flexWrap: "wrap",
-              justifyContent: "center",
-              gap: 10
-            }}
-          >
+        <div style={{
+          borderTop: "1px solid rgba(255,255,255,.05)", paddingTop: 22,
+          display: "flex", flexDirection: isMobile ? "column" : "row",
+          justifyContent: "space-between", alignItems: "center",
+          gap: 16, textAlign: isMobile ? "center" : "left"
+        }}>
+          <p style={{ color: "rgba(255,255,255,.18)", fontSize: 12 }}>© 2026 Mawahib LLC. All rights reserved.</p>
+          <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 10 }}>
             {["AI-Powered", "SOC 2 Type II", "GDPR Ready"].map((b) => (
-              <span
-                key={b}
-                style={{
-                  fontSize: 11,
-                  color: "rgba(255,255,255,.22)",
-                  border: "1px solid rgba(255,255,255,.07)",
-                  borderRadius: 9999,
-                  padding: "5px 12px",
-                  letterSpacing: ".05em"
-                }}
-              >
-                {b}
-              </span>
+              <span key={b} style={{ fontSize: 11, color: "rgba(255,255,255,.22)", border: "1px solid rgba(255,255,255,.07)", borderRadius: 9999, padding: "5px 12px", letterSpacing: ".05em" }}>{b}</span>
             ))}
           </div>
         </div>
@@ -2130,45 +1741,97 @@ function Footer() {
 
 /* ══════════════════════════════════════════════════════════════════════
    ROOT APP
+   Section order:
+   1. HeroSection
+   2. Ticker
+   — CTA Strip 0 —
+   3. CompaniesTrustSection  ← moved above ProblemSection
+   4. ProblemSection
+   — CTA Strip 1 —
+   5. GlobalSection
+   6. VideoSection
+   — CTA Strip 2 —
+   7. InterviewSection
+   8. FeaturesSection
+   — CTA Strip 3 —
+   9. CTASection
 ══════════════════════════════════════════════════════════════════════ */
 export default function App() {
   const [loaded, setLoaded] = useState(false);
   const handleDone = useCallback(() => setLoaded(true), []);
   return (
     <Router>
-      <FontLink />
-      <GlobalStyles />
-      <GlobeBackground />
-      <ScrollToTop />
-      <PageLoader onDone={handleDone} />
+      <FontLink/>
+      <GlobalStyles/>
+      <GlobeBackground/>
+      <ScrollToTop/>
+      <PageLoader onDone={handleDone}/>
       <motion.div
         initial={{ opacity: 0 }}
         animate={loaded ? { opacity: 1 } : {}}
         transition={{ duration: .5 }}
         style={{ position: "relative", zIndex: 10 }}>
-        <CustomCursor />
-        <ScrollProgress />
-        <Nav />
+        <CustomCursor/>
+        <ScrollProgress/>
+        <Nav/>
         <Routes>
           <Route path="/" element={
             <main>
-              <HeroSection />
-              <Ticker />
-              <ProblemSection />
-              <GlobalSection />
-              <VideoSection />
-              <InterviewSection />
-              <TrustSection />
-              <CTASection />
+              <HeroSection/>
+              <Ticker/>
+
+              {/* ── CTA after sections 1+2 ── */}
+              <CTAStrip variant={0}/>
+
+              {/* Companies Trust Mawahib — now ABOVE Hiring is a Challenge */}
+              <CompanyTrustSection/>
+              <CompaniesTrustSection/>
+              <ProblemSection/>
+
+              {/* ── CTA after sections 3+4 ── */}
+              <CTAStrip variant={1}/>
+
+              <GlobalSection/>
+              <VideoSection/>
+
+              {/* ── CTA after sections 5+6 ── */}
+              <CTAStrip variant={2}/>
+
+              <InterviewSection/>
+              <FeaturesSection/>
+
+              {/* ── CTA after sections 7+8 ── */}
+              <CTAStrip variant={0}/>
+
+              <CTASection/>
             </main>
-          } />
-          <Route path="/pricing" element={<Pricing />} />
-          <Route path="/about" element={<About />} />
-          <Route path="/privacy" element={<Privacy />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<Signup />} />
+          }/>
+          <Route path="/pricing" element={<Pricing/>}/>
+          <Route path="/about" element={<About/>}/>
+          <Route path="/privacy" element={<Privacy/>}/>
+          <Route path="/login" element={<Login/>}/>
+          <Route path="/signup" element={<Signup/>}/>
+          {/* Placeholder route for How Mawahib Works */}
+          <Route path="/how-mawahib-works" element={
+            <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", padding: "120px 40px", textAlign: "center" }}>
+              <div>
+                <Label>HOW IT WORKS</Label>
+                <h1 style={{ fontFamily: "'DM Serif Display',serif", fontStyle: "italic", fontSize: "clamp(2.5rem,6vw,5rem)", color: "#fff", marginBottom: 20 }}>
+                  How <span className="gold-shimmer">Mawahib</span> Works
+                </h1>
+                <p style={{ color: "rgba(255,255,255,.4)", fontSize: 16, maxWidth: 480, margin: "0 auto 32px" }}>
+                  This page is coming soon. In the meantime, reach us on WhatsApp for a live walkthrough.
+                </p>
+                <motion.a href={WHATSAPP_URL} target="_blank"
+                  whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}
+                  style={{ display: "inline-block", background: `linear-gradient(135deg,${C.gold},${C.goldBright})`, borderRadius: 12, padding: "13px 30px", fontSize: 14, fontWeight: 700, color: C.bgDark, textDecoration: "none" }}>
+                  Chat With Us on WhatsApp
+                </motion.a>
+              </div>
+            </div>
+          }/>
         </Routes>
-        <Footer />
+        <Footer/>
       </motion.div>
     </Router>
   );
