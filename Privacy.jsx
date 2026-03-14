@@ -18,23 +18,24 @@ const FontLink = () => (
 );
 
 const GlobalStyles = () => (
-  <style dangerouslySetInnerHTML={{ __html: 
-    "*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}\n" +
-    "html{scroll-behavior:smooth}\n" +
-    "body{background:#0a0f1e;color:#f5f0eb;font-family:'Sora',sans-serif;overflow-x:hidden}\n" +
-    "::-webkit-scrollbar{width:8px}\n" +
-    "::-webkit-scrollbar-track{background:#0a0f1e}\n" +
-    "::-webkit-scrollbar-thumb{background:#b8955a;border-radius:4px}\n" +
-    ".gold-shimmer{\n" +
-    "  background:linear-gradient(90deg,#b8955a,#f0c97a,#b8955a,#d4b483,#f0c97a);\n" +
-    "  background-size:200% auto;\n" +
-    "  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;\n" +
-    "  animation:shimmer-gold 3s linear infinite\n" +
-    "}\n" +
-    "@keyframes shimmer-gold{\n" +
-    "  0%{background-position:-200% center}\n" +
-    "  100%{background-position:200% center}\n" +
-    "}"
+  <style dangerouslySetInnerHTML={{
+    __html:
+      "*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}\n" +
+      "html{scroll-behavior:smooth}\n" +
+      "body{background:#0a0f1e;color:#f5f0eb;font-family:'Sora',sans-serif;overflow-x:hidden}\n" +
+      "::-webkit-scrollbar{width:8px}\n" +
+      "::-webkit-scrollbar-track{background:#0a0f1e}\n" +
+      "::-webkit-scrollbar-thumb{background:#b8955a;border-radius:4px}\n" +
+      ".gold-shimmer{\n" +
+      "  background:linear-gradient(90deg,#b8955a,#f0c97a,#b8955a,#d4b483,#f0c97a);\n" +
+      "  background-size:200% auto;\n" +
+      "  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;\n" +
+      "  animation:shimmer-gold 3s linear infinite\n" +
+      "}\n" +
+      "@keyframes shimmer-gold{\n" +
+      "  0%{background-position:-200% center}\n" +
+      "  100%{background-position:200% center}\n" +
+      "}"
   }} />
 );
 
@@ -94,33 +95,34 @@ const Section = ({ icon: Icon, title, children, index }) => (
           <Icon size={24} strokeWidth={1.5} />
         </div>
       )}
-      <h2 style={{ 
-        fontFamily: "'DM Serif Display', serif", 
-        fontSize: "clamp(1.5rem, 3vw, 2rem)", 
+      <h2 style={{
+        fontFamily: "'DM Serif Display', serif",
+        fontSize: "clamp(1.5rem, 3vw, 2rem)",
         color: "#fff",
         margin: 0
       }}>
         {title}
       </h2>
     </div>
-    <div style={{ 
-      color: "rgba(255,255,255,0.7)", 
-      fontSize: "1.05rem", 
+    <div style={{
+      color: "rgba(255,255,255,0.7)",
+      fontSize: "1.05rem",
       lineHeight: 1.8,
-      paddingLeft: Icon ? "68px" : "0" // Aligns text with the title, past the icon
+      paddingLeft: 0
     }}>
       {/* If children is an array or string that has bullet points, this global style helps it render nicely if needed, but we'll handle layout below */}
-      <style dangerouslySetInnerHTML={{ __html: 
-        ".section-content ul { padding-left: 20px; margin-top: 16px; margin-bottom: 16px; }\n" +
-        ".section-content li { margin-bottom: 8px; position: relative; list-style-type: none; }\n" +
-        ".section-content li::before { content: '•'; color: " + C.goldBright + "; position: absolute; left: -18px; font-weight: bold; }\n" +
-        ".section-content p { margin-bottom: 16px; }\n" +
-        ".section-content p:last-child { margin-bottom: 0; }\n" +
-        "@media (max-width: 600px) {\n" +
-        "  .mobile-padding { padding-left: 0 !important; margin-top: 16px; }\n" +
-        "}"
+      <style dangerouslySetInnerHTML={{
+        __html:
+          ".section-content ul { padding-left: 20px; margin-top: 16px; margin-bottom: 16px; }\n" +
+          ".section-content li { margin-bottom: 8px; position: relative; list-style-type: none; }\n" +
+          ".section-content li::before { content: '•'; color: " + C.goldBright + "; position: absolute; left: -18px; font-weight: bold; }\n" +
+          ".section-content p { margin-bottom: 16px; }\n" +
+          ".section-content p:last-child { margin-bottom: 0; }\n" +
+          "@media (max-width: 600px) {\n" +
+          "  .mobile-padding { padding-left: 0 !important; margin-top: 16px; }\n" +
+          "}"
       }} />
-      <div className="section-content mobile-padding" style={{ paddingLeft: Icon ? "68px" : "0", transition: "padding 0.3s" }}>
+      <div className="section-content mobile-padding" style={{ paddingLeft: 0, transition: "padding 0.3s" }}>
         {children}
       </div>
     </div>
@@ -132,23 +134,23 @@ export default function Privacy() {
     <>
       <FontLink />
       <GlobalStyles />
-      <motion.div 
-        initial={{ opacity: 0 }} 
-        animate={{ opacity: 1 }} 
-        transition={{ duration: 0.8 }} 
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.8 }}
         style={{ position: "relative", zIndex: 10 }}
       >
-        <main style={{ 
-          minHeight: "100vh", 
-          background: C.bgDark, 
-          padding: "clamp(80px,10vw,120px) clamp(24px,5vw,40px)", 
-          display: "flex", 
-          flexDirection: "column", 
-          alignItems: "center", 
-          position: "relative", 
-          overflow: "hidden" 
+        <main style={{
+          minHeight: "100vh",
+          background: C.bgDark,
+          padding: "clamp(80px,10vw,120px) clamp(24px,5vw,40px)",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          position: "relative",
+          overflow: "hidden"
         }}>
-          
+
           {/* subtle background glow */}
           <div style={{
             position: "absolute",
@@ -163,26 +165,26 @@ export default function Privacy() {
           }} />
 
           <div style={{ position: "relative", zIndex: 1, width: "100%", maxWidth: 860, display: "flex", flexDirection: "column" }}>
-            
+
             {/* Header */}
             <div style={{ textAlign: "center", marginBottom: 60 }}>
               <Label>Privacy Policy</Label>
-              <h1 style={{ 
-                fontFamily: "'DM Serif Display',serif", 
-                fontSize: "clamp(2.5rem,6vw,4rem)", 
-                lineHeight: 1.1, 
-                color: "#fff", 
-                marginBottom: 24 
+              <h1 style={{
+                fontFamily: "'DM Serif Display',serif",
+                fontSize: "clamp(2.5rem,6vw,4rem)",
+                lineHeight: 1.1,
+                color: "#fff",
+                marginBottom: 24
               }}>
-                Security <span style={{ fontFamily: "'Sora', sans-serif", fontSize: "0.8em", fontWeight: 300, fontStyle: "normal", color: "rgba(255,255,255,0.4)" }}>&</span> <br/>
+                Security <span style={{ fontFamily: "'Sora', sans-serif", fontSize: "0.8em", fontWeight: 300, fontStyle: "normal", color: "rgba(255,255,255,0.4)" }}>&</span> <br />
                 <span className="gold-shimmer" style={{ fontStyle: "italic" }}>Data Protection</span>
               </h1>
-              <p style={{ 
-                color: "rgba(255,255,255,0.8)", 
-                fontSize: "clamp(16px, 1.8vw, 18px)", 
-                lineHeight: 1.8, 
-                maxWidth: 700, 
-                margin: "0 auto" 
+              <p style={{
+                color: "rgba(255,255,255,0.8)",
+                fontSize: "clamp(16px, 1.8vw, 18px)",
+                lineHeight: 1.8,
+                maxWidth: 700,
+                margin: "0 auto"
               }}>
                 At Mawahib Talent Hub, protecting the privacy and security of candidate and client data is a fundamental priority. Our platform is designed with multiple security measures to ensure that sensitive recruitment information is handled responsibly and securely throughout the hiring process.
               </p>
@@ -235,7 +237,7 @@ export default function Privacy() {
             </Section>
 
             {/* Footer Contact Section */}
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
@@ -250,8 +252,8 @@ export default function Privacy() {
               <p style={{ color: "rgba(255,255,255,0.7)", fontSize: 16, lineHeight: 1.8, marginBottom: 24 }}>
                 If you have questions regarding security, privacy, or data handling practices, our team will be happy to provide further information.
               </p>
-              <a 
-                href="mailto:info@mawahib.ai"
+              <a
+                href="mailto:info@mwahib.ai"
                 style={{
                   display: "inline-flex",
                   alignItems: "center",

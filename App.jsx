@@ -18,6 +18,7 @@ import Privacy from "./Privacy";
 import Login from "./Login";
 import Signup from "./Signup";
 import CompanyTrustSection from "./Companytrustsection";
+import { Menu, X } from "lucide-react";
 
 import * as THREE from "three";
 
@@ -162,27 +163,15 @@ function CTAStrip({ variant = 0 }) {
   const configs = [
     {
       label: "READY TO TRANSFORM HIRING?",
-      buttons: [
-        { text: "🚀 Start Now", primary: true },
-        { text: "Get Free Demo", primary: false },
-        { text: "Contact Us", primary: false },
-      ]
+      button: { text: "🚀 Start Now", primary: true }
     },
     {
       label: "JOIN 400+ COMPANIES HIRING SMARTER",
-      buttons: [
-        { text: "Get Free Demo", primary: true },
-        { text: "🚀 Start Now", primary: false },
-        { text: "Contact Us", primary: false },
-      ]
+      button: { text: "Get Free Demo", primary: true }
     },
     {
       label: "SEE MAWAHIB IN ACTION",
-      buttons: [
-        { text: "Contact Us", primary: true },
-        { text: "Get Free Demo", primary: false },
-        { text: "🚀 Start Now", primary: false },
-      ]
+      button: { text: "Contact Us", primary: true }
     },
   ];
   const cfg = configs[variant % configs.length];
@@ -198,7 +187,7 @@ function CTAStrip({ variant = 0 }) {
       style={{
         position: "relative",
         zIndex: 10,
-        padding: "clamp(28px,4vw,44px) clamp(20px,5vw,80px)",
+        padding: "clamp(18px,2.5vw,28px) clamp(20px,5vw,80px)",
         background: "linear-gradient(135deg,rgba(184,149,90,.07) 0%,rgba(3,6,16,.9) 50%,rgba(184,149,90,.05) 100%)",
         borderTop: "1px solid rgba(184,149,90,.15)",
         borderBottom: "1px solid rgba(184,149,90,.15)",
@@ -236,40 +225,27 @@ function CTAStrip({ variant = 0 }) {
           flexWrap: "wrap",
           justifyContent: "center",
         }}>
-          {cfg.buttons.map((btn, i) => (
-            <motion.a
-              key={i}
-              href={WHATSAPP_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              whileHover={{ scale: 1.06, y: -2 }}
-              whileTap={{ scale: 0.96 }}
-              style={btn.primary ? {
-                background: `linear-gradient(135deg,${C.gold},${C.goldBright})`,
-                color: C.bgDark,
-                borderRadius: 11,
-                padding: "11px clamp(18px,2.5vw,28px)",
-                fontSize: "clamp(12px,1.2vw,14px)",
-                fontWeight: 800,
-                textDecoration: "none",
-                boxShadow: `0 6px 24px rgba(184,149,90,.35)`,
-                border: "none",
-                whiteSpace: "nowrap",
-              } : {
-                background: "rgba(255,255,255,.04)",
-                border: "1px solid rgba(184,149,90,.28)",
-                color: "rgba(255,255,255,.62)",
-                borderRadius: 11,
-                padding: "11px clamp(18px,2.5vw,28px)",
-                fontSize: "clamp(12px,1.2vw,14px)",
-                fontWeight: 700,
-                textDecoration: "none",
-                whiteSpace: "nowrap",
-              }}
-            >
-              {btn.text}
-            </motion.a>
-          ))}
+          <motion.a
+            href={WHATSAPP_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            whileHover={{ scale: 1.06, y: -2 }}
+            whileTap={{ scale: 0.96 }}
+            style={{
+              background: `linear-gradient(135deg,${C.gold},${C.goldBright})`,
+              color: C.bgDark,
+              borderRadius: 11,
+              padding: "11px clamp(18px,2.5vw,28px)",
+              fontSize: "clamp(12px,1.2vw,14px)",
+              fontWeight: 800,
+              textDecoration: "none",
+              boxShadow: `0 6px 24px rgba(184,149,90,.35)`,
+              border: "none",
+              whiteSpace: "nowrap",
+            }}
+          >
+            {cfg.button.text}
+          </motion.a>
         </div>
       </div>
     </motion.div>
@@ -758,51 +734,137 @@ function AnimCount({ val, suffix="" }) {
 function Nav() {
   const [scrolled, setScrolled] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
-  useEffect(()=>{const fn=()=>setScrolled(window.scrollY>60);window.addEventListener("scroll",fn);return()=>window.removeEventListener("scroll",fn);},[]);
+  const [isOpen, setIsOpen] = useState(false);
+  const { pathname } = useLocation();
+
   useEffect(() => {
-    const check = () => setIsMobile(window.innerWidth < 640);
+    const fn = () => setScrolled(window.scrollY > 60);
+    window.addEventListener("scroll", fn);
+    return () => window.removeEventListener("scroll", fn);
+  }, []);
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 820);
     check();
     window.addEventListener("resize", check);
     return () => window.removeEventListener("resize", check);
   }, []);
-  return(
-    <motion.nav
-      initial={{opacity:0,y:-18}} animate={{opacity:1,y:0}}
-      transition={{duration:.8,ease:[.16,1,.3,1]}}
-      style={{position:"fixed",top:0,left:0,right:0,zIndex:500,height:isMobile ? 60 : 64,
-        padding:isMobile ? "0 10px" : "0 clamp(20px,5vw,60px)",display:"flex",alignItems:"center",justifyContent:"space-between",
-        background: scrolled ? "rgba(3,6,16,.82)" : "transparent",
-        backdropFilter: scrolled ? "blur(24px) saturate(1.4)" : "none",
-        borderBottom: scrolled ? "1px solid rgba(184,149,90,.12)" : "none",
-        transition:"all .4s cubic-bezier(.16,1,.3,1)"}}>
-      <motion.a href="/" style={{display:"flex",alignItems:"center",textDecoration:"none"}}
-        whileHover={{scale:1.04}} whileTap={{scale:.96}}>
-          <MawahibLogo width={isMobile ? 116 : 148} blend={false}/>
-      </motion.a>
-      <div style={{display:"flex",alignItems:"center",gap:isMobile ? 8 : 12,flexShrink:0}}>
-        <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}>
-          <Link to="/login" style={{
-            background: "rgba(255,255,255,.05)",
-            border: "1px solid rgba(255,255,255,.18)",
-            borderRadius: isMobile ? 9 : 10,
-            padding: isMobile ? "8px 12px" : "8px 20px",
-            fontSize: isMobile ? 12 : 13,
-            fontWeight: 700,
-            color: "rgba(255,255,255,.82)",
-            textDecoration: "none",
-            display: "inline-flex",
-            alignItems: "center",
-            lineHeight: 1,
-            whiteSpace: "nowrap"
-          }}>Log In</Link>
-        </motion.div>
-        <motion.a href="https://mawahib.ai/request-campaign" target="_blank" rel="noopener noreferrer"
-          whileHover={{scale:1.04,boxShadow:`0 8px 28px rgba(184,149,90,.35)`}} whileTap={{scale:.96}}
-          style={{background:`linear-gradient(135deg,${C.gold},${C.goldBright})`,borderRadius:isMobile ? 9 : 10,padding:isMobile ? "8px 12px" : "8px 20px",fontSize:isMobile ? 12 : 13,fontWeight:700,color:C.bgDark,textDecoration:"none",boxShadow:`0 4px 18px rgba(184,149,90,.25)`,lineHeight:1,whiteSpace:"nowrap"}}>
-          Get Started
+
+  // Close menu on route change
+  useEffect(() => {
+    setIsOpen(false);
+  }, [pathname]);
+
+  const links = [
+    { name: "About", path: "/about" },
+    { name: "Pricing", path: "/pricing" },
+    { name: "Privacy", path: "/privacy" },
+  ];
+
+  return (
+    <>
+      <motion.nav
+        initial={{ opacity: 0, y: -18 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: .8, ease: [.16, 1, .3, 1] }}
+        style={{
+          position: "fixed", top: 0, left: 0, right: 0, zIndex: 1000, height: isMobile ? 64 : 74,
+          padding: isMobile ? "0 16px" : "0 clamp(20px,5vw,80px)",
+          display: "flex", alignItems: "center", justifyContent: "space-between",
+          background: scrolled || isOpen ? "rgba(3,6,16,.85)" : "transparent",
+          backdropFilter: scrolled || isOpen ? "blur(24px) saturate(1.4)" : "none",
+          borderBottom: scrolled || isOpen ? "1px solid rgba(184,149,90,.12)" : "none",
+          transition: "all .4s cubic-bezier(.16,1,.3,1)"
+        }}>
+        
+        {/* Logo */}
+        <motion.a href="/" style={{ display: "flex", alignItems: "center", textDecoration: "none" }}
+          whileHover={{ scale: 1.04 }} whileTap={{ scale: .96 }}>
+          <MawahibLogo width={isMobile ? 124 : 156} blend={false} />
         </motion.a>
-      </div>
-    </motion.nav>
+
+        {/* Desktop Links */}
+        {!isMobile && (
+          <div style={{ display: "flex", alignItems: "center", gap: 32 }}>
+            {links.map(l => (
+              <Link key={l.name} to={l.path} style={{
+                color: pathname === l.path ? C.gold : "rgba(255,255,255,.65)",
+                textDecoration: "none", fontSize: 13, fontWeight: 600, letterSpacing: ".02em", transition: "color .2s"
+              }} className="nav-link-hover">
+                {l.name}
+              </Link>
+            ))}
+          </div>
+        )}
+
+        {/* Action Buttons / Hamburger */}
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          {!isMobile && (
+            <>
+              <motion.a href="https://mawahib.ai/request-campaign" target="_blank" rel="noopener noreferrer"
+                whileHover={{ scale: 1.04, boxShadow: `0 8px 28px rgba(184,149,90,.35)` }} whileTap={{ scale: .96 }}
+                style={{ background: `linear-gradient(135deg,${C.gold},${C.goldBright})`, borderRadius: 10, padding: "9px 22px", fontSize: 13, fontWeight: 700, color: C.bgDark, textDecoration: "none", boxShadow: `0 4px 18px rgba(184,149,90,.25)`, lineHeight: 1, whiteSpace: "nowrap" }}>
+                Request Campaign
+              </motion.a>
+              <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}>
+                <Link to="/login" style={{
+                  background: "rgba(255,255,255,.05)",
+                  border: "1px solid rgba(255,255,255,.18)",
+                  borderRadius: 10, padding: "9px 22px", fontSize: 13, fontWeight: 700, color: "rgba(255,255,255,.82)", textDecoration: "none", display: "inline-flex", alignItems: "center", lineHeight: 1, whiteSpace: "nowrap"
+                }}>Log In</Link>
+              </motion.div>
+            </>
+          )}
+
+          {isMobile && (
+            <motion.button
+              whileTap={{ scale: 0.9 }}
+              onClick={() => setIsOpen(!isOpen)}
+              style={{
+                background: "rgba(184,149,90,.1)", border: "1px solid rgba(184,149,90,.25)",
+                borderRadius: 10, padding: 8, color: C.gold, cursor: "pointer", display: "flex", alignItems: "center"
+              }}>
+              {isOpen ? <X size={22} /> : <Menu size={22} />}
+            </motion.button>
+          )}
+        </div>
+      </motion.nav>
+
+      {/* Mobile Menu Overlay */}
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.3, ease: [.16, 1, .3, 1] }}
+            style={{
+              position: "fixed", top: 0, left: 0, right: 0, bottom: 0,
+              background: "rgba(3,6,16,.98)", backdropFilter: "blur(20px)",
+              zIndex: 900, paddingTop: isMobile ? 100 : 120, paddingInline: 24
+            }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: 32, alignItems: "center" }}>
+              {links.map(l => (
+                <Link key={l.name} to={l.path} onClick={() => setIsOpen(false)} style={{
+                  color: "#fff", textDecoration: "none", fontSize: 24, fontWeight: 700, fontFamily: "'DM Serif Display', serif", fontStyle: "italic"
+                }}>
+                  {l.name}
+                </Link>
+              ))}
+              <div style={{ width: "100%", height: "1px", background: "rgba(255,255,255,.1)", margin: "8px 0" }} />
+              <motion.a href="https://mawahib.ai/request-campaign" target="_blank" rel="noopener noreferrer"
+                style={{ background: `linear-gradient(135deg,${C.gold},${C.goldBright})`, borderRadius: 12, padding: "16px 40px", fontSize: 18, fontWeight: 700, color: C.bgDark, textDecoration: "none", width: "100%", textAlign: "center" }}>
+                Request Campaign
+              </motion.a>
+              <Link to="/login" onClick={() => setIsOpen(false)} style={{
+                background: "rgba(255,255,255,.05)", border: "1px solid rgba(255,255,255,.12)",
+                borderRadius: 12, padding: "16px 40px", fontSize: 18, fontWeight: 700, color: "rgba(255,255,255,.9)", textDecoration: "none", width: "100%", textAlign: "center"
+              }}>Log In</Link>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
   );
 }
 
@@ -843,9 +905,8 @@ function HeroSection() {
     }}>
       <motion.div style={{
         y, opacity, scale,
-        /* Reduced right padding to close gap between text block and planet */
-        padding: "0 clamp(28px,7vw,100px)",
-        paddingTop: 90,
+        padding: isMobile ? "0 22px" : "0 clamp(28px,7vw,100px)",
+        paddingTop: isMobile ? "clamp(90px, 12vh, 110px)" : 90,
         maxWidth: "clamp(340px,44vw,580px)",
         width: "100%"
       }}>
@@ -865,7 +926,7 @@ function HeroSection() {
             fontWeight: 400,
             letterSpacing: "-0.02em",
             lineHeight: 1.05,
-            marginBottom: 30,
+            marginBottom: isMobile ? 18 : 30,
             whiteSpace: isMobile ? "normal" : "nowrap",
             color: "rgba(255,255,255,.95)",
           }}
@@ -883,7 +944,7 @@ function HeroSection() {
             color: "rgba(255,255,255,.55)",
             fontSize: "clamp(15px,1.7vw,19px)",
             lineHeight: 1.8,
-            marginBottom: 38,
+            marginBottom: isMobile ? 24 : 38,
             maxWidth: 460,
             fontWeight: 400,
           }}
@@ -1014,7 +1075,6 @@ function ReviewCard({ r }) {
       <div style={{position:"absolute",top:0,left:"12%",right:"12%",height:1.5,background:`linear-gradient(90deg,transparent,${C.gold},transparent)`,boxShadow:`0 0 8px ${C.gold}`}}/>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:11}}>
         <StarRating n={r.rating} size={11}/>
-        <span style={{fontSize:9,color:"rgba(255,255,255,.22)",letterSpacing:".06em",fontWeight:700}}>{r.date}</span>
       </div>
       <p style={{color:"rgba(255,255,255,.45)",fontSize:"clamp(11px,1.05vw,12px)",lineHeight:1.75,marginBottom:14,minHeight:54}}>"{r.text}"</p>
       <div style={{display:"flex",alignItems:"center",gap:9}}>
@@ -1047,7 +1107,6 @@ function CompaniesTrustSection() {
   const ref = useRef();
   const inView = useInView(ref, { once: true, amount: 0.05 });
   const [isMobile, setIsMobile] = useState(false);
-  const [carouselIdx, setCarouselIdx] = useState(0);
 
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 768);
@@ -1056,24 +1115,19 @@ function CompaniesTrustSection() {
     return () => window.removeEventListener("resize", check);
   }, []);
 
-  // Show 4 visible, rest in carousel
   const VISIBLE = 4;
-  const carouselReviews = ALL_REVIEWS.slice(VISIBLE); // reviews 5-10 go in carousel
   const visibleReviews = ALL_REVIEWS.slice(0, VISIBLE);
-
-  const prev = () => setCarouselIdx(i => (i === 0 ? carouselReviews.length - 1 : i - 1));
-  const next = () => setCarouselIdx(i => (i === carouselReviews.length - 1 ? 0 : i + 1));
 
   return (
     <section ref={ref} style={{
       position: "relative", zIndex: 10,
-      padding: "clamp(90px,12vw,140px) clamp(28px,7vw,100px)",
+      padding: isMobile ? "clamp(30px,6vw,50px) clamp(22px,7vw,100px)" : "clamp(50px,7vw,80px) clamp(28px,7vw,100px)",
       background: "rgba(3,6,16,.75)", backdropFilter: "blur(2px)", overflow: "hidden"
     }}>
       <motion.div
         initial={{ opacity: 0, y: 22 }} animate={inView ? { opacity: 1, y: 0 } : {}}
         transition={{ duration: .85 }}
-        style={{ textAlign: "center", marginBottom: "clamp(44px,6vw,60px)" }}
+        style={{ textAlign: "center", marginBottom: "clamp(28px,4vw,40px)" }}
       >
         {/* <Label>COMPANIES TRUST MAWAHIB</Label> */}
         <div style={{
@@ -1117,74 +1171,7 @@ function CompaniesTrustSection() {
         ))}
       </div>
 
-      {/* Carousel for remaining reviews */}
-      {carouselReviews.length > 0 && (
-        <div style={{ maxWidth: 1280, margin: "0 auto", position: "relative" }}>
-          <div style={{
-            display: "flex", alignItems: "center", gap: 16,
-            justifyContent: "center", flexWrap: isMobile ? "wrap" : "nowrap",
-          }}>
-            {/* Prev btn */}
-            <motion.button
-              whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
-              onClick={prev}
-              style={{
-                flexShrink: 0,
-                width: 42, height: 42, borderRadius: "50%",
-                background: "rgba(255,255,255,.05)",
-                border: "1px solid rgba(184,149,90,.3)",
-                color: C.gold, fontSize: 18, cursor: "pointer",
-                display: "flex", alignItems: "center", justifyContent: "center",
-              }}>‹</motion.button>
 
-            {/* Carousel slide */}
-            <div style={{
-              flex: 1,
-              maxWidth: isMobile ? "100%" : 560,
-              overflow: "hidden",
-              borderRadius: 18,
-            }}>
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={carouselIdx}
-                  initial={{ opacity: 0, x: 40 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -40 }}
-                  transition={{ duration: 0.4 }}
-                >
-                  <ReviewCard r={carouselReviews[carouselIdx]}/>
-                </motion.div>
-              </AnimatePresence>
-            </div>
-
-            {/* Next btn */}
-            <motion.button
-              whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
-              onClick={next}
-              style={{
-                flexShrink: 0,
-                width: 42, height: 42, borderRadius: "50%",
-                background: "rgba(255,255,255,.05)",
-                border: "1px solid rgba(184,149,90,.3)",
-                color: C.gold, fontSize: 18, cursor: "pointer",
-                display: "flex", alignItems: "center", justifyContent: "center",
-              }}>›</motion.button>
-          </div>
-
-          {/* Dots */}
-          <div style={{ display: "flex", justifyContent: "center", gap: 8, marginTop: 16 }}>
-            {carouselReviews.map((_, i) => (
-              <button key={i} onClick={() => setCarouselIdx(i)}
-                style={{
-                  width: i === carouselIdx ? 20 : 7, height: 7, borderRadius: 999,
-                  background: i === carouselIdx ? C.gold : "rgba(255,255,255,.18)",
-                  border: "none", cursor: "pointer", padding: 0,
-                  transition: "all .3s",
-                }}/>
-            ))}
-          </div>
-        </div>
-      )}
 
       <motion.div
         initial={{ opacity: 0 }} animate={inView ? { opacity: 1 } : {}} transition={{ delay: .7, duration: .7 }}
@@ -1227,7 +1214,7 @@ function ProblemSection() {
   ];
 
   return(
-    <section ref={ref} style={{position:"relative",zIndex:10,padding:"clamp(90px,12vw,140px) clamp(28px,7vw,100px)",background:"linear-gradient(180deg,rgba(3,6,16,.6) 0%,rgba(10,15,30,.85) 100%)"}}>
+    <section ref={ref} style={{position:"relative",zIndex:10,padding: isMobile ? "clamp(30px,6vw,50px) clamp(22px,7vw,100px)" : "clamp(50px,7vw,80px) clamp(28px,7vw,100px)",background:"linear-gradient(180deg,rgba(3,6,16,.6) 0%,rgba(10,15,30,.85) 100%)"}}>
       <div style={{maxWidth:1280,margin:"0 auto",display:"grid",gridTemplateColumns:"1fr 1fr",gap:"clamp(50px,8vw,100px)",alignItems:"center"}} className="two-col">
         {/* Left */}
         <motion.div style={{y:parallaxY,position:"relative"}} initial={{opacity:0,x:-40}} animate={inView?{opacity:1,x:0}:{}} transition={{duration:1,ease:[.16,1,.3,1]}}>
@@ -1335,7 +1322,7 @@ function GlobalSection() {
   return (
     <section ref={ref} style={{
       position: "relative", zIndex: 10,
-      padding: "clamp(90px,12vw,140px) clamp(28px,7vw,100px)",
+      padding: isMobile ? "clamp(30px,6vw,50px) clamp(22px,7vw,100px)" : "clamp(50px,7vw,80px) clamp(28px,7vw,100px)",
       background: "linear-gradient(180deg,rgba(10,15,30,.85) 0%,rgba(3,6,16,.6) 100%)", overflow: "hidden"
     }}>
       <div style={{
@@ -1416,6 +1403,13 @@ function VideoSection() {
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
   const scale = useTransform(scrollYProgress, [0, 0.3, 0.7, 1], [0.93, 1, 1, 0.93]);
   const [muted, setMuted] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
 
   useEffect(() => {
     if (!videoRef.current) return;
@@ -1436,7 +1430,7 @@ function VideoSection() {
   return (
     <section ref={ref} style={{
       position: "relative", zIndex: 10,
-      padding: "clamp(80px,11vw,130px) clamp(28px,7vw,100px)",
+      padding: isMobile ? "clamp(30px,6vw,50px) clamp(22px,7vw,100px)" : "clamp(50px,7vw,80px) clamp(28px,7vw,100px)",
       background: "rgba(3,6,16,.72)", backdropFilter: "blur(2px)"
     }}>
       <div style={{ maxWidth: 1100, margin: "0 auto" }}>
@@ -1497,6 +1491,13 @@ function InterviewSection() {
   const inView = useInView(ref,{once:true,amount:.08});
   const { scrollYProgress } = useScroll({target:ref,offset:["start end","end start"]});
   const imgY = useTransform(scrollYProgress,[0,1],[40,-40]);
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
 
   const features=[
     {lbl:"24/7 AI Interviews",val:98,desc:"Available around the clock. No scheduling required."},
@@ -1504,7 +1505,7 @@ function InterviewSection() {
     {lbl:"Auto Ranking",val:88,desc:"Candidates ranked by fit, not impression."},
   ];
   return(
-    <section ref={ref} style={{position:"relative",zIndex:10,padding:"clamp(90px,12vw,140px) clamp(28px,7vw,100px)",background:"linear-gradient(180deg,rgba(3,6,16,.6) 0%,rgba(10,15,30,.9) 100%)"}}>
+    <section ref={ref} style={{position:"relative",zIndex:10,padding: isMobile ? "clamp(30px,6vw,50px) clamp(22px,7vw,100px)" : "clamp(50px,7vw,80px) clamp(28px,7vw,100px)",background:"linear-gradient(180deg,rgba(3,6,16,.6) 0%,rgba(10,15,30,.9) 100%)"}}>
       <div style={{maxWidth:1280,margin:"0 auto",display:"grid",gridTemplateColumns:"1fr 1fr",gap:"clamp(50px,8vw,100px)",alignItems:"center"}} className="two-col">
         <motion.div style={{y:imgY,position:"relative"}} initial={{opacity:0,scale:.94}} animate={inView?{opacity:1,scale:1}:{}} transition={{duration:1,ease:[.16,1,.3,1]}}>
           <div style={{borderRadius:24,overflow:"hidden",aspectRatio:"3/4",boxShadow:"0 40px 100px rgba(0,0,0,.55)",border:"1px solid rgba(255,255,255,.06)",position:"relative"}}>
@@ -1589,6 +1590,13 @@ function FeatureCard({ f, i }) {
 function FeaturesSection() {
   const ref = useRef();
   const inView = useInView(ref,{once:true,amount:.06});
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
   const features=[
     {title:"AI Candidate Matching",desc:"Neural matching across skills, culture fit, and growth trajectory.",delay:0},
     {title:"Automated Screening",desc:"AI-powered async interviews that screen hundreds simultaneously.",delay:.07},
@@ -1598,9 +1606,9 @@ function FeaturesSection() {
     {title:"Workforce Analytics",desc:"Hiring funnel metrics, diversity dashboards, predictive retention.",delay:.35},
   ];
   return(
-    <section ref={ref} style={{position:"relative",zIndex:10,padding:"clamp(90px,12vw,140px) clamp(28px,7vw,100px)",background:"rgba(10,15,30,.8)",backdropFilter:"blur(2px)"}}>
+    <section ref={ref} style={{position:"relative",zIndex:10,padding: isMobile ? "clamp(30px,6vw,50px) clamp(22px,7vw,100px)" : "clamp(50px,7vw,80px) clamp(28px,7vw,100px)",background:"rgba(10,15,30,.8)",backdropFilter:"blur(2px)"}}>
       <div style={{maxWidth:1280,margin:"0 auto"}}>
-        <motion.div initial={{opacity:0,y:20}} animate={inView?{opacity:1,y:0}:{}} transition={{duration:.8}} style={{textAlign:"center",marginBottom:"clamp(44px,7vw,72px)"}}>
+        <motion.div initial={{opacity:0,y:20}} animate={inView?{opacity:1,y:0}:{}} transition={{duration:.8}} style={{textAlign:"center",marginBottom:"clamp(28px,4vw,44px)"}}>
           <Label>PLATFORM FEATURES</Label>
           <h2 style={{fontFamily:"'DM Serif Display',serif",fontStyle:"italic",fontSize:"clamp(2.4rem,4.5vw,4.2rem)",fontWeight:400,letterSpacing:"-.02em",lineHeight:1.08,color:"rgba(255,255,255,.95)",marginBottom:14}}>
             Everything you need to hire<br/><span className="gold-shimmer" style={{fontFamily:"'DM Serif Display',serif",fontStyle:"italic"}}>with confidence.</span>
@@ -1623,8 +1631,15 @@ function CTASection() {
   const scale = useTransform(scrollYProgress,[0,.5],[.94,1]);
   const opacity = useTransform(scrollYProgress,[0,.25],[0,1]);
   const inView = useInView(ref,{once:true,amount:.1});
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
   return(
-    <section ref={ref} style={{position:"relative",zIndex:10,padding:"clamp(100px,14vw,160px) clamp(28px,7vw,100px)",background:"rgba(3,6,16,.88)",backdropFilter:"blur(4px)",overflow:"hidden"}}>
+    <section ref={ref} style={{position:"relative",zIndex:10,padding: isMobile ? "clamp(30px,6vw,50px) clamp(22px,7vw,100px)" : "clamp(60px,8vw,90px) clamp(28px,7vw,100px)",background:"rgba(3,6,16,.88)",backdropFilter:"blur(4px)",overflow:"hidden"}}>
       <div style={{position:"absolute",top:0,left:"5%",right:"5%",height:1,background:`linear-gradient(90deg,transparent,${C.gold},${C.goldBright},transparent)`,boxShadow:`0 0 20px ${C.gold}`}}/>
       <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",width:"70vw",height:"70vw",maxWidth:700,maxHeight:700,borderRadius:"50%",background:"radial-gradient(circle,rgba(184,149,90,.055) 0%,transparent 60%)",pointerEvents:"none"}}/>
       <motion.div style={{scale,opacity,maxWidth:700,margin:"0 auto",textAlign:"center",position:"relative",zIndex:5}}>
@@ -1675,7 +1690,7 @@ function Footer() {
     <footer style={{
       position: "relative", zIndex: 10,
       background: "rgba(2,4,12,.95)",
-      padding: "clamp(50px,8vw,70px) clamp(24px,6vw,100px) clamp(30px,4vw,40px)",
+      padding: isMobile ? "clamp(24px,4vw,36px) clamp(18px,5vw,24px) clamp(18px,3vw,24px)" : "clamp(36px,5vw,50px) clamp(24px,6vw,100px) clamp(24px,3vw,36px)",
       borderTop: "1px solid rgba(184,149,90,.1)"
     }}>
       <div style={{ maxWidth: 1280, margin: "0 auto" }}>
@@ -1780,29 +1795,28 @@ export default function App() {
               <HeroSection/>
               <Ticker/>
 
-              {/* ── CTA after sections 1+2 ── */}
+              {/* ── CTA 0 ── */}
               <CTAStrip variant={0}/>
 
-              {/* Companies Trust Mawahib — now ABOVE Hiring is a Challenge */}
               <CompanyTrustSection/>
               <CompaniesTrustSection/>
-              <ProblemSection/>
 
-              {/* ── CTA after sections 3+4 ── */}
+              {/* ── CTA 1 ── */}
               <CTAStrip variant={1}/>
 
+              <ProblemSection/>
               <GlobalSection/>
-              <VideoSection/>
 
-              {/* ── CTA after sections 5+6 ── */}
+              {/* ── CTA 2 ── */}
               <CTAStrip variant={2}/>
 
+              <VideoSection/>
               <InterviewSection/>
-              <FeaturesSection/>
 
-              {/* ── CTA after sections 7+8 ── */}
+              {/* ── CTA 3 ── */}
               <CTAStrip variant={0}/>
 
+              <FeaturesSection/>
               <CTASection/>
             </main>
           }/>

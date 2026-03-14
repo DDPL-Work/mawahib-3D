@@ -279,7 +279,7 @@ export default function Pricing() {
               </p>
 
               <motion.a
-                href="https://mawahib.ai/request-campaign"
+                href="https://wa.me/966556919502"
                 target="_blank"
                 whileHover={{ scale: 1.05, boxShadow: `0 16px 40px rgba(184,149,90,.3)` }}
                 whileTap={{ scale: .96 }}
