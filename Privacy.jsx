@@ -253,7 +253,7 @@ export default function Privacy() {
                 If you have questions regarding security, privacy, or data handling practices, our team will be happy to provide further information.
               </p>
               <a
-                href="mailto:info@mwahib.ai"
+                href="mailto:info@mawahib.ai"
                 style={{
                   display: "inline-flex",
                   alignItems: "center",

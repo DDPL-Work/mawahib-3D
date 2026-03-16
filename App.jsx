@@ -1737,6 +1737,23 @@ function Footer() {
           </div>
         </div>
         <div style={{
+          marginTop: isMobile ? 0 : -20,
+          marginBottom: 30,
+          textAlign: isMobile ? "center" : "right"
+        }}>
+          <a href="mailto:info@mawahib.ai" style={{
+            color: "rgba(255,255,255,.3)",
+            fontSize: 14,
+            textDecoration: "none",
+            transition: "color .25s"
+          }}
+          onMouseOver={(e) => e.target.style.color = "rgba(255,255,255,.7)"}
+          onMouseOut={(e) => e.target.style.color = "rgba(255,255,255,.3)"}
+          >
+            info@mawahib.ai
+          </a>
+        </div>
+        <div style={{
           borderTop: "1px solid rgba(255,255,255,.05)", paddingTop: 22,
           display: "flex", flexDirection: isMobile ? "column" : "row",
           justifyContent: "space-between", alignItems: "center",
