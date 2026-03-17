@@ -17,6 +17,7 @@ import About from "./About";
 import Privacy from "./Privacy";
 import Login from "./Login";
 import Signup from "./Signup";
+import HowItWorks from "./HowItWorks";
 import CompanyTrustSection from "./Companytrustsection";
 import { Menu, X } from "lucide-react";
 
@@ -29,6 +30,10 @@ const C = {
   gold:"#b8955a", goldLight:"#d4b483", goldBright:"#f0c97a",
   goldPale:"rgba(184,149,90,.10)", goldBorder:"rgba(184,149,90,.22)",
   white:"#ffffff", border:"rgba(15,23,42,.08)", borderMid:"rgba(15,23,42,.14)",
+};
+const PAGE_X = {
+  mobile: "clamp(14px,4vw,20px)",
+  desktop: "clamp(28px,7vw,100px)"
 };
 
 const LOGO_SRC = "./IMG_2041.JPG-removebg-preview.png";
@@ -66,7 +71,10 @@ const GlobalStyles = () => (
   <style>{`
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
     html{scroll-behavior:smooth}
-    body{background:#0a0f1e;color:#f5f0eb;font-family:'Sora',sans-serif;overflow-x:hidden}
+    html,body{width:100%;overflow-x:hidden}
+    body{background:#0a0f1e;color:#f5f0eb;font-family:'Sora',sans-serif}
+    #root{width:100%;overflow-x:hidden}
+    img,svg{max-width:100%;height:auto}
     @media(min-width:769px){body,a,button{cursor:none}}
     ::-webkit-scrollbar{width:2px}
     ::-webkit-scrollbar-track{background:#0a0f1e}
@@ -187,7 +195,7 @@ function CTAStrip({ variant = 0 }) {
       style={{
         position: "relative",
         zIndex: 10,
-        padding: "clamp(18px,2.5vw,28px) clamp(20px,5vw,80px)",
+        padding: "clamp(18px,2.5vw,28px) clamp(16px,4.5vw,80px)",
         background: "linear-gradient(135deg,rgba(184,149,90,.07) 0%,rgba(3,6,16,.9) 50%,rgba(184,149,90,.05) 100%)",
         borderTop: "1px solid rgba(184,149,90,.15)",
         borderBottom: "1px solid rgba(184,149,90,.15)",
@@ -757,6 +765,7 @@ function Nav() {
 
   const links = [
     { name: "About", path: "/about" },
+    { name: "How It Works", path: "/how-mawahib-works" },
     { name: "Pricing", path: "/pricing" },
     { name: "Privacy", path: "/privacy" },
   ];
@@ -769,7 +778,7 @@ function Nav() {
         transition={{ duration: .8, ease: [.16, 1, .3, 1] }}
         style={{
           position: "fixed", top: 0, left: 0, right: 0, zIndex: 1000, height: isMobile ? 64 : 74,
-          padding: isMobile ? "0 16px" : "0 clamp(20px,5vw,80px)",
+          padding: isMobile ? `0 ${PAGE_X.mobile}` : `0 ${PAGE_X.desktop}`,
           display: "flex", alignItems: "center", justifyContent: "space-between",
           background: scrolled || isOpen ? "rgba(3,6,16,.85)" : "transparent",
           backdropFilter: scrolled || isOpen ? "blur(24px) saturate(1.4)" : "none",
@@ -821,10 +830,10 @@ function Nav() {
               whileTap={{ scale: 0.9 }}
               onClick={() => setIsOpen(!isOpen)}
               style={{
-                background: "rgba(184,149,90,.1)", border: "1px solid rgba(184,149,90,.25)",
-                borderRadius: 10, padding: 8, color: C.gold, cursor: "pointer", display: "flex", alignItems: "center"
+                background: "rgba(184,149,90,.08)", border: "1px solid rgba(184,149,90,.22)",
+                borderRadius: 9, padding: 7, color: C.gold, cursor: "pointer", display: "flex", alignItems: "center"
               }}>
-              {isOpen ? <X size={22} /> : <Menu size={22} />}
+              {isOpen ? <X size={20} /> : <Menu size={20} />}
             </motion.button>
           )}
         </div>
@@ -840,26 +849,69 @@ function Nav() {
             transition={{ duration: 0.3, ease: [.16, 1, .3, 1] }}
             style={{
               position: "fixed", top: 0, left: 0, right: 0, bottom: 0,
-              background: "rgba(3,6,16,.98)", backdropFilter: "blur(20px)",
-              zIndex: 900, paddingTop: isMobile ? 100 : 120, paddingInline: 24
+              background: "radial-gradient(110% 90% at 50% 10%, rgba(184,149,90,.08) 0%, transparent 55%), linear-gradient(180deg, rgba(3,6,16,.98) 0%, rgba(3,6,16,.98) 100%)",
+              backdropFilter: "blur(22px) saturate(1.2)",
+              zIndex: 900, paddingTop: isMobile ? 88 : 110, paddingInline: 20
             }}>
-            <div style={{ display: "flex", flexDirection: "column", gap: 32, alignItems: "center" }}>
-              {links.map(l => (
-                <Link key={l.name} to={l.path} onClick={() => setIsOpen(false)} style={{
-                  color: "#fff", textDecoration: "none", fontSize: 24, fontWeight: 700, fontFamily: "'DM Serif Display', serif", fontStyle: "italic"
-                }}>
-                  {l.name}
-                </Link>
-              ))}
-              <div style={{ width: "100%", height: "1px", background: "rgba(255,255,255,.1)", margin: "8px 0" }} />
-              <motion.a href="https://mawahib.ai/request-campaign" target="_blank" rel="noopener noreferrer"
-                style={{ background: `linear-gradient(135deg,${C.gold},${C.goldBright})`, borderRadius: 12, padding: "16px 40px", fontSize: 18, fontWeight: 700, color: C.bgDark, textDecoration: "none", width: "100%", textAlign: "center" }}>
-                Request Campaign
-              </motion.a>
-              <Link to="/login" onClick={() => setIsOpen(false)} style={{
-                background: "rgba(255,255,255,.05)", border: "1px solid rgba(255,255,255,.12)",
-                borderRadius: 12, padding: "16px 40px", fontSize: 18, fontWeight: 700, color: "rgba(255,255,255,.9)", textDecoration: "none", width: "100%", textAlign: "center"
-              }}>Log In</Link>
+            <div style={{ width: "100%", display: "flex", justifyContent: "center" }}>
+              <div style={{
+                width: "min(92vw, 360px)",
+                background: "rgba(255,255,255,.04)",
+                border: "1px solid rgba(184,149,90,.18)",
+                borderRadius: 16,
+                padding: "18px 16px",
+                display: "flex",
+                flexDirection: "column",
+                gap: 16,
+                boxShadow: "0 18px 60px rgba(0,0,0,.45)"
+              }}>
+                {links.map(l => (
+                  <Link key={l.name} to={l.path} onClick={() => setIsOpen(false)} style={{
+                    color: "rgba(255,255,255,.92)",
+                    textDecoration: "none",
+                    fontSize: 18,
+                    fontWeight: 600,
+                    fontFamily: "'DM Serif Display', serif",
+                    fontStyle: "italic",
+                    letterSpacing: ".01em",
+                    padding: "10px 12px",
+                    borderRadius: 10,
+                    background: "rgba(255,255,255,.02)",
+                    border: "1px solid rgba(255,255,255,.06)"
+                  }}>
+                    {l.name}
+                  </Link>
+                ))}
+                <div style={{ width: "100%", height: 1, background: "rgba(184,149,90,.18)" }} />
+                <motion.a href="https://mawahib.ai/request-campaign" target="_blank" rel="noopener noreferrer"
+                  whileTap={{ scale: 0.98 }}
+                  style={{
+                    background: `linear-gradient(135deg,${C.gold},${C.goldBright})`,
+                    borderRadius: 12,
+                    padding: "12px 18px",
+                    fontSize: 14,
+                    fontWeight: 700,
+                    color: C.bgDark,
+                    textDecoration: "none",
+                    width: "100%",
+                    textAlign: "center",
+                    boxShadow: "0 10px 24px rgba(184,149,90,.3)"
+                  }}>
+                  Request Campaign
+                </motion.a>
+                <Link to="/login" onClick={() => setIsOpen(false)} style={{
+                  background: "rgba(255,255,255,.04)",
+                  border: "1px solid rgba(255,255,255,.12)",
+                  borderRadius: 12,
+                  padding: "12px 18px",
+                  fontSize: 14,
+                  fontWeight: 700,
+                  color: "rgba(255,255,255,.9)",
+                  textDecoration: "none",
+                  width: "100%",
+                  textAlign: "center"
+                }}>Log In</Link>
+              </div>
             </div>
           </motion.div>
         )}
@@ -888,8 +940,10 @@ function HeroSection() {
 
   const stats = [
     { val: "190+", sub: "Countries" },
-    { val: "92%", sub: "AI Accuracy" },
-    { val: "10×", sub: "Faster Hire" }
+    { val: "20+", sub: "Languages" },
+    { val: "All", sub: "Industries" },
+    { val: "Any", sub: "Job Role" },
+    { val: "Startups", sub: "Enterprises" }
   ];
 
   return (
@@ -905,7 +959,7 @@ function HeroSection() {
     }}>
       <motion.div style={{
         y, opacity, scale,
-        padding: isMobile ? "0 22px" : "0 clamp(28px,7vw,100px)",
+        padding: isMobile ? `0 ${PAGE_X.mobile}` : `0 ${PAGE_X.desktop}`,
         paddingTop: isMobile ? "clamp(90px, 12vh, 110px)" : 90,
         maxWidth: "clamp(340px,44vw,580px)",
         width: "100%"
@@ -975,15 +1029,24 @@ function HeroSection() {
 
         {/* Mobile Stats */}
         {isMobile && (
-          <div style={{ display: "flex", justifyContent: "space-between", gap: 10, marginTop: 40 }}>
+          <div style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+            gap: 12,
+            marginTop: 36
+          }}>
             {stats.map(({ val, sub }) => (
               <div key={val} style={{
-                flex: 1, background: "rgba(3,6,16,.7)",
-                border: "1px solid rgba(184,149,90,.2)", borderRadius: 12,
-                padding: "14px 10px", textAlign: "center", backdropFilter: "blur(20px)"
+                background: "linear-gradient(180deg, rgba(6,10,22,.85), rgba(3,6,16,.7))",
+                border: "1px solid rgba(184,149,90,.28)",
+                borderRadius: 14,
+                padding: "14px 12px",
+                textAlign: "center",
+                backdropFilter: "blur(20px)",
+                boxShadow: "0 8px 24px rgba(0,0,0,.35), inset 0 0 0 1px rgba(255,255,255,.04)"
               }}>
-                <div style={{ fontSize: 18, fontWeight: 800, color: "#fff" }}>{val}</div>
-                <div style={{ fontSize: 9, color: C.gold, fontWeight: 700 }}>{sub}</div>
+                <div style={{ fontSize: 17, fontWeight: 800, color: "#fff", letterSpacing: "-.02em" }}>{val}</div>
+                <div style={{ fontSize: 9, color: C.gold, fontWeight: 700, letterSpacing: ".08em", marginTop: 2 }}>{sub}</div>
               </div>
             ))}
           </div>
@@ -1005,13 +1068,16 @@ function HeroSection() {
             <motion.div key={val}
               initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }}
               style={{
-                background: "rgba(3,6,16,.6)",
-                border: "1px solid rgba(184,149,90,.2)",
-                borderRadius: 14, padding: "12px 18px",
-                backdropFilter: "blur(20px)", boxShadow: "0 8px 32px rgba(0,0,0,.3)"
+                minWidth: "clamp(140px, 16vw, 190px)",
+                background: "linear-gradient(180deg, rgba(6,10,22,.85), rgba(3,6,16,.7))",
+                border: "1px solid rgba(184,149,90,.28)",
+                borderRadius: 18,
+                padding: "16px 22px",
+                backdropFilter: "blur(22px)",
+                boxShadow: "0 12px 36px rgba(0,0,0,.38), inset 0 0 0 1px rgba(255,255,255,.04)"
               }}>
-              <div style={{ fontSize: "clamp(18px,2.2vw,26px)", fontWeight: 800, color: "#fff", letterSpacing: "-.04em" }}>{val}</div>
-              <div style={{ fontSize: 9, color: C.gold, fontWeight: 700 }}>{sub}</div>
+              <div style={{ fontSize: "clamp(22px,2.6vw,32px)", fontWeight: 800, color: "#fff", letterSpacing: "-.03em" }}>{val}</div>
+              <div style={{ fontSize: 10, color: C.gold, fontWeight: 700, letterSpacing: ".08em" }}>{sub}</div>
             </motion.div>
           ))}
         </div>
@@ -1121,7 +1187,7 @@ function CompaniesTrustSection() {
   return (
     <section ref={ref} style={{
       position: "relative", zIndex: 10,
-      padding: isMobile ? "clamp(30px,6vw,50px) clamp(22px,7vw,100px)" : "clamp(50px,7vw,80px) clamp(28px,7vw,100px)",
+      padding: isMobile ? `clamp(30px,6vw,50px) ${PAGE_X.mobile}` : `clamp(50px,7vw,80px) ${PAGE_X.desktop}`,
       background: "rgba(3,6,16,.75)", backdropFilter: "blur(2px)", overflow: "hidden"
     }}>
       <motion.div
@@ -1214,7 +1280,7 @@ function ProblemSection() {
   ];
 
   return(
-    <section ref={ref} style={{position:"relative",zIndex:10,padding: isMobile ? "clamp(30px,6vw,50px) clamp(22px,7vw,100px)" : "clamp(50px,7vw,80px) clamp(28px,7vw,100px)",background:"linear-gradient(180deg,rgba(3,6,16,.6) 0%,rgba(10,15,30,.85) 100%)"}}>
+    <section ref={ref} style={{position:"relative",zIndex:10,padding: isMobile ? `clamp(30px,6vw,50px) ${PAGE_X.mobile}` : `clamp(50px,7vw,80px) ${PAGE_X.desktop}`,background:"linear-gradient(180deg,rgba(3,6,16,.6) 0%,rgba(10,15,30,.85) 100%)",overflow:"hidden"}}>
       <div style={{maxWidth:1280,margin:"0 auto",display:"grid",gridTemplateColumns:"1fr 1fr",gap:"clamp(50px,8vw,100px)",alignItems:"center"}} className="two-col">
         {/* Left */}
         <motion.div style={{y:parallaxY,position:"relative"}} initial={{opacity:0,x:-40}} animate={inView?{opacity:1,x:0}:{}} transition={{duration:1,ease:[.16,1,.3,1]}}>
@@ -1322,7 +1388,7 @@ function GlobalSection() {
   return (
     <section ref={ref} style={{
       position: "relative", zIndex: 10,
-      padding: isMobile ? "clamp(30px,6vw,50px) clamp(22px,7vw,100px)" : "clamp(50px,7vw,80px) clamp(28px,7vw,100px)",
+      padding: isMobile ? `clamp(30px,6vw,50px) ${PAGE_X.mobile}` : `clamp(50px,7vw,80px) ${PAGE_X.desktop}`,
       background: "linear-gradient(180deg,rgba(10,15,30,.85) 0%,rgba(3,6,16,.6) 100%)", overflow: "hidden"
     }}>
       <div style={{
@@ -1430,7 +1496,7 @@ function VideoSection() {
   return (
     <section ref={ref} style={{
       position: "relative", zIndex: 10,
-      padding: isMobile ? "clamp(30px,6vw,50px) clamp(22px,7vw,100px)" : "clamp(50px,7vw,80px) clamp(28px,7vw,100px)",
+      padding: isMobile ? `clamp(30px,6vw,50px) ${PAGE_X.mobile}` : `clamp(50px,7vw,80px) ${PAGE_X.desktop}`,
       background: "rgba(3,6,16,.72)", backdropFilter: "blur(2px)"
     }}>
       <div style={{ maxWidth: 1100, margin: "0 auto" }}>
@@ -1505,7 +1571,7 @@ function InterviewSection() {
     {lbl:"Auto Ranking",val:88,desc:"Candidates ranked by fit, not impression."},
   ];
   return(
-    <section ref={ref} style={{position:"relative",zIndex:10,padding: isMobile ? "clamp(30px,6vw,50px) clamp(22px,7vw,100px)" : "clamp(50px,7vw,80px) clamp(28px,7vw,100px)",background:"linear-gradient(180deg,rgba(3,6,16,.6) 0%,rgba(10,15,30,.9) 100%)"}}>
+    <section ref={ref} style={{position:"relative",zIndex:10,padding: isMobile ? `clamp(30px,6vw,50px) ${PAGE_X.mobile}` : `clamp(50px,7vw,80px) ${PAGE_X.desktop}`,background:"linear-gradient(180deg,rgba(3,6,16,.6) 0%,rgba(10,15,30,.9) 100%)"}}>
       <div style={{maxWidth:1280,margin:"0 auto",display:"grid",gridTemplateColumns:"1fr 1fr",gap:"clamp(50px,8vw,100px)",alignItems:"center"}} className="two-col">
         <motion.div style={{y:imgY,position:"relative"}} initial={{opacity:0,scale:.94}} animate={inView?{opacity:1,scale:1}:{}} transition={{duration:1,ease:[.16,1,.3,1]}}>
           <div style={{borderRadius:24,overflow:"hidden",aspectRatio:"3/4",boxShadow:"0 40px 100px rgba(0,0,0,.55)",border:"1px solid rgba(255,255,255,.06)",position:"relative"}}>
@@ -1606,7 +1672,7 @@ function FeaturesSection() {
     {title:"Workforce Analytics",desc:"Hiring funnel metrics, diversity dashboards, predictive retention.",delay:.35},
   ];
   return(
-    <section ref={ref} style={{position:"relative",zIndex:10,padding: isMobile ? "clamp(30px,6vw,50px) clamp(22px,7vw,100px)" : "clamp(50px,7vw,80px) clamp(28px,7vw,100px)",background:"rgba(10,15,30,.8)",backdropFilter:"blur(2px)"}}>
+    <section ref={ref} style={{position:"relative",zIndex:10,padding: isMobile ? `clamp(30px,6vw,50px) ${PAGE_X.mobile}` : `clamp(50px,7vw,80px) ${PAGE_X.desktop}`,background:"rgba(10,15,30,.8)",backdropFilter:"blur(2px)"}}>
       <div style={{maxWidth:1280,margin:"0 auto"}}>
         <motion.div initial={{opacity:0,y:20}} animate={inView?{opacity:1,y:0}:{}} transition={{duration:.8}} style={{textAlign:"center",marginBottom:"clamp(28px,4vw,44px)"}}>
           <Label>PLATFORM FEATURES</Label>
@@ -1639,7 +1705,7 @@ function CTASection() {
     return () => window.removeEventListener("resize", check);
   }, []);
   return(
-    <section ref={ref} style={{position:"relative",zIndex:10,padding: isMobile ? "clamp(30px,6vw,50px) clamp(22px,7vw,100px)" : "clamp(60px,8vw,90px) clamp(28px,7vw,100px)",background:"rgba(3,6,16,.88)",backdropFilter:"blur(4px)",overflow:"hidden"}}>
+    <section ref={ref} style={{position:"relative",zIndex:10,padding: isMobile ? `clamp(30px,6vw,50px) ${PAGE_X.mobile}` : `clamp(60px,8vw,90px) ${PAGE_X.desktop}`,background:"rgba(3,6,16,.88)",backdropFilter:"blur(4px)",overflow:"hidden"}}>
       <div style={{position:"absolute",top:0,left:"5%",right:"5%",height:1,background:`linear-gradient(90deg,transparent,${C.gold},${C.goldBright},transparent)`,boxShadow:`0 0 20px ${C.gold}`}}/>
       <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",width:"70vw",height:"70vw",maxWidth:700,maxHeight:700,borderRadius:"50%",background:"radial-gradient(circle,rgba(184,149,90,.055) 0%,transparent 60%)",pointerEvents:"none"}}/>
       <motion.div style={{scale,opacity,maxWidth:700,margin:"0 auto",textAlign:"center",position:"relative",zIndex:5}}>
@@ -1690,7 +1756,7 @@ function Footer() {
     <footer style={{
       position: "relative", zIndex: 10,
       background: "rgba(2,4,12,.95)",
-      padding: isMobile ? "clamp(24px,4vw,36px) clamp(18px,5vw,24px) clamp(18px,3vw,24px)" : "clamp(36px,5vw,50px) clamp(24px,6vw,100px) clamp(24px,3vw,36px)",
+      padding: isMobile ? `clamp(24px,4vw,36px) ${PAGE_X.mobile} clamp(18px,3vw,24px)` : `clamp(36px,5vw,50px) ${PAGE_X.desktop} clamp(24px,3vw,36px)`,
       borderTop: "1px solid rgba(184,149,90,.1)"
     }}>
       <div style={{ maxWidth: 1280, margin: "0 auto" }}>
@@ -1842,28 +1908,11 @@ export default function App() {
           <Route path="/privacy" element={<Privacy/>}/>
           <Route path="/login" element={<Login/>}/>
           <Route path="/signup" element={<Signup/>}/>
-          {/* Placeholder route for How Mawahib Works */}
-          <Route path="/how-mawahib-works" element={
-            <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", padding: "120px 40px", textAlign: "center" }}>
-              <div>
-                <Label>HOW IT WORKS</Label>
-                <h1 style={{ fontFamily: "'DM Serif Display',serif", fontStyle: "italic", fontSize: "clamp(2.5rem,6vw,5rem)", color: "#fff", marginBottom: 20 }}>
-                  How <span className="gold-shimmer">Mawahib</span> Works
-                </h1>
-                <p style={{ color: "rgba(255,255,255,.4)", fontSize: 16, maxWidth: 480, margin: "0 auto 32px" }}>
-                  This page is coming soon. In the meantime, reach us on WhatsApp for a live walkthrough.
-                </p>
-                <motion.a href={WHATSAPP_URL} target="_blank"
-                  whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}
-                  style={{ display: "inline-block", background: `linear-gradient(135deg,${C.gold},${C.goldBright})`, borderRadius: 12, padding: "13px 30px", fontSize: 14, fontWeight: 700, color: C.bgDark, textDecoration: "none" }}>
-                  Chat With Us on WhatsApp
-                </motion.a>
-              </div>
-            </div>
-          }/>
+          <Route path="/how-mawahib-works" element={<HowItWorks/>}/>
         </Routes>
         <Footer/>
       </motion.div>
     </Router>
   );
 }
+

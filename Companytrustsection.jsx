@@ -16,7 +16,8 @@ const C = {
 /* ─── Company logos ──────────────────────────────────────────────── */
 const LOGOS = [
   { name: "High Rock", src: "./HIGH ROCK LOGO.png" },
-  { name: "RetailGroup", src: "./IMG_30701.PNG" },
+  { name: "RetailGroup", src: "./IMG_30701.png" },
+  { name: "OwnMind", src: "./OwnMind.png" },
   { name: "Holy Rock", src: "./Holy rock Logo-01.png" },
   { name: "MediCare", src: "./MAHAWHIB.jpeg" },
 ];
@@ -38,13 +39,14 @@ function LogoItem({ logo }) {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        width: 200,
-        height: 100,
-        margin: "0 clamp(14px, 2.5vw, 28px)",
-        borderRadius: 14,
-        background: "rgba(255,255,255,.04)",
-        border: "1px solid rgba(255,255,255,.07)",
-        backdropFilter: "blur(12px)",
+        width: "clamp(200px, 26vw, 280px)",
+        height: "clamp(100px, 13vw, 140px)",
+        margin: "0 clamp(12px, 2.2vw, 26px)",
+        borderRadius: 16,
+        background: "linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03))",
+        border: "1px solid rgba(255,255,255,.10)",
+        boxShadow: "inset 0 0 0 1px rgba(184,149,90,.05)",
+        backdropFilter: "blur(14px)",
         transition: "all .35s ease",
         cursor: "default",
         overflow: "hidden",
@@ -52,13 +54,13 @@ function LogoItem({ logo }) {
       onMouseOver={(e) => {
         e.currentTarget.style.background = "rgba(255,255,255,.08)";
         e.currentTarget.style.borderColor = "rgba(184,149,90,.35)";
-        e.currentTarget.style.boxShadow = "0 6px 24px rgba(184,149,90,.12)";
-        e.currentTarget.style.transform = "scale(1.05)";
+        e.currentTarget.style.boxShadow = "0 10px 30px rgba(184,149,90,.18)";
+        e.currentTarget.style.transform = "scale(1.04)";
       }}
       onMouseOut={(e) => {
-        e.currentTarget.style.background = "rgba(255,255,255,.04)";
-        e.currentTarget.style.borderColor = "rgba(255,255,255,.07)";
-        e.currentTarget.style.boxShadow = "none";
+        e.currentTarget.style.background = "linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03))";
+        e.currentTarget.style.borderColor = "rgba(255,255,255,.10)";
+        e.currentTarget.style.boxShadow = "inset 0 0 0 1px rgba(184,149,90,.05)";
         e.currentTarget.style.transform = "scale(1)";
       }}
     >
@@ -67,12 +69,12 @@ function LogoItem({ logo }) {
         alt={logo.name}
         loading="lazy"
         style={{
-          maxWidth: "88%",
-          maxHeight: "80%",
+          maxWidth: "90%",
+          maxHeight: "85%",
           objectFit: "contain",
-          filter: "brightness(.85) contrast(1.1) saturate(.9)",
+          filter: "brightness(.95) contrast(1.05) saturate(1)",
           transition: "filter .3s",
-          borderRadius: 8,
+          borderRadius: 10,
           /* Dark blend so white-bg logos look dark-themed */
           mixBlendMode: "lighten",
         }}
