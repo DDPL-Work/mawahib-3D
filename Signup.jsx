@@ -40,6 +40,8 @@ function MawahibLogo() {
 }
 
 export default function Signup() {
+  const [customerName, setCustomerName] = useState("");
+  const [company, setCompany] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
@@ -48,7 +50,7 @@ export default function Signup() {
   const handleSubmit = e => {
     e.preventDefault();
     setError("");
-    if (!email || !password || !confirm) {
+    if (!customerName || !company || !email || !password || !confirm) {
       setError("Please fill in all fields.");
       return;
     }
@@ -69,7 +71,9 @@ export default function Signup() {
           <MawahibLogo />
           <div className="auth-title">Create My Account</div>
           <form className="auth-form" onSubmit={handleSubmit}>
-            <input className="auth-input" type="email" placeholder="Email address" value={email} onChange={e => setEmail(e.target.value)} autoFocus required />
+            <input className="auth-input" type="text" placeholder="Customer name" value={customerName} onChange={e => setCustomerName(e.target.value)} autoFocus required />
+            <input className="auth-input" type="text" placeholder="Company" value={company} onChange={e => setCompany(e.target.value)} required />
+            <input className="auth-input" type="email" placeholder="Email address" value={email} onChange={e => setEmail(e.target.value)} required />
             <input className="auth-input" type="password" placeholder="Password" value={password} onChange={e => setPassword(e.target.value)} required />
             <input className="auth-input" type="password" placeholder="Confirm password" value={confirm} onChange={e => setConfirm(e.target.value)} required />
             {error && <div style={{ color: '#f87171', fontSize: 14, marginBottom: 6 }}>{error}</div>}
