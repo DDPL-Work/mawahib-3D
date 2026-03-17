@@ -86,6 +86,21 @@ const InfoCard = ({ icon: Icon, title, description, delay }) => (
   </motion.div>
 );
 
+const orgCardStyle = {
+  background: "rgba(255,255,255,0.03)",
+  border: "1px solid rgba(184,149,90,0.22)",
+  borderRadius: 22,
+  padding: "30px 22px",
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "center",
+  textAlign: "center",
+  gap: 12,
+  minHeight: 160,
+  backdropFilter: "blur(10px)",
+  boxShadow: "0 12px 34px rgba(0,0,0,.35)"
+};
+
 export default function Pricing() {
   return (
     <>
@@ -201,10 +216,10 @@ export default function Pricing() {
                   whileInView={{ opacity: 1, scale: 1 }}
                   viewport={{ once: true }}
                   transition={{ delay: 0.1 }}
-                  style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(184,149,90,0.15)", borderRadius: 20, padding: "24px", display: "flex", alignItems: "center", gap: 16 }}
+                  style={orgCardStyle}
                 >
-                  <TrendingUp color={C.goldBright} size={24} />
-                  <span style={{ fontSize: 16, fontWeight: 500 }}>Growing startups</span>
+                  <TrendingUp color={C.goldBright} size={28} />
+                  <span style={{ fontSize: 16, fontWeight: 600 }}>Growing startups</span>
                 </motion.div>
                 
                 <motion.div
@@ -212,10 +227,10 @@ export default function Pricing() {
                   whileInView={{ opacity: 1, scale: 1 }}
                   viewport={{ once: true }}
                   transition={{ delay: 0.2 }}
-                  style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(184,149,90,0.15)", borderRadius: 20, padding: "24px", display: "flex", alignItems: "center", gap: 16 }}
+                  style={orgCardStyle}
                 >
-                  <Building color={C.goldBright} size={24} />
-                  <span style={{ fontSize: 16, fontWeight: 500 }}>Mid-sized companies</span>
+                  <Building color={C.goldBright} size={28} />
+                  <span style={{ fontSize: 16, fontWeight: 600 }}>Mid-sized companies</span>
                 </motion.div>
 
                 <motion.div
@@ -223,10 +238,10 @@ export default function Pricing() {
                   whileInView={{ opacity: 1, scale: 1 }}
                   viewport={{ once: true }}
                   transition={{ delay: 0.3 }}
-                  style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(184,149,90,0.15)", borderRadius: 20, padding: "24px", display: "flex", alignItems: "center", gap: 16 }}
+                  style={orgCardStyle}
                 >
-                  <Building2 color={C.goldBright} size={24} />
-                  <span style={{ fontSize: 16, fontWeight: 500 }}>Large enterprises</span>
+                  <Building2 color={C.goldBright} size={28} />
+                  <span style={{ fontSize: 16, fontWeight: 600 }}>Large enterprises</span>
                 </motion.div>
 
                 <motion.div
@@ -234,10 +249,10 @@ export default function Pricing() {
                   whileInView={{ opacity: 1, scale: 1 }}
                   viewport={{ once: true }}
                   transition={{ delay: 0.4 }}
-                  style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(184,149,90,0.15)", borderRadius: 20, padding: "24px", display: "flex", alignItems: "center", gap: 16 }}
+                  style={orgCardStyle}
                 >
-                  <Users color={C.goldBright} size={24} />
-                  <span style={{ fontSize: 16, fontWeight: 500 }}>High-volume recruitment</span>
+                  <Users color={C.goldBright} size={28} />
+                  <span style={{ fontSize: 16, fontWeight: 600 }}>High-volume recruitment</span>
                 </motion.div>
               </div>
             </div>

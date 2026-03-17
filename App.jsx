@@ -764,6 +764,7 @@ function Nav() {
   }, [pathname]);
 
   const links = [
+    { name: "Home", path: "/" },
     { name: "About", path: "/about" },
     { name: "How It Works", path: "/how-mawahib-works" },
     { name: "Pricing", path: "/pricing" },
@@ -942,8 +943,7 @@ function HeroSection() {
     { val: "190+", sub: "Countries" },
     { val: "20+", sub: "Languages" },
     { val: "All", sub: "Industries" },
-    { val: "Any", sub: "Job Role" },
-    { val: "Startups", sub: "Enterprises" }
+    { val: "Any", sub: "Job Role" }
   ];
 
   return (
