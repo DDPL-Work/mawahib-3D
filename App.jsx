@@ -1068,7 +1068,8 @@ function HeroSection() {
               gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
               gap: 16,
               alignSelf: "center",
-              justifySelf: "end"
+              justifySelf: "end",
+              transform: "translate(clamp(10px, 1vw, 18px), clamp(18px, 2vh, 28px))"
             }}>
               {stats.map(({ val, sub }) => (
                 <motion.div key={val}
