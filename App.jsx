@@ -950,8 +950,6 @@ function HeroSection() {
     <section style={{
       position: "relative",
       minHeight: "100vh",
-      display: "flex",
-      alignItems: "center",
       zIndex: 10,
       overflow: "hidden",
       /* Push planet graphic more to the right with a narrower gradient */
@@ -961,9 +959,19 @@ function HeroSection() {
         y, opacity, scale,
         padding: isMobile ? `0 ${PAGE_X.mobile}` : `0 ${PAGE_X.desktop}`,
         paddingTop: isMobile ? "clamp(90px, 12vh, 110px)" : 90,
-        maxWidth: "clamp(340px,44vw,580px)",
+        paddingBottom: isMobile ? "clamp(48px, 8vh, 72px)" : 90,
         width: "100%"
       }}>
+        <div style={{
+          maxWidth: 1280,
+          margin: "0 auto",
+          minHeight: isMobile ? "auto" : "calc(100vh - 180px)",
+          display: "grid",
+          gridTemplateColumns: isMobile ? "1fr" : "minmax(0, 1.05fr) minmax(300px, 360px)",
+          gap: isMobile ? 32 : "clamp(40px, 6vw, 88px)",
+          alignItems: "center"
+        }}>
+          <div style={{ width: "100%", maxWidth: "clamp(340px,44vw,580px)" }}>
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.3 }}>
           <Label>AI-POWERED HIRING INTELLIGENCE</Label>
         </motion.div>
@@ -1051,37 +1059,43 @@ function HeroSection() {
             ))}
           </div>
         )}
+          </div>
+
+          {!isMobile && (
+            <div style={{
+              width: "100%",
+              display: "grid",
+              gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+              gap: 16,
+              alignSelf: "center",
+              justifySelf: "end"
+            }}>
+              {stats.map(({ val, sub }) => (
+                <motion.div key={val}
+                  initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }}
+                  style={{
+                    minHeight: 128,
+                    background: "linear-gradient(180deg, rgba(6,10,22,.85), rgba(3,6,16,.7))",
+                    border: "1px solid rgba(184,149,90,.28)",
+                    borderRadius: 18,
+                    padding: "18px 16px",
+                    backdropFilter: "blur(22px)",
+                    boxShadow: "0 12px 36px rgba(0,0,0,.38), inset 0 0 0 1px rgba(255,255,255,.04)",
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    textAlign: "center"
+                  }}>
+                  <div style={{ fontSize: "clamp(22px,2.6vw,32px)", fontWeight: 800, color: "#fff", letterSpacing: "-.03em" }}>{val}</div>
+                  <div style={{ fontSize: 10, color: C.gold, fontWeight: 700, letterSpacing: ".08em", marginTop: 6 }}>{sub}</div>
+                </motion.div>
+              ))}
+            </div>
+          )}
+        </div>
       </motion.div>
 
-      {/* Desktop Floating Stats — positioned closer to text block */}
-      {!isMobile && (
-        <div style={{
-          position: "absolute",
-          /* Moved closer: was 5-8%, now at right edge of text ~46-50% */
-          right: "clamp(2%,4vw,6%)",
-          top: "50%",
-          transform: "translateY(-50%)",
-          display: "flex", flexDirection: "column", gap: 14,
-          zIndex: 20, pointerEvents: "none"
-        }}>
-          {stats.map(({ val, sub }) => (
-            <motion.div key={val}
-              initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }}
-              style={{
-                minWidth: "clamp(140px, 16vw, 190px)",
-                background: "linear-gradient(180deg, rgba(6,10,22,.85), rgba(3,6,16,.7))",
-                border: "1px solid rgba(184,149,90,.28)",
-                borderRadius: 18,
-                padding: "16px 22px",
-                backdropFilter: "blur(22px)",
-                boxShadow: "0 12px 36px rgba(0,0,0,.38), inset 0 0 0 1px rgba(255,255,255,.04)"
-              }}>
-              <div style={{ fontSize: "clamp(22px,2.6vw,32px)", fontWeight: 800, color: "#fff", letterSpacing: "-.03em" }}>{val}</div>
-              <div style={{ fontSize: 10, color: C.gold, fontWeight: 700, letterSpacing: ".08em" }}>{sub}</div>
-            </motion.div>
-          ))}
-        </div>
-      )}
     </section>
   );
 }
