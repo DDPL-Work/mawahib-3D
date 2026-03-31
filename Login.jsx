@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { DASHBOARD_AUTH_KEY, LOGIN_CREDENTIALS } from "./authConfig";
 
 const C = {
   gold: "#b8955a",
@@ -12,7 +13,10 @@ const FontLink = () => (
   <>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=DM+Serif+Display:ital@0;1&display=swap"
+      rel="stylesheet"
+    />
   </>
 );
 
@@ -35,25 +39,49 @@ const GlobalStyles = () => (
 
 function MawahibLogo() {
   return (
-    <img src="/logo-m.png" alt="Mawahib" height={44} className="auth-logo" style={{height:140,marginBottom:18}} />
+    <img
+      src="/logo-m.png"
+      alt="Mawahib"
+      height={44}
+      className="auth-logo"
+      style={{ height: 140, marginBottom: 18 }}
+    />
   );
 }
 
 export default function Login() {
+  const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
-  const handleSubmit = e => {
+  useEffect(() => {
+    const isLoggedIn = sessionStorage.getItem(DASHBOARD_AUTH_KEY) === "true";
+    if (isLoggedIn) {
+      navigate("/dashboard", { replace: true });
+    }
+  }, [navigate]);
+
+  const handleSubmit = (e) => {
     e.preventDefault();
     setError("");
-    // Add authentication logic here
+
     if (!email || !password) {
       setError("Please enter both email and password.");
       return;
     }
-    // Simulate login
-    alert("Logged in! (Demo)");
+
+    const normalizedEmail = email.trim().toLowerCase();
+    const isValidEmail = normalizedEmail === LOGIN_CREDENTIALS.email;
+    const isValidPassword = password === LOGIN_CREDENTIALS.password;
+
+    if (!isValidEmail || !isValidPassword) {
+      setError("Invalid credentials. Please use the provided login details.");
+      return;
+    }
+
+    sessionStorage.setItem(DASHBOARD_AUTH_KEY, "true");
+    navigate("/dashboard", { replace: true });
   };
 
   return (
@@ -61,18 +89,42 @@ export default function Login() {
       <FontLink />
       <GlobalStyles />
       <div className="auth-container">
-        <motion.div className="auth-card" initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+        <motion.div
+          className="auth-card"
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
           <MawahibLogo />
           <div className="auth-title">Log In to Mawahib</div>
           <form className="auth-form" onSubmit={handleSubmit}>
-            <input className="auth-input" type="email" placeholder="Email address" value={email} onChange={e => setEmail(e.target.value)} autoFocus required />
-            <input className="auth-input" type="password" placeholder="Password" value={password} onChange={e => setPassword(e.target.value)} required />
-            {error && <div style={{ color: '#f87171', fontSize: 14, marginBottom: 6 }}>{error}</div>}
-            <button className="auth-btn" type="submit">Log In</button>
+            <input
+              className="auth-input"
+              type="email"
+              placeholder="Email address"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              autoFocus
+              required
+            />
+            <input
+              className="auth-input"
+              type="password"
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+            {error && <div style={{ color: "#f87171", fontSize: 14, marginBottom: 6 }}>{error}</div>}
+            <button className="auth-btn" type="submit">
+              Log In
+            </button>
           </form>
-          <div style={{ marginTop: 18, fontSize: 15, color: '#aaa' }}>
-            Don’t have an account?{' '}
-            <Link to="/signup" className="auth-link">Create Your Account</Link>
+          <div style={{ marginTop: 18, fontSize: 15, color: "#aaa" }}>
+            Don't have an account?{" "}
+            <Link to="/signup" className="auth-link">
+              Create Your Account
+            </Link>
           </div>
         </motion.div>
       </div>

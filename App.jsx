@@ -9,7 +9,7 @@ function ScrollToTop() {
   return null;
 }
 import { useRef, useEffect, useState, useMemo, Suspense, useCallback } from "react";
-import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Link, useNavigate } from "react-router-dom";
 import { motion, useScroll, useTransform, useSpring, useInView, AnimatePresence, useMotionValue, useVelocity } from "framer-motion";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import Pricing from "./Pricing";
@@ -17,9 +17,13 @@ import About from "./About";
 import Privacy from "./Privacy";
 import Login from "./Login";
 import Signup from "./Signup";
+import Dashboard from "./Dashboard";
+import CVResults from "./resume";
+import Interview from "./Interview";
 import HowItWorks from "./HowItWorks";
 import CompanyTrustSection from "./Companytrustsection";
-import { Menu, X } from "lucide-react";
+import { Bell, LogOut, Menu, X } from "lucide-react";
+import { DASHBOARD_AUTH_KEY } from "./authConfig";
 
 import * as THREE from "three";
 
@@ -740,10 +744,12 @@ function AnimCount({ val, suffix="" }) {
    NAV
 ══════════════════════════════════════════════════════════════════════ */
 function Nav() {
+  const navigate = useNavigate();
   const [scrolled, setScrolled] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const { pathname } = useLocation();
+  const isLoggedIn = sessionStorage.getItem(DASHBOARD_AUTH_KEY) === "true";
 
   useEffect(() => {
     const fn = () => setScrolled(window.scrollY > 60);
@@ -770,6 +776,12 @@ function Nav() {
     { name: "Pricing", path: "/pricing" },
     { name: "Privacy", path: "/privacy" },
   ];
+
+  const handleLogout = () => {
+    sessionStorage.removeItem(DASHBOARD_AUTH_KEY);
+    setIsOpen(false);
+    navigate("/login");
+  };
 
   return (
     <>
@@ -811,18 +823,69 @@ function Nav() {
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           {!isMobile && (
             <>
-              <motion.a href="https://mawahib.ai/request-campaign" target="_blank" rel="noopener noreferrer"
-                whileHover={{ scale: 1.04, boxShadow: `0 8px 28px rgba(184,149,90,.35)` }} whileTap={{ scale: .96 }}
-                style={{ background: `linear-gradient(135deg,${C.gold},${C.goldBright})`, borderRadius: 10, padding: "9px 22px", fontSize: 13, fontWeight: 700, color: C.bgDark, textDecoration: "none", boxShadow: `0 4px 18px rgba(184,149,90,.25)`, lineHeight: 1, whiteSpace: "nowrap" }}>
-                Request Campaign
-              </motion.a>
-              <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}>
-                <Link to="/login" style={{
-                  background: "rgba(255,255,255,.05)",
-                  border: "1px solid rgba(255,255,255,.18)",
-                  borderRadius: 10, padding: "9px 22px", fontSize: 13, fontWeight: 700, color: "rgba(255,255,255,.82)", textDecoration: "none", display: "inline-flex", alignItems: "center", lineHeight: 1, whiteSpace: "nowrap"
-                }}>Log In</Link>
-              </motion.div>
+              {!isLoggedIn ? (
+                <>
+                  <motion.a href="https://mawahib.ai/request-campaign" target="_blank" rel="noopener noreferrer"
+                    whileHover={{ scale: 1.04, boxShadow: `0 8px 28px rgba(184,149,90,.35)` }} whileTap={{ scale: .96 }}
+                    style={{ background: `linear-gradient(135deg,${C.gold},${C.goldBright})`, borderRadius: 10, padding: "9px 22px", fontSize: 13, fontWeight: 700, color: C.bgDark, textDecoration: "none", boxShadow: `0 4px 18px rgba(184,149,90,.25)`, lineHeight: 1, whiteSpace: "nowrap" }}>
+                    Request Campaign
+                  </motion.a>
+                  <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}>
+                    <Link to="/login" style={{
+                      background: "rgba(255,255,255,.05)",
+                      border: "1px solid rgba(255,255,255,.18)",
+                      borderRadius: 10, padding: "9px 22px", fontSize: 13, fontWeight: 700, color: "rgba(255,255,255,.82)", textDecoration: "none", display: "inline-flex", alignItems: "center", lineHeight: 1, whiteSpace: "nowrap"
+                    }}>Log In</Link>
+                  </motion.div>
+                </>
+              ) : (
+                <>
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    type="button"
+                    aria-label="Notifications"
+                    style={{
+                      width: 42,
+                      height: 42,
+                      borderRadius: 10,
+                      border: "1px solid rgba(184,149,90,.28)",
+                      background: "rgba(184,149,90,.10)",
+                      color: "rgba(255,255,255,.9)",
+                      cursor: "pointer",
+                      display: "inline-flex",
+                      alignItems: "center",
+                      justifyContent: "center"
+                    }}
+                  >
+                    <Bell size={18} />
+                  </motion.button>
+                  <motion.button
+                    whileHover={{ scale: 1.04 }}
+                    whileTap={{ scale: 0.96 }}
+                    type="button"
+                    onClick={handleLogout}
+                    style={{
+                      background: "rgba(255,255,255,.05)",
+                      border: "1px solid rgba(255,255,255,.18)",
+                      borderRadius: 10,
+                      padding: "9px 16px",
+                      fontSize: 13,
+                      fontWeight: 700,
+                      color: "rgba(255,255,255,.86)",
+                      lineHeight: 1,
+                      whiteSpace: "nowrap",
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: 7,
+                      cursor: "pointer"
+                    }}
+                  >
+                    <LogOut size={14} />
+                    Log Out
+                  </motion.button>
+                </>
+              )}
             </>
           )}
 
@@ -884,34 +947,57 @@ function Nav() {
                   </Link>
                 ))}
                 <div style={{ width: "100%", height: 1, background: "rgba(184,149,90,.18)" }} />
-                <motion.a href="https://mawahib.ai/request-campaign" target="_blank" rel="noopener noreferrer"
-                  whileTap={{ scale: 0.98 }}
-                  style={{
-                    background: `linear-gradient(135deg,${C.gold},${C.goldBright})`,
-                    borderRadius: 12,
-                    padding: "12px 18px",
-                    fontSize: 14,
-                    fontWeight: 700,
-                    color: C.bgDark,
-                    textDecoration: "none",
-                    width: "100%",
-                    textAlign: "center",
-                    boxShadow: "0 10px 24px rgba(184,149,90,.3)"
-                  }}>
-                  Request Campaign
-                </motion.a>
-                <Link to="/login" onClick={() => setIsOpen(false)} style={{
-                  background: "rgba(255,255,255,.04)",
-                  border: "1px solid rgba(255,255,255,.12)",
-                  borderRadius: 12,
-                  padding: "12px 18px",
-                  fontSize: 14,
-                  fontWeight: 700,
-                  color: "rgba(255,255,255,.9)",
-                  textDecoration: "none",
-                  width: "100%",
-                  textAlign: "center"
-                }}>Log In</Link>
+                {!isLoggedIn ? (
+                  <>
+                    <motion.a href="https://mawahib.ai/request-campaign" target="_blank" rel="noopener noreferrer"
+                      whileTap={{ scale: 0.98 }}
+                      style={{
+                        background: `linear-gradient(135deg,${C.gold},${C.goldBright})`,
+                        borderRadius: 12,
+                        padding: "12px 18px",
+                        fontSize: 14,
+                        fontWeight: 700,
+                        color: C.bgDark,
+                        textDecoration: "none",
+                        width: "100%",
+                        textAlign: "center",
+                        boxShadow: "0 10px 24px rgba(184,149,90,.3)"
+                      }}>
+                      Request Campaign
+                    </motion.a>
+                    <Link to="/login" onClick={() => setIsOpen(false)} style={{
+                      background: "rgba(255,255,255,.04)",
+                      border: "1px solid rgba(255,255,255,.12)",
+                      borderRadius: 12,
+                      padding: "12px 18px",
+                      fontSize: 14,
+                      fontWeight: 700,
+                      color: "rgba(255,255,255,.9)",
+                      textDecoration: "none",
+                      width: "100%",
+                      textAlign: "center"
+                    }}>Log In</Link>
+                  </>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleLogout}
+                    style={{
+                      background: "rgba(255,255,255,.04)",
+                      border: "1px solid rgba(255,255,255,.12)",
+                      borderRadius: 12,
+                      padding: "12px 18px",
+                      fontSize: 14,
+                      fontWeight: 700,
+                      color: "rgba(255,255,255,.9)",
+                      width: "100%",
+                      textAlign: "center",
+                      cursor: "pointer"
+                    }}
+                  >
+                    Log Out
+                  </button>
+                )}
               </div>
             </div>
           </motion.div>
@@ -1872,6 +1958,13 @@ function Footer() {
 export default function App() {
   const [loaded, setLoaded] = useState(false);
   const handleDone = useCallback(() => setLoaded(true), []);
+
+  function AppChrome() {
+    const { pathname } = useLocation();
+    if (pathname === "/resume" || pathname === "/interview") return null;
+    return <Nav />;
+  }
+
   return (
     <Router>
       <FontLink/>
@@ -1886,7 +1979,7 @@ export default function App() {
         style={{ position: "relative", zIndex: 10 }}>
         <CustomCursor/>
         <ScrollProgress/>
-        <Nav/>
+        <AppChrome/>
         <Routes>
           <Route path="/" element={
             <main>
@@ -1923,6 +2016,9 @@ export default function App() {
           <Route path="/privacy" element={<Privacy/>}/>
           <Route path="/login" element={<Login/>}/>
           <Route path="/signup" element={<Signup/>}/>
+          <Route path="/dashboard" element={<Dashboard/>}/> 
+          <Route path="/resume" element={<CVResults/>}/>
+          <Route path="/interview" element={<Interview/>}/>
           <Route path="/how-mawahib-works" element={<HowItWorks/>}/>
         </Routes>
         <Footer/>
