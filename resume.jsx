@@ -79,36 +79,42 @@ const CANDIDATES = [
 ];
 
 // â”€â”€â”€ Styles â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-const GlobalStyles = () => (
+const GlobalStyles = ({ embedded = false }) => {
+  const rootBackground = embedded
+    ? "transparent"
+    : `radial-gradient(ellipse 80vw 55vh at 100% -5%, rgba(184,149,90,0.11) 0%, transparent 55%),
+       radial-gradient(ellipse 55vw 45vh at -5% 95%, rgba(95,158,255,0.06) 0%, transparent 50%),
+       ${C.bgDark}`;
+
+  return (
   <style>{`
     @import url('https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=DM+Serif+Display:ital@0;1&display=swap');
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    ${embedded ? "" : `
     html, body { scrollbar-width: none; }
     html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
+    `}
 
     .cv-root {
-      min-height: 100vh;
-      background:
-        radial-gradient(ellipse 80vw 55vh at 100% -5%, rgba(184,149,90,0.11) 0%, transparent 55%),
-        radial-gradient(ellipse 55vw 45vh at -5% 95%, rgba(95,158,255,0.06) 0%, transparent 50%),
-        ${C.bgDark};
+      min-height: ${embedded ? "auto" : "100vh"};
+      background: ${rootBackground};
       color: #f5f0eb;
       font-family: 'Sora', sans-serif;
-      padding: clamp(16px, 2.5vw, 32px);
+      padding: ${embedded ? "0" : "clamp(16px, 2.5vw, 32px)"};
     }
 
     .cv-shell {
-      max-width: 1220px;
+      max-width: ${embedded ? "100%" : "1220px"};
       margin: 0 auto;
     }
     .cv-top {
       display: flex;
       flex-direction: column;
-      align-items: center;
-      text-align: center;
+      align-items: ${embedded ? "flex-start" : "center"};
+      text-align: ${embedded ? "left" : "center"};
       gap: 8px;
-      margin-bottom: 14px;
+      margin-bottom: ${embedded ? "12px" : "14px"};
     }
     .cv-breadcrumb {
       display: flex;
@@ -134,10 +140,10 @@ const GlobalStyles = () => (
       color: #fff;
     }
     .cv-desc {
-      margin: 2px auto 0;
+      margin: ${embedded ? "2px 0 0" : "2px auto 0"};
       font-size: 13px;
       color: ${C.inkSoft};
-      max-width: 760px;
+      max-width: ${embedded ? "none" : "760px"};
     }
 
     /* â”€â”€ Summary Cards â”€â”€ */
@@ -252,7 +258,7 @@ const GlobalStyles = () => (
       border: 1px solid ${C.line};
       border-radius: 24px;
       backdrop-filter: blur(16px);
-      box-shadow: 0 16px 48px rgba(0,0,0,0.32);
+      box-shadow: ${embedded ? "none" : "0 16px 48px rgba(0,0,0,0.32)"};
       overflow: hidden;
     }
     .cv-panel-head {
@@ -671,7 +677,8 @@ const GlobalStyles = () => (
       .cv-summary-row { grid-template-columns: 1fr; }
     }
   `}</style>
-);
+  );
+};
 
 // â”€â”€â”€ Score color helper â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function scoreClass(s) {
@@ -693,7 +700,7 @@ function statusDotColor(s) {
 }
 
 // â”€â”€â”€ Component â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-export default function CVResults() {
+export default function CVResults({ embedded = false }) {
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
@@ -768,15 +775,17 @@ export default function CVResults() {
 
   return (
     <>
-      <GlobalStyles />
+      <GlobalStyles embedded={embedded} />
       <div className="cv-root">
         <div className="cv-shell">
           <header className="cv-top">
-            <div className="cv-breadcrumb">
-              <button type="button" className="cv-crumb-link" onClick={() => navigate("/dashboard")}>Dashboard</button>
-              <span>/</span>
-              <span>CvResults</span>
-            </div>
+            {!embedded && (
+              <div className="cv-breadcrumb">
+                <button type="button" className="cv-crumb-link" onClick={() => navigate("/dashboard")}>Dashboard</button>
+                <span>/</span>
+                <span>CvResults</span>
+              </div>
+            )}
             <h1>Resume Results</h1>
             <p className="cv-desc">Review submitted CVs, compare scores, and shortlist the right candidates.</p>
           </header>
@@ -1145,8 +1154,3 @@ export default function CVResults() {
     </>
   );
 }
-
-
-
-
-

@@ -1,1669 +1,1520 @@
-﻿import { useEffect, useMemo, useRef, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { useNavigate } from "react-router-dom";
+﻿import { useState, useMemo, useRef, useEffect } from "react";
 import {
-  CircleEllipsis,
-  Clock3,
-  LogOut,
-  Plus,
-  Search,
-  Settings,
-  ChevronLeft,
-  ChevronRight,
-  Users,
-  BarChart3,
-  Briefcase,
-  Sparkles,
+  Plus, Search, Settings, LogOut, Clock, Copy, ExternalLink,
+  BarChart2, Users, CheckCircle2, ArrowRight, MoreHorizontal,
+  Sparkles, TrendingUp, FileText, MessageSquare, Brain, Gavel,
+  Globe, Layers, X, Calendar, Link2, Eye,
+  UserCheck, UserX, AlertCircle, Award, BarChart, PieChart,
 } from "lucide-react";
-import { MdPerson, MdSearch as MdSearchIcon, MdExtension, MdGavel, MdMemory, MdChat } from "react-icons/md";
-import { DASHBOARD_AUTH_KEY } from "./authConfig";
+import { useNavigate } from "react-router-dom";
+import CVResults from "./resume";
 
-// â”€â”€â”€ Design Tokens â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Design Tokens ────────────────────────────────────────────────────────────
 const C = {
-  bgDark: "#080d1c",
-  bgPanel: "rgba(11,17,34,0.88)",
-  bgPanelSoft: "rgba(10,15,30,0.72)",
-  bgCard: "rgba(8,12,24,0.82)",
-  gold: "#b8955a",
-  goldBright: "#f0c97a",
-  goldDim: "rgba(240,201,122,0.18)",
-  inkSoft: "rgba(245,240,235,0.78)",
-  inkMuted: "rgba(245,240,235,0.46)",
-  line: "rgba(184,149,90,0.18)",
-  lineStrong: "rgba(184,149,90,0.35)",
-  blue: "#5f9eff",
-  blueGlow: "rgba(95,158,255,0.15)",
-  green: "#39c98f",
-  greenDim: "rgba(57,201,143,0.15)",
-  yellow: "#e3c466",
-  red: "#ff6b6b",
+  bgDark:        "#080d1c",
+  bgPanel:       "rgba(11,17,34,0.90)",
+  bgCard:        "rgba(8,12,24,0.85)",
+  bgCardHover:   "rgba(12,18,36,0.95)",
+  bgInput:       "rgba(6,10,20,0.75)",
+  gold:          "#b8955a",
+  goldBright:    "#f0c97a",
+  goldDim:       "rgba(240,201,122,0.14)",
+  goldBorder:    "rgba(184,149,90,0.28)",
+  goldBorderHot: "rgba(240,201,122,0.55)",
+  inkWhite:      "#ffffff",
+  inkSoft:       "rgba(245,240,235,0.82)",
+  inkMuted:      "rgba(245,240,235,0.48)",
+  inkFaint:      "rgba(245,240,235,0.22)",
+  line:          "rgba(184,149,90,0.16)",
+  lineStrong:    "rgba(184,149,90,0.32)",
+  blue:          "#5f9eff",
+  blueDim:       "rgba(95,158,255,0.12)",
+  green:         "#39c98f",
+  greenDim:      "rgba(57,201,143,0.12)",
+  greenBright:   "rgba(57,201,143,0.9)",
+  yellow:        "#e3c466",
+  yellowDim:     "rgba(227,196,102,0.12)",
+  red:           "#ff6b6b",
+  redDim:        "rgba(255,107,107,0.12)",
 };
 
-// â”€â”€â”€ Data â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-const CREATE_TABS = ["All", "General", "Stage 2", "Assessment", "Language", "Behavior"];
-
-const CREATE_CARDS = [
-  {
-    title: "First Interview",
-    category: "General",
-    description: "CV-based screening interview to evaluate core qualifications and cultural fit.",
-    icon: MdPerson,
-  },
-  {
-    title: "Second Interview",
-    category: "Stage 2",
-    description: "Strict follow-up interview based on Stage 1 performance and red flags.",
-    icon: MdSearchIcon,
-  },
-  {
-    title: "Problem Solving",
-    category: "Assessment",
-    description: "Real workplace challenges and decision-making under pressure scenarios.",
-    icon: MdExtension,
-  },
-  {
-    title: "Situational Judgment",
-    category: "Assessment",
-    description: "Workplace scenarios measuring professional judgment and ethics.",
-    icon: MdGavel,
-  },
-  {
-    title: "Cognitive Ability",
-    category: "Assessment",
-    description: "General reasoning, pattern recognition and learning agility tests.",
-    icon: MdMemory,
-  },
-  {
-    title: "English Communication",
-    category: "Language",
-    description: "Conversation fluency, grammar accuracy, and expression clarity.",
-    icon: MdChat,
-  },
-];
-
-const TABLE_ROW = {
-  focus: "demo",
-  code: "DEMO-073298",
-  job: "B2B Sales Representative",
-  company: "Demo Company",
-  created: "3/30/2026",
-  cvEnd: "No end date",
-  interviewEnd: "No end date",
-};
-
-const INTAKE_CODE = "DEMOT-F9908C";
-const CAMPAIGN_LINKS = {
-  cvSubmission: `https://mawahib.ai/apply/${INTAKE_CODE}`,
-  avatarInterview: `https://mawahib.ai/interview?code=${TABLE_ROW.code}`,
-};
-
-const FUNNEL_STEPS = [
-  { label: "Invited", value: 108, color: C.blue },
-  { label: "Submitted CV", value: 62, color: "#4f87e8" },
-  { label: "Interviewed", value: 28, color: C.yellow },
-  { label: "Shortlisted", value: 12, color: C.green },
-  { label: "Hired", value: 5, color: "#28a66f" },
-];
-
-// â”€â”€â”€ Font & Global Styles â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Fonts ────────────────────────────────────────────────────────────────────
 const FontLink = () => (
   <>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=DM+Serif+Display:ital@0;1&display=swap"
-      rel="stylesheet"
-    />
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet" />
   </>
 );
 
-const GlobalStyles = () => (
-  <style>{`
-    *, *::before, *::after { box-sizing: border-box; }
+// ─── Data ─────────────────────────────────────────────────────────────────────
+const CAMPAIGN_TYPES = [
+  { id: "first",    icon: Users,   label: "First Interview",      tag: "General",    desc: "CV-based screening for core qualifications." },
+  { id: "second",   icon: Search,  label: "Second Interview",     tag: "Stage 2",    desc: "Strict follow-up based on Stage 1 results."  },
+  { id: "problem",  icon: Layers,  label: "Problem Solving",      tag: "Assessment", desc: "Real workplace challenges under pressure."    },
+  { id: "judgment", icon: Gavel,   label: "Situational Judgment", tag: "Assessment", desc: "Measure professional ethics and reasoning."   },
+  { id: "cognitive",icon: Brain,   label: "Cognitive Ability",    tag: "Assessment", desc: "Pattern recognition & learning agility."      },
+  { id: "english",  icon: Globe,   label: "English Communication",tag: "Language",   desc: "Fluency, grammar, and expression clarity."   },
+];
 
-    html, body {
-      margin: 0;
-      padding: 0;
-      scrollbar-width: none;
-      -ms-overflow-style: none;
-    }
-    html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
+const TAG_COLORS = {
+  "General":    { bg: C.blueDim,   border: "rgba(95,158,255,0.3)",  text: C.blue       },
+  "Stage 2":    { bg: C.goldDim,   border: C.goldBorder,            text: C.goldBright },
+  "Assessment": { bg: C.greenDim,  border: "rgba(57,201,143,0.3)",  text: C.green      },
+  "Language":   { bg: C.yellowDim, border: "rgba(227,196,102,0.3)", text: C.yellow     },
+};
 
-    /* â”€â”€ Root â”€â”€ */
-    .db-root {
-      min-height: 100vh;
-      background:
-        radial-gradient(ellipse 80vw 60vh at 100% -10%, rgba(184,149,90,0.12) 0%, transparent 55%),
-        radial-gradient(ellipse 60vw 50vh at -5% 90%, rgba(95,158,255,0.07) 0%, transparent 50%),
-        radial-gradient(ellipse 40vw 40vh at 50% 50%, rgba(184,149,90,0.04) 0%, transparent 60%),
-        ${C.bgDark};
-      color: #f5f0eb;
-      font-family: 'Sora', sans-serif;
-      padding: 100px clamp(16px, 2.5vw, 32px) clamp(24px, 3vw, 40px);
-    }
+const CAMPAIGNS = [{
+  id: "demo", code: "DEMO-073298",
+  title: "B2B Sales Representative", company: "Demo Company",
+  created: "Mar 30, 2026", status: "active",
+  applicants: 108, interviewed: 28, shortlisted: 12,
+  intakeCode: "DEMOT-F9908C",
+  cvEnd: "No end date", interviewEnd: "No end date",
+  accessType: "Open access", language: "EN",
+}];
 
-    .db-frame {
-      max-width: 1480px;
-      margin: 0 auto;
-      display: flex;
-      flex-direction: column;
-      gap: 18px;
-    }
+const FUNNEL = [
+  { label: "Invited",      value: 108, pct: 100, color: C.blue       },
+  { label: "CV Submitted", value: 62,  pct: 57,  color: C.goldBright },
+  { label: "Interviewed",  value: 28,  pct: 26,  color: C.yellow     },
+  { label: "Shortlisted",  value: 12,  pct: 11,  color: C.green      },
+  { label: "Hired",        value: 5,   pct: 5,   color: "#28a66f"    },
+];
 
-    /* â”€â”€ Navbar â”€â”€ */
-    .db-navbar {
-      position: fixed;
-      top: 0; left: 0; right: 0;
-      z-index: 100;
-      padding: 12px clamp(16px, 2.5vw, 32px);
-      background: rgba(8,13,26,0.82);
-      border-bottom: 1px solid ${C.line};
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 16px;
-    }
-    .db-brand {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-    .db-logo-chip {
-      width: 44px;
-      height: 44px;
-      border-radius: 12px;
-      border: 1px solid ${C.lineStrong};
-      background: linear-gradient(140deg, rgba(184,149,90,0.28), rgba(184,149,90,0.06));
-      display: grid;
-      place-items: center;
-      flex-shrink: 0;
-    }
-    .db-brand-text {}
-    .db-brand-name {
-      font-size: 15px;
-      font-weight: 700;
-      color: #fff;
-      line-height: 1;
-      letter-spacing: -0.01em;
-    }
-    .db-brand-sub {
-      font-size: 11px;
-      letter-spacing: 0.16em;
-      text-transform: uppercase;
-      color: ${C.inkMuted};
-      font-weight: 600;
-      margin-top: 2px;
-    }
-    .db-nav-actions {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .db-icon-btn {
-      width: 42px;
-      height: 42px;
-      border: 1px solid ${C.line};
-      background: rgba(184,149,90,0.06);
-      color: #f5f0eb;
-      border-radius: 12px;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      position: relative;
-    }
-    .db-icon-btn .dot {
-      position: absolute;
-      top: 9px; right: 9px;
-      width: 7px; height: 7px;
-      border-radius: 50%;
-      background: ${C.goldBright};
-      box-shadow: 0 0 8px ${C.goldBright};
-    }
-    .db-logout-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 7px;
-      padding: 0 16px;
-      height: 42px;
-      border: 1px solid ${C.line};
-      background: rgba(184,149,90,0.06);
-      color: #f5f0eb;
-      border-radius: 12px;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      font-size: 13px;
-      font-weight: 600;
-      font-family: 'Sora', sans-serif;
-      white-space: nowrap;
-    }
-    .db-icon-btn:hover, .db-logout-btn:hover {
-      background: rgba(184,149,90,0.14);
-      border-color: ${C.lineStrong};
-      transform: translateY(-1px);
-    }
+// Mock CV results data
+const CV_RESULTS = [
+  { name: "Sarah Al-Farsi",    score: 84, status: "suitable",    gender: "F", exp: "5 yrs", match: "High" },
+  { name: "Omar Khalid",       score: 77, status: "suitable",    gender: "M", exp: "3 yrs", match: "High" },
+  { name: "Lina Mansoor",      score: 71, status: "suitable",    gender: "F", exp: "4 yrs", match: "Med"  },
+  { name: "Tariq Hassan",      score: 68, status: "suitable",    gender: "M", exp: "6 yrs", match: "Med"  },
+  { name: "Noor Al-Rashid",    score: 62, status: "suitable",    gender: "F", exp: "2 yrs", match: "Med"  },
+  { name: "Khalid Ibrahim",    score: 44, status: "unsuitable",  gender: "M", exp: "1 yr",  match: "Low"  },
+  { name: "Fatima Zahra",      score: 38, status: "unsuitable",  gender: "F", exp: "0 yrs", match: "Low"  },
+  { name: "Yousef Al-Mutairi", score: 31, status: "unsuitable",  gender: "M", exp: "2 yrs", match: "Low"  },
+];
 
-    /* â”€â”€ Hero â”€â”€ */
-    .db-hero {
-      display: grid;
-      grid-template-columns: 1.2fr 0.8fr;
-      gap: 20px;
-      padding: clamp(24px, 3vw, 36px);
-      background: ${C.bgPanel};
-      border: 1px solid ${C.line};
-      border-radius: 28px;
-      backdrop-filter: blur(16px);
-      box-shadow: 0 24px 64px rgba(0,0,0,0.36);
-    }
-    .db-hero-content {}
-    .db-pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 7px;
-      border-radius: 999px;
-      border: 1px solid rgba(184,149,90,0.4);
-      background: rgba(184,149,90,0.1);
-      color: ${C.goldBright};
-      letter-spacing: 0.13em;
-      text-transform: uppercase;
-      font-size: 10.5px;
-      font-weight: 700;
-      padding: 7px 13px;
-      margin-bottom: 18px;
-    }
-    .db-hero h1 {
-      font-family: 'DM Serif Display', serif;
-      font-style: italic;
-      font-size: clamp(2.4rem, 4.8vw, 4.8rem);
-      line-height: 0.97;
-      letter-spacing: -0.025em;
-      margin: 0 0 18px;
-      color: #fff;
-    }
-    .db-hero h1 span { color: ${C.goldBright}; }
-    .db-hero-desc {
-      color: ${C.inkSoft};
-      font-size: clamp(13px, 1.4vw, 15.5px);
-      line-height: 1.8;
-      max-width: 560px;
-      margin: 0 0 28px;
-    }
-    .db-hero-stats {
-      display: flex;
-      gap: 28px;
-      flex-wrap: wrap;
-    }
-    .db-hero-stat {}
-    .db-hero-stat-val {
-      font-family: 'DM Serif Display', serif;
-      font-size: 28px;
-      color: #fff;
-      line-height: 1;
-    }
-    .db-hero-stat-label {
-      font-size: 12px;
-      color: ${C.inkMuted};
-      margin-top: 4px;
-      letter-spacing: 0.04em;
-    }
-    .db-hero-stat-divider {
-      width: 1px;
-      background: ${C.line};
-      align-self: stretch;
-    }
-    .db-hero-image {
-      border-radius: 20px;
-      overflow: hidden;
-      border: 1px solid rgba(184,149,90,0.22);
-      min-height: 260px;
-      max-height: 360px;
-      position: relative;
-      background: linear-gradient(135deg, #0d1427, #081020);
-    }
-    .db-hero-image img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      opacity: 0.88;
-    }
-    .db-hero-image-overlay {
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(135deg, rgba(8,13,28,0.25), transparent);
-    }
+const CV_STATS = {
+  total: 108, suitable: 62, unsuitable: 46, threshold: 50,
+  male: 58, female: 50,
+  scoreRanges: [
+    { range: "80–100", count: 12, color: C.green      },
+    { range: "60–79",  count: 28, color: C.goldBright },
+    { range: "40–59",  count: 22, color: C.yellow     },
+    { range: "0–39",   count: 46, color: C.red        },
+  ],
+};
 
-    /* â”€â”€ Section Wrapper â”€â”€ */
-    .db-section {
-      background: ${C.bgPanel};
-      border: 1px solid ${C.line};
-      border-radius: 28px;
-      backdrop-filter: blur(16px);
-      box-shadow: 0 12px 40px rgba(0,0,0,0.28);
-      overflow: hidden;
-    }
-    .db-section-inner {
-      padding: clamp(20px, 2.5vw, 28px);
-    }
-    .db-section-head {
-      margin-bottom: 20px;
-    }
-    .db-section-head h2 {
-      font-family: 'DM Serif Display', serif;
-      font-size: clamp(1.6rem, 2.8vw, 2.2rem);
-      font-weight: 400;
-      color: #fff;
-      margin: 0 0 6px;
-      letter-spacing: -0.015em;
-    }
-    .db-section-head p {
-      color: ${C.inkMuted};
-      font-size: 13.5px;
-      line-height: 1.6;
-      margin: 0;
-    }
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+const Tag = ({ label }) => {
+  const s = TAG_COLORS[label] || TAG_COLORS["General"];
+  return (
+    <span style={{
+      display: "inline-flex", alignItems: "center",
+      background: s.bg, border: `1px solid ${s.border}`, color: s.text,
+      borderRadius: 999, padding: "3px 9px",
+      fontSize: 11, fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase",
+    }}>{label}</span>
+  );
+};
 
-    /* â”€â”€ Tabs â”€â”€ */
-    .db-tab-row {
-      display: flex;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 7px;
-      margin-bottom: 20px;
-    }
-    .db-tab {
-      border: 1px solid rgba(184,149,90,0.2);
-      background: rgba(255,255,255,0.03);
-      color: ${C.inkMuted};
-      border-radius: 999px;
-      padding: 7px 16px;
-      font-size: 13px;
-      font-weight: 600;
-      font-family: 'Sora', sans-serif;
-      white-space: nowrap;
-      cursor: pointer;
-      transition: all 0.22s ease;
-    }
-    .db-tab:hover {
-      border-color: rgba(184,149,90,0.4);
-      color: ${C.inkSoft};
-    }
-    .db-tab.active {
-      background: linear-gradient(135deg, rgba(184,149,90,0.28), rgba(240,201,122,0.16));
-      border-color: rgba(240,201,122,0.6);
-      color: #fff;
-    }
+const StatusDot = ({ status }) => {
+  const color = status === "active" ? C.green : C.yellow;
+  return (
+    <span style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 12.5, color: C.inkSoft, fontWeight: 500 }}>
+      <span style={{ width: 7, height: 7, borderRadius: "50%", background: color, boxShadow: `0 0 6px ${color}`, flexShrink: 0 }} />
+      {status === "active" ? "Active" : "Paused"}
+    </span>
+  );
+};
 
-    /* â”€â”€ Carousel â”€â”€ */
-    .db-carousel-wrapper {
-      position: relative;
-    }
-    .db-carousel-nav {
-      position: absolute;
-      top: 50%;
-      transform: translateY(-50%);
-      z-index: 10;
-      width: 38px;
-      height: 38px;
-      border-radius: 50%;
-      border: 1px solid ${C.lineStrong};
-      background: rgba(8,12,24,0.92);
-      color: ${C.inkSoft};
-      display: grid;
-      place-items: center;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      backdrop-filter: blur(8px);
-    }
-    .db-carousel-nav:hover {
-      background: rgba(184,149,90,0.2);
-      border-color: ${C.goldBright};
-      color: #fff;
-    }
-    .db-carousel-nav.prev { left: -14px; }
-    .db-carousel-nav.next { right: -14px; }
-    .db-carousel-viewport {
-      overflow: hidden;
-      width: 100%;
-      border-radius: 18px;
-    }
-    .db-create-track {
-      display: grid;
-      grid-auto-flow: column;
-      grid-auto-columns: calc((100% - 36px) / 4);
-      gap: 12px;
-      transition: transform 0.45s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-
-    /* â”€â”€ Campaign Cards â€” FIXED UNIFORM SIZING â”€â”€ */
-    .db-create-card {
-      height: 220px;
-      border: 1px solid rgba(184,149,90,0.18);
-      background: linear-gradient(160deg, rgba(10,14,28,0.9), rgba(7,11,22,0.72));
-      border-radius: 18px;
-      padding: 20px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      transition: all 0.24s ease;
-      overflow: hidden;
-      position: relative;
-    }
-    .db-create-card::before {
-      content: '';
-      position: absolute;
-      top: 0; left: 0; right: 0;
-      height: 1px;
-      background: linear-gradient(90deg, transparent, rgba(240,201,122,0.3), transparent);
-      opacity: 0;
-      transition: opacity 0.24s ease;
-    }
-    .db-create-card:hover {
-      transform: translateY(-3px);
-      border-color: rgba(240,201,122,0.45);
-      box-shadow: 0 20px 40px rgba(0,0,0,0.36), 0 0 0 1px rgba(240,201,122,0.1);
-    }
-    .db-create-card:hover::before { opacity: 1; }
-
-    .db-create-card-top {
-      display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
-      gap: 10px;
-      margin-bottom: 8px;
-    }
-    .db-card-icon {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      color: ${C.goldBright};
-      flex-shrink: 0;
-    }
-    .db-card-icon svg { display: block; }
-    .db-category {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 10.5px;
-      font-weight: 700;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      border-radius: 999px;
-      padding: 5px 11px;
-      border: 1px solid rgba(184,149,90,0.38);
-      color: ${C.goldBright};
-      background: rgba(184,149,90,0.1);
-      white-space: nowrap;
-      flex-shrink: 0;
-    }
-    .db-create-card h3 {
-      font-family: 'DM Serif Display', serif;
-      font-size: 1.45rem;
-      font-weight: 400;
-      color: #fff;
-      margin: 0 0 8px;
-      line-height: 1.15;
-      letter-spacing: -0.01em;
-    }
-    .db-create-card p {
-      color: ${C.inkMuted};
-      font-size: 12.5px;
-      line-height: 1.6;
-      flex: 1;
-      margin: 0 0 14px;
-      overflow: hidden;
-      display: -webkit-box;
-      -webkit-line-clamp: 2;
-      -webkit-box-orient: vertical;
-    }
-    .db-create-btn {
-      border: none;
-      background: none;
-      color: ${C.goldBright};
-      font-size: 13px;
-      font-weight: 700;
-      font-family: 'Sora', sans-serif;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      cursor: pointer;
-      padding: 0;
-      transition: gap 0.2s ease;
-    }
-    .db-create-btn:hover { gap: 9px; }
-
-    /* â”€â”€ Carousel Dots â”€â”€ */
-    .db-carousel-dots {
-      display: flex;
-      justify-content: center;
-      gap: 6px;
-      margin-top: 16px;
-    }
-    .db-carousel-dot {
-      width: 6px; height: 6px;
-      border-radius: 50%;
-      background: rgba(184,149,90,0.3);
-      transition: all 0.2s ease;
-      cursor: pointer;
-    }
-    .db-carousel-dot.active {
-      background: ${C.goldBright};
-      width: 20px;
-      border-radius: 3px;
-    }
-
-    /* â”€â”€ Main Grid â”€â”€ */
-    .db-main-grid {
-      display: grid;
-      grid-template-columns: 1.18fr 0.82fr;
-      gap: 16px;
-    }
-    .db-pane {
-      background: ${C.bgPanel};
-      border: 1px solid ${C.line};
-      border-radius: 28px;
-      overflow: hidden;
-      backdrop-filter: blur(16px);
-      box-shadow: 0 12px 40px rgba(0,0,0,0.28);
-    }
-    .db-pane-head {
-      padding: 20px 20px 16px;
-      border-bottom: 1px solid ${C.line};
-    }
-    .db-pane-head-top {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 8px;
-      margin-bottom: 14px;
-    }
-    .db-pane h3 {
-      font-family: 'DM Serif Display', serif;
-      font-size: 1.5rem;
-      font-weight: 400;
-      color: #fff;
-      margin: 0;
-    }
-    .db-count-badge {
-      font-size: 12px;
-      color: ${C.inkMuted};
-      border: 1px solid ${C.line};
-      border-radius: 999px;
-      padding: 3px 10px;
-      font-weight: 600;
-    }
-
-    /* â”€â”€ Filters â”€â”€ */
-    .db-filters {
-      display: grid;
-      grid-template-columns: 1.5fr repeat(3, 1fr);
-      gap: 8px;
-    }
-    .db-input-wrap { position: relative; }
-    .db-input-wrap svg {
-      position: absolute;
-      left: 11px;
-      top: 50%;
-      transform: translateY(-50%);
-      color: ${C.inkMuted};
-      pointer-events: none;
-    }
-    .db-input, .db-select {
-      width: 100%;
-      height: 40px;
-      border-radius: 11px;
-      border: 1px solid rgba(184,149,90,0.18);
-      background: rgba(6,10,20,0.72);
-      color: #f5f0eb;
-      font-size: 13px;
-      outline: none;
-      font-family: 'Sora', sans-serif;
-      transition: border-color 0.2s ease;
-    }
-    .db-input { padding: 0 12px 0 36px; }
-    .db-select { padding: 0 12px; cursor: pointer; appearance: none; }
-    .db-input:focus, .db-select:focus {
-      border-color: rgba(184,149,90,0.45);
-    }
-    .db-input::placeholder { color: ${C.inkMuted}; }
-
-    /* â”€â”€ Table â”€â”€ */
-    .db-table-wrap { overflow-x: auto; }
-    .db-table {
-      width: 100%;
-      border-collapse: separate;
-      border-spacing: 0;
-      min-width: 760px;
-    }
-    .db-table th {
-      text-transform: uppercase;
-      letter-spacing: 0.11em;
-      font-size: 11px;
-      color: ${C.inkMuted};
-      font-weight: 700;
-      background: rgba(255,255,255,0.02);
-      padding: 13px 16px;
-      text-align: left;
-      border-bottom: 1px solid ${C.line};
-    }
-    .db-table td {
-      padding: 14px 16px;
-      border-bottom: 1px solid rgba(184,149,90,0.1);
-      color: ${C.inkSoft};
-      vertical-align: middle;
-      font-size: 13.5px;
-      background: rgba(8,12,24,0.62);
-    }
-    .db-table tbody tr:hover td {
-      background: rgba(184,149,90,0.05);
-    }
-    .db-table tbody tr:last-child td { border-bottom: none; }
-
-    .db-row-active td { background: rgba(95,158,255,0.06) !important; }
-    .db-row-active td:first-child {
-      border-left: 2px solid ${C.blue};
-    }
-    .db-focus-name {
-      font-size: 14px;
-      color: #fff;
-      font-weight: 700;
-      margin-bottom: 3px;
-      letter-spacing: -0.01em;
-    }
-    .db-mini {
-      font-size: 11.5px;
-      color: ${C.inkMuted};
-      line-height: 1.5;
-      font-family: 'Sora', monospace;
-    }
-    .db-pill-light {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 999px;
-      border: 1px solid rgba(184,149,90,0.18);
-      background: rgba(255,255,255,0.03);
-      color: ${C.inkSoft};
-      padding: 4px 10px;
-      font-size: 12px;
-      font-weight: 600;
-      white-space: nowrap;
-    }
-    .db-action-btn {
-      width: 36px; height: 36px;
-      border-radius: 10px;
-      border: 1px solid ${C.line};
-      background: rgba(255,255,255,0.03);
-      color: ${C.inkMuted};
-      display: grid;
-      place-items: center;
-      cursor: pointer;
-      transition: all 0.2s ease;
-    }
-    .db-action-btn:hover {
-      background: rgba(184,149,90,0.1);
-      border-color: ${C.lineStrong};
-      color: ${C.inkSoft};
-    }
-
-    /* â”€â”€ Side Panel â”€â”€ */
-    .db-side {
-      padding: 20px;
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
-      background: ${C.bgPanel};
-      border: 1px solid ${C.line};
-      border-radius: 28px;
-      backdrop-filter: blur(16px);
-      box-shadow: 0 12px 40px rgba(0,0,0,0.28);
-    }
-    .db-side-header {
-      display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
-      gap: 12px;
-    }
-    .db-switch {
-      display: flex;
-      gap: 4px;
-      background: rgba(6,10,20,0.8);
-      border: 1px solid ${C.line};
-      border-radius: 12px;
-      padding: 4px;
-      flex-shrink: 0;
-    }
-    .db-switch-btn {
-      border: 1px solid transparent;
-      height: 32px;
-      border-radius: 9px;
-      padding: 0 12px;
-      font-size: 12px;
-      font-weight: 700;
-      font-family: 'Sora', sans-serif;
-      color: ${C.inkMuted};
-      background: transparent;
-      cursor: pointer;
-      transition: all 0.22s ease;
-      white-space: nowrap;
-    }
-    .db-switch-btn.active {
-      border-color: rgba(240,201,122,0.55);
-      background: linear-gradient(135deg, rgba(184,149,90,0.95), rgba(240,201,122,0.88));
-      color: #1a1307;
-      box-shadow: 0 4px 12px rgba(184,149,90,0.28), inset 0 1px 0 rgba(255,255,255,0.22);
-    }
-
-    .db-campaign-title {
-      font-family: 'DM Serif Display', serif;
-      font-size: 2.2rem;
-      line-height: 1;
-      color: #fff;
-      margin-bottom: 5px;
-      letter-spacing: -0.02em;
-    }
-    .db-campaign-sub {
-      color: ${C.inkSoft};
-      font-size: 14px;
-      margin-bottom: 6px;
-    }
-    .db-campaign-meta {
-      color: ${C.inkMuted};
-      font-size: 12.5px;
-      line-height: 1.65;
-    }
-    .db-tag-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 7px;
-      margin-top: 10px;
-    }
-
-    /* â”€â”€ AI Callout â”€â”€ */
-    .db-ai-callout {
-      border: 1px solid rgba(184,149,90,0.28);
-      border-radius: 16px;
-      padding: 14px;
-      background: linear-gradient(135deg, rgba(184,149,90,0.08), rgba(184,149,90,0.03));
-      display: flex;
-      gap: 12px;
-      align-items: flex-start;
-    }
-    .db-ai-chip {
-      width: 40px; height: 40px;
-      border-radius: 11px;
-      display: grid;
-      place-items: center;
-      font-weight: 800;
-      font-size: 12px;
-      background: linear-gradient(135deg, rgba(184,149,90,0.95), rgba(240,201,122,0.9));
-      color: #1a1307;
-      flex-shrink: 0;
-      box-shadow: 0 4px 14px rgba(184,149,90,0.3);
-      letter-spacing: 0.03em;
-    }
-    .db-ai-callout h4 {
-      font-family: 'DM Serif Display', serif;
-      font-size: 1.1rem;
-      font-weight: 400;
-      color: #fff;
-      margin: 0 0 4px;
-    }
-    .db-ai-callout p {
-      font-size: 13px;
-      line-height: 1.6;
-      color: ${C.inkMuted};
-      margin: 0;
-    }
-
-    /* â”€â”€ Stats â”€â”€ */
-    .db-stat-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-    }
-    .db-stat {
-      border-radius: 16px;
-      border: 1px solid ${C.line};
-      background: rgba(6,10,20,0.65);
-      padding: 16px;
-    }
-    .db-stat-head {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 8px;
-      margin-bottom: 10px;
-    }
-    .db-stat label {
-      text-transform: uppercase;
-      letter-spacing: 0.11em;
-      font-size: 10.5px;
-      color: ${C.inkMuted};
-      font-weight: 700;
-    }
-    .db-stat strong {
-      display: block;
-      font-family: 'DM Serif Display', serif;
-      font-size: 3.2rem;
-      line-height: 1;
-      color: #fff;
-      font-weight: 400;
-      margin-bottom: 6px;
-    }
-    .db-stat p {
-      color: ${C.inkMuted};
-      font-size: 12.5px;
-      line-height: 1.5;
-      margin: 0 0 8px;
-    }
-    .db-dot-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 4px 12px;
-    }
-    .db-dot {
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-      font-size: 11.5px;
-      color: ${C.inkMuted};
-    }
-    .db-dot-circle {
-      width: 7px; height: 7px;
-      border-radius: 50%;
-      flex-shrink: 0;
-    }
-
-    /* â”€â”€ Funnel â”€â”€ */
-    .db-funnel-card {
-      border: 1px solid ${C.line};
-      border-radius: 18px;
-      background: rgba(6,10,20,0.65);
-      overflow: hidden;
-    }
-    .db-funnel-head {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 14px 16px;
-      border-bottom: 1px solid ${C.line};
-    }
-    .db-funnel-head h4 {
-      font-family: 'DM Serif Display', serif;
-      font-size: 1.1rem;
-      font-weight: 400;
-      color: #fff;
-      margin: 0;
-    }
-    .db-funnel-head span {
-      color: ${C.inkMuted};
-      font-size: 12px;
-    }
-    .db-funnel-legend {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px 12px;
-      padding: 12px 16px 4px;
-    }
-    .db-funnel-legend-item {
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-      font-size: 11.5px;
-      color: ${C.inkMuted};
-    }
-    .db-funnel-legend-dot {
-      width: 8px; height: 8px;
-      border-radius: 50%;
-      flex-shrink: 0;
-    }
-    .db-funnel-svg {
-      width: 100%;
-      height: 190px;
-      display: block;
-      padding: 8px 14px 14px;
-    }
-    .db-funnel-svg text {
-      font-size: 11px;
-      fill: rgba(245,240,235,0.7);
-      font-family: 'Sora', sans-serif;
-    }
-
-    /* â”€â”€ Post-Funnel Controls â”€â”€ */
-    .db-manage-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-    }
-    .db-manage-card {
-      border-radius: 15px;
-      border: 1px solid ${C.line};
-      background: rgba(6,10,20,0.62);
-      padding: 14px;
-    }
-    .db-manage-head {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 8px;
-      margin-bottom: 8px;
-    }
-    .db-manage-head h5 {
-      margin: 0;
-      color: #fff;
-      font-size: 14px;
-      font-weight: 700;
-      letter-spacing: -0.01em;
-    }
-    .db-subtle-btn {
-      border: 1px solid ${C.line};
-      background: rgba(184,149,90,0.08);
-      color: ${C.inkSoft};
-      border-radius: 10px;
-      height: 34px;
-      padding: 0 14px;
-      font-size: 12px;
-      font-weight: 700;
-      font-family: 'Sora', sans-serif;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      white-space: nowrap;
-    }
-    .db-subtle-btn:hover {
-      background: rgba(184,149,90,0.16);
-      border-color: ${C.lineStrong};
-      color: #fff;
-    }
-    .db-manage-status {
-      color: #fff;
-      font-size: 29px;
-      line-height: 1;
-      font-family: 'DM Serif Display', serif;
-      margin-bottom: 4px;
-      letter-spacing: -0.02em;
-    }
-    .db-manage-end {
-      color: ${C.inkMuted};
-      font-size: 12.5px;
-      line-height: 1.4;
-    }
-
-    .db-links-card {
-      border: 1px solid ${C.line};
-      border-radius: 16px;
-      background: rgba(6,10,20,0.62);
-      padding: 14px;
-    }
-    .db-links-card h4 {
-      margin: 0 0 12px;
-      color: #fff;
-      font-size: 18px;
-      font-family: 'DM Serif Display', serif;
-      font-weight: 400;
-      letter-spacing: -0.01em;
-    }
-    .db-link-group {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-    .db-link-group + .db-link-group { margin-top: 12px; }
-    .db-link-group label {
-      color: ${C.inkMuted};
-      font-size: 12.5px;
-      line-height: 1.4;
-    }
-    .db-link-row {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .db-link-input {
-      width: 100%;
-      height: 40px;
-      border-radius: 11px;
-      border: 1px solid rgba(184,149,90,0.2);
-      background: rgba(8,12,24,0.9);
-      color: ${C.inkSoft};
-      font-size: 13px;
-      font-family: 'Sora', sans-serif;
-      padding: 0 12px;
-      outline: none;
-    }
-    .db-link-input:focus {
-      border-color: rgba(184,149,90,0.45);
-    }
-    .db-copy-btn {
-      height: 40px;
-      min-width: 64px;
-      border-radius: 11px;
-      border: 1px solid ${C.line};
-      background: rgba(184,149,90,0.08);
-      color: ${C.inkSoft};
-      font-size: 13px;
-      font-weight: 700;
-      font-family: 'Sora', sans-serif;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      padding: 0 14px;
-      flex-shrink: 0;
-    }
-    .db-copy-btn:hover {
-      background: rgba(184,149,90,0.16);
-      border-color: ${C.lineStrong};
-      color: #fff;
-    }
-    .db-copy-btn.copied {
-      border-color: rgba(57,201,143,0.4);
-      background: rgba(57,201,143,0.16);
-      color: rgba(122,235,186,0.98);
-    }
-
-    .db-end-actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-    }
-    .db-end-btn {
-      height: 40px;
-      border-radius: 12px;
-      border: 1px solid ${C.line};
-      background: rgba(255,255,255,0.03);
-      color: ${C.inkSoft};
-      padding: 0 14px;
-      font-size: 13px;
-      font-weight: 700;
-      font-family: 'Sora', sans-serif;
-      cursor: pointer;
-      transition: all 0.2s ease;
-    }
-    .db-end-btn:hover {
-      background: rgba(184,149,90,0.14);
-      border-color: ${C.lineStrong};
-      color: #fff;
-    }
-
-    /* â”€â”€ Responsive â”€â”€ */
-    @media (max-width: 1280px) {
-      .db-main-grid, .db-hero { grid-template-columns: 1fr; }
-      .db-hero-image { min-height: 220px; max-height: 280px; }
-      .db-filters { grid-template-columns: 1fr 1fr; }
-      .db-create-track { grid-auto-columns: calc((100% - 24px) / 3); }
-    }
-    @media (max-width: 960px) {
-      .db-create-track { grid-auto-columns: calc((100% - 12px) / 2); }
-      .db-stat-grid { grid-template-columns: 1fr; }
-      .db-manage-grid { grid-template-columns: 1fr; }
-      .db-filters { grid-template-columns: 1fr; }
-    }
-    @media (max-width: 680px) {
-      .db-root { padding-top: 88px; }
-      .db-create-track { grid-auto-columns: calc(100% - 0px); }
-      .db-logout-btn .db-logout-label { display: none; }
-      .db-logout-btn { padding: 0 12px; }
-      .db-carousel-nav { display: none; }
-      .db-hero { padding: 20px; }
-      .db-section-inner { padding: 18px; }
-      .db-side-header { flex-direction: column; }
-      .db-link-row {
-        flex-direction: column;
-        align-items: stretch;
-      }
-      .db-copy-btn { width: 100%; }
-    }
-  `}</style>
+const Divider = () => (
+  <div style={{ width: "100%", height: 1, background: C.line, flexShrink: 0 }} />
 );
 
-// â”€â”€â”€ Funnel Builder â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-function buildFunnelPolygons() {
-  const xPositions = [14, 126, 232, 328, 414, 482];
-  const heights    = [158, 108, 74, 50, 34];
-  const yMid = 106;
+const AxisBarChart = ({ data }) => {
+  const svgWidth = 720;
+  const svgHeight = 280;
+  const margin = { top: 14, right: 20, bottom: 64, left: 58 };
+  const plotWidth = svgWidth - margin.left - margin.right;
+  const plotHeight = svgHeight - margin.top - margin.bottom;
 
-  return FUNNEL_STEPS.map((step, i) => {
-    const lH = heights[i];
-    const rH = heights[i + 1] ?? lH * 0.74;
-    const points = [
-      `${xPositions[i]},${yMid - lH / 2}`,
-      `${xPositions[i + 1]},${yMid - rH / 2}`,
-      `${xPositions[i + 1]},${yMid + rH / 2}`,
-      `${xPositions[i]},${yMid + lH / 2}`,
-    ].join(" ");
-    return { ...step, points, labelX: (xPositions[i] + xPositions[i + 1]) / 2 };
-  });
-}
+  const rawMax = Math.max(...data.map((d) => d.value), 1);
+  const roundedMax = Math.ceil(rawMax / 10) * 10;
+  const yMax = roundedMax === 0 ? 10 : roundedMax;
+  const tickCount = 5;
+  const slotWidth = plotWidth / data.length;
+  const barWidth = Math.min(76, slotWidth * 0.56);
 
-// â”€â”€â”€ Dashboard â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-export default function Dashboard() {
+  const yForValue = (value) => margin.top + plotHeight - (value / yMax) * plotHeight;
+
+  return (
+    <div style={{ border: `1px solid ${C.line}`, borderRadius: 14, background: "rgba(6,10,20,0.65)", padding: "12px 12px 8px" }}>
+      <svg viewBox={`0 0 ${svgWidth} ${svgHeight}`} role="img" aria-label="Recruitment funnel chart" style={{ width: "100%", height: "auto", display: "block" }}>
+        {[...Array(tickCount + 1)].map((_, i) => {
+          const tickValue = (yMax / tickCount) * i;
+          const y = yForValue(tickValue);
+          return (
+            <g key={`tick-${i}`}>
+              <line x1={margin.left} x2={svgWidth - margin.right} y1={y} y2={y} stroke={i === 0 ? C.lineStrong : C.line} strokeWidth={1} />
+              <text x={margin.left - 10} y={y + 4} textAnchor="end" fontSize="11" fill={C.inkMuted}>
+                {tickValue}
+              </text>
+            </g>
+          );
+        })}
+
+        <line x1={margin.left} x2={margin.left} y1={margin.top} y2={margin.top + plotHeight} stroke={C.lineStrong} strokeWidth={1.2} />
+        <line x1={margin.left} x2={svgWidth - margin.right} y1={margin.top + plotHeight} y2={margin.top + plotHeight} stroke={C.lineStrong} strokeWidth={1.2} />
+
+        {data.map((point, index) => {
+          const x = margin.left + slotWidth * index + (slotWidth - barWidth) / 2;
+          const y = yForValue(point.value);
+          const barHeight = margin.top + plotHeight - y;
+          const xCenter = x + barWidth / 2;
+          return (
+            <g key={point.label}>
+              <rect x={x} y={y} width={barWidth} height={Math.max(4, barHeight)} rx={6} fill={point.color} opacity={0.9} />
+              <text x={xCenter} y={y - 8} textAnchor="middle" fontSize="11" fontWeight="600" fill={C.inkSoft}>
+                {point.value}
+              </text>
+              <text x={xCenter} y={margin.top + plotHeight + 18} textAnchor="middle" fontSize="10.5" fill={C.inkMuted}>
+                {point.label}
+              </text>
+              <text x={xCenter} y={margin.top + plotHeight + 32} textAnchor="middle" fontSize="10" fill={C.inkFaint}>
+                {point.pct}%
+              </text>
+            </g>
+          );
+        })}
+
+        <text x={svgWidth / 2} y={svgHeight - 8} textAnchor="middle" fontSize="11.5" fill={C.inkFaint}>
+          X-axis: Recruitment Stages
+        </text>
+        <text
+          x={16}
+          y={svgHeight / 2}
+          transform={`rotate(-90 16 ${svgHeight / 2})`}
+          textAnchor="middle"
+          fontSize="11.5"
+          fill={C.inkFaint}
+        >
+          Y-axis: Candidate Count
+        </text>
+      </svg>
+    </div>
+  );
+};
+const SectionLabel = ({ children }) => (
+  <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.17em", textTransform: "uppercase", color: C.inkFaint, marginBottom: 10 }}>
+    {children}
+  </div>
+);
+
+const CircularKpi = ({ label, value, color, description }) => {
+  const size = 148;
+  const stroke = 12;
+  const radius = (size - stroke) / 2;
+  const circumference = 2 * Math.PI * radius;
+  const safeValue = Math.max(0, Math.min(100, value));
+  const progress = circumference * (safeValue / 100);
+  const dashOffset = circumference - progress;
+
+  return (
+    <div style={{
+      background: "rgba(6,10,20,0.62)",
+      border: `1px solid ${C.line}`,
+      borderRadius: 16,
+      padding: "16px 14px",
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      gap: 10,
+      minHeight: 252,
+    }}>
+      <svg viewBox={`0 0 ${size} ${size}`} style={{ width: 148, height: 148, overflow: "visible" }} role="img" aria-label={`${label} ${safeValue}%`}>
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          fill="none"
+          stroke={C.line}
+          strokeWidth={stroke}
+        />
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          fill="none"
+          stroke={color}
+          strokeWidth={stroke}
+          strokeLinecap="round"
+          strokeDasharray={circumference}
+          strokeDashoffset={dashOffset}
+          transform={`rotate(-90 ${size / 2} ${size / 2})`}
+          style={{ transition: "stroke-dashoffset 0.45s ease" }}
+        />
+        <text
+          x="50%"
+          y="50%"
+          dominantBaseline="middle"
+          textAnchor="middle"
+          fill={C.inkWhite}
+          style={{ fontFamily: "'DM Serif Display', serif", fontSize: 32 }}
+        >
+          {safeValue}%
+        </text>
+      </svg>
+      <div style={{ textAlign: "center" }}>
+        <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: C.inkSoft, marginBottom: 5 }}>
+          {label}
+        </div>
+        <div style={{ fontSize: 12.5, color: C.inkMuted, lineHeight: 1.55 }}>
+          {description}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const DashboardCircularInsights = ({ campaign, onCreateCampaign }) => {
+  const totalApplicants = Math.max(campaign.applicants || 0, 1);
+  const interviewRate = Math.round(((campaign.interviewed || 0) / totalApplicants) * 100);
+  const shortlistRate = Math.round(((campaign.shortlisted || 0) / totalApplicants) * 100);
+  const shortlistFromInterviewRate = campaign.interviewed
+    ? Math.round(((campaign.shortlisted || 0) / campaign.interviewed) * 100)
+    : 0;
+
+  return (
+    <section style={{
+      background: C.bgPanel,
+      border: `1px solid ${C.line}`,
+      borderRadius: 22,
+      padding: "24px 24px 20px",
+      backdropFilter: "blur(12px)",
+      display: "flex",
+      flexDirection: "column",
+      gap: 18,
+    }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 16, flexWrap: "wrap" }}>
+        <div>
+          <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: C.inkFaint, marginBottom: 7 }}>
+            Performance Dashboard
+          </div>
+          <h3 style={{ fontFamily: "'DM Serif Display', serif", fontSize: "1.45rem", fontWeight: 400, color: C.inkWhite, margin: "0 0 8px" }}>
+            Hiring Funnel Circular Analytics
+          </h3>
+          <p style={{ margin: 0, fontSize: 13.5, color: C.inkMuted, maxWidth: 760, lineHeight: 1.7 }}>
+            This view highlights recruitment efficiency from intake to shortlist with executive-level clarity. The circular charts are designed for quick stakeholder reporting and alignment across HR, recruiters, and hiring managers.
+          </p>
+        </div>
+        <button
+          onClick={onCreateCampaign}
+          style={{
+            height: 40,
+            padding: "0 16px",
+            borderRadius: 11,
+            border: `1px solid ${C.goldBorder}`,
+            background: C.goldDim,
+            color: C.goldBright,
+            fontSize: 12.5,
+            fontWeight: 700,
+            fontFamily: "'Sora', sans-serif",
+            cursor: "pointer",
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 7,
+            transition: "all 0.18s",
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = `linear-gradient(135deg,${C.gold},${C.goldBright})`;
+            e.currentTarget.style.color = "#1a1006";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = C.goldDim;
+            e.currentTarget.style.color = C.goldBright;
+          }}
+        >
+          <Plus size={14} /> Create Campaign
+        </button>
+      </div>
+
+      <div className="circular-kpi-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(210px, 1fr))", gap: 12 }}>
+        <CircularKpi
+          label="Interview Reach"
+          value={interviewRate}
+          color={C.blue}
+          description="Share of total applicants who progressed into the interview stage."
+        />
+        <CircularKpi
+          label="Shortlist Yield"
+          value={shortlistRate}
+          color={C.green}
+          description="Total pipeline conversion from applicants into shortlist-ready candidates."
+        />
+        <CircularKpi
+          label="Quality Pass Rate"
+          value={shortlistFromInterviewRate}
+          color={C.goldBright}
+          description="Percent of interviewed candidates who met quality criteria for shortlist."
+        />
+      </div>
+
+      <div className="insight-copy-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(180px, 1fr))", gap: 10 }}>
+        {[
+          {
+            title: "Executive Summary",
+            body: `${campaign.shortlisted} shortlisted from ${campaign.applicants} total applicants indicates a focused, quality-first screening flow.`,
+          },
+          {
+            title: "Operational Insight",
+            body: `${campaign.interviewed} candidates interviewed so far. Continue cadence to preserve decision velocity and avoid bottlenecks.`,
+          },
+          {
+            title: "Strategic Recommendation",
+            body: "Use this circular KPI block in weekly hiring reviews to track conversion health and drive evidence-based hiring decisions.",
+          },
+        ].map((card) => (
+          <div
+            key={card.title}
+            style={{
+              background: "rgba(255,255,255,0.025)",
+              border: `1px solid ${C.line}`,
+              borderRadius: 12,
+              padding: "12px 13px",
+            }}
+          >
+            <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.11em", textTransform: "uppercase", color: C.goldBright, marginBottom: 6 }}>
+              {card.title}
+            </div>
+            <div style={{ fontSize: 12.5, color: C.inkSoft, lineHeight: 1.65 }}>
+              {card.body}
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+};
+
+const InputField = ({ label, value, onChange, placeholder, type = "text" }) => (
+  <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+    <label style={{ fontSize: 12, fontWeight: 600, color: C.inkMuted, letterSpacing: "0.04em" }}>{label}</label>
+    <input
+      type={type} value={value} onChange={onChange} placeholder={placeholder}
+      style={{
+        height: 40, padding: "0 12px",
+        background: C.bgInput, border: `1px solid ${C.line}`,
+        borderRadius: 10, color: C.inkSoft, fontSize: 13, outline: "none",
+        fontFamily: "'Sora', sans-serif", transition: "border-color 0.18s",
+      }}
+      onFocus={e => e.target.style.borderColor = C.goldBorder}
+      onBlur={e => e.target.style.borderColor = C.line}
+    />
+  </div>
+);
+
+const SelectField = ({ label, value, onChange, children }) => (
+  <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+    <label style={{ fontSize: 12, fontWeight: 600, color: C.inkMuted, letterSpacing: "0.04em" }}>{label}</label>
+    <select
+      value={value} onChange={onChange}
+      style={{
+        height: 40, padding: "0 12px",
+        background: C.bgInput, border: `1px solid ${C.line}`,
+        borderRadius: 10, color: C.inkSoft, fontSize: 13, outline: "none",
+        fontFamily: "'Sora', sans-serif", cursor: "pointer", appearance: "none",
+        transition: "border-color 0.18s",
+      }}
+      onFocus={e => e.target.style.borderColor = C.goldBorder}
+      onBlur={e => e.target.style.borderColor = C.line}
+    >
+      {children}
+    </select>
+  </div>
+);
+
+const IconBtn = ({ children, onClick, title, active }) => (
+  <button
+    title={title} onClick={onClick}
+    style={{
+      width: 32, height: 32, borderRadius: 8,
+      border: `1px solid ${active ? C.goldBorder : C.line}`,
+      background: active ? C.goldDim : "transparent",
+      color: active ? C.goldBright : C.inkMuted,
+      display: "grid", placeItems: "center", cursor: "pointer", transition: "all 0.18s",
+    }}
+    onMouseEnter={e => { e.currentTarget.style.background = C.goldDim; e.currentTarget.style.borderColor = C.goldBorder; e.currentTarget.style.color = C.inkSoft; }}
+    onMouseLeave={e => {
+      e.currentTarget.style.background = active ? C.goldDim : "transparent";
+      e.currentTarget.style.borderColor = active ? C.goldBorder : C.line;
+      e.currentTarget.style.color = active ? C.goldBright : C.inkMuted;
+    }}
+  >{children}</button>
+);
+
+// ─── Navbar ───────────────────────────────────────────────────────────────────
+const Navbar = () => (
+  <nav style={{
+    position: "fixed", top: 0, left: 0, right: 0, zIndex: 100,
+    padding: "0 clamp(16px,2.5vw,32px)", height: 64,
+    background: "rgba(8,13,26,0.88)", borderBottom: `1px solid ${C.line}`,
+    backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)",
+    display: "flex", alignItems: "center", justifyContent: "space-between",
+    fontFamily: "'Sora', sans-serif",
+  }}>
+  </nav>
+);
+
+// ─── CV Results Panel ─────────────────────────────────────────────────────────
+const CVResultsPanel = ({ campaign }) => {
+  const [view, setView] = useState("overview"); // overview | candidates
+
+  const maxBarCount = Math.max(...CV_STATS.scoreRanges.map(r => r.count));
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
+
+      {/* Sub-tabs */}
+      <div style={{ display: "flex", gap: 4, background: "rgba(6,10,20,0.7)", border: `1px solid ${C.line}`, borderRadius: 12, padding: 4 }}>
+        {[
+          { id: "overview",   label: "Overview",   icon: PieChart  },
+          { id: "candidates", label: "Candidates", icon: Users     },
+        ].map(({ id, label, icon: Icon }) => (
+          <button key={id} onClick={() => setView(id)} style={{
+            flex: 1, height: 32, borderRadius: 9,
+            border: `1px solid ${view === id ? "rgba(240,201,122,0.55)" : "transparent"}`,
+            background: view === id ? "linear-gradient(135deg,rgba(184,149,90,0.25),rgba(240,201,122,0.14))" : "transparent",
+            color: view === id ? C.inkWhite : C.inkMuted,
+            fontSize: 12, fontWeight: 700, cursor: "pointer",
+            display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+            fontFamily: "'Sora', sans-serif", transition: "all 0.18s",
+          }}>
+            <Icon size={13} /> {label}
+          </button>
+        ))}
+      </div>
+
+      {view === "overview" ? (
+        <>
+          {/* Summary cards */}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+            {[
+              { label: "Total CVs",   value: CV_STATS.total,     sub: "Uploaded",            color: C.blue,       border: "rgba(95,158,255,0.25)"   },
+              { label: "Suitable",    value: CV_STATS.suitable,  sub: `Score ≥ ${CV_STATS.threshold}`, color: C.green, border: "rgba(57,201,143,0.3)"  },
+              { label: "Unsuitable",  value: CV_STATS.unsuitable,sub: "Below threshold",     color: C.red,        border: "rgba(255,107,107,0.25)"   },
+              { label: "Pass Rate",   value: `${Math.round(CV_STATS.suitable/CV_STATS.total*100)}%`, sub: "Of reviewed", color: C.goldBright, border: C.goldBorder },
+            ].map(({ label, value, sub, color, border }) => (
+              <div key={label} style={{
+                background: "rgba(6,10,20,0.65)", border: `1px solid ${border}`,
+                borderRadius: 14, padding: "14px 16px",
+              }}>
+                <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.13em", textTransform: "uppercase", color: C.inkFaint, marginBottom: 6 }}>{label}</div>
+                <div style={{ fontFamily: "'DM Serif Display', serif", fontSize: "2rem", color, lineHeight: 1, marginBottom: 4 }}>{value}</div>
+                <div style={{ fontSize: 11.5, color: C.inkMuted }}>{sub}</div>
+              </div>
+            ))}
+          </div>
+
+          {/* Gender breakdown */}
+          <div style={{ background: "rgba(6,10,20,0.65)", border: `1px solid ${C.line}`, borderRadius: 14, padding: "14px 16px" }}>
+            <SectionLabel>Gender Breakdown</SectionLabel>
+            <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 10 }}>
+              <div style={{ flex: 1 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 5 }}>
+                  <span style={{ fontSize: 12, color: C.inkMuted }}>Male</span>
+                  <span style={{ fontSize: 12, color: C.inkSoft, fontWeight: 600 }}>{CV_STATS.male}</span>
+                </div>
+                <div style={{ height: 6, borderRadius: 99, background: C.line, overflow: "hidden" }}>
+                  <div style={{ height: "100%", width: `${Math.round(CV_STATS.male/CV_STATS.total*100)}%`, borderRadius: 99, background: C.blue }} />
+                </div>
+              </div>
+              <div style={{ flex: 1 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 5 }}>
+                  <span style={{ fontSize: 12, color: C.inkMuted }}>Female</span>
+                  <span style={{ fontSize: 12, color: C.inkSoft, fontWeight: 600 }}>{CV_STATS.female}</span>
+                </div>
+                <div style={{ height: 6, borderRadius: 99, background: C.line, overflow: "hidden" }}>
+                  <div style={{ height: "100%", width: `${Math.round(CV_STATS.female/CV_STATS.total*100)}%`, borderRadius: 99, background: "#e06fa5" }} />
+                </div>
+              </div>
+            </div>
+            {/* Visual split bar */}
+            <div style={{ height: 8, borderRadius: 99, overflow: "hidden", display: "flex" }}>
+              <div style={{ width: `${Math.round(CV_STATS.male/CV_STATS.total*100)}%`, background: C.blue }} />
+              <div style={{ flex: 1, background: "#e06fa5" }} />
+            </div>
+            <div style={{ display: "flex", justifyContent: "space-between", marginTop: 6 }}>
+              <span style={{ fontSize: 11, color: C.inkFaint }}>♂ {Math.round(CV_STATS.male/CV_STATS.total*100)}% Male</span>
+              <span style={{ fontSize: 11, color: C.inkFaint }}>{Math.round(CV_STATS.female/CV_STATS.total*100)}% Female ♀</span>
+            </div>
+          </div>
+
+          {/* Score distribution bar chart */}
+          <div style={{ background: "rgba(6,10,20,0.65)", border: `1px solid ${C.line}`, borderRadius: 14, padding: "14px 16px" }}>
+            <SectionLabel>Score Distribution</SectionLabel>
+            <div style={{ display: "flex", alignItems: "flex-end", gap: 8, height: 80 }}>
+              {CV_STATS.scoreRanges.map(({ range, count, color }) => (
+                <div key={range} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 4, height: "100%", justifyContent: "flex-end" }}>
+                  <div style={{ fontSize: 11, color: C.inkMuted, fontWeight: 600 }}>{count}</div>
+                  <div style={{
+                    width: "100%", borderRadius: "4px 4px 0 0",
+                    height: `${Math.round(count / maxBarCount * 64)}px`,
+                    background: color, opacity: 0.85,
+                    transition: "height 0.4s ease",
+                  }} />
+                </div>
+              ))}
+            </div>
+            <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
+              {CV_STATS.scoreRanges.map(({ range, color }) => (
+                <div key={range} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 3 }}>
+                  <div style={{ width: 8, height: 8, borderRadius: 2, background: color }} />
+                  <span style={{ fontSize: 10, color: C.inkFaint, textAlign: "center" }}>{range}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Threshold info */}
+          <div style={{
+            background: "linear-gradient(135deg,rgba(184,149,90,0.08),rgba(184,149,90,0.03))",
+            border: `1px solid ${C.goldBorder}`, borderRadius: 12, padding: "12px 14px",
+            display: "flex", alignItems: "center", gap: 10,
+          }}>
+            <AlertCircle size={16} color={C.goldBright} style={{ flexShrink: 0 }} />
+            <div style={{ fontSize: 12.5, color: C.inkMuted, lineHeight: 1.6 }}>
+              <span style={{ color: C.inkSoft, fontWeight: 600 }}>Suitability threshold set to {CV_STATS.threshold}.</span>{" "}
+              Candidates scoring above this are marked suitable and eligible for interview.
+            </div>
+          </div>
+        </>
+      ) : (
+        /* Candidates list */
+        <div style={{ display: "flex", flexDirection: "column", gap: 0, background: "rgba(6,10,20,0.65)", border: `1px solid ${C.line}`, borderRadius: 14, overflow: "hidden" }}>
+          {/* List header */}
+          <div style={{
+            display: "grid", gridTemplateColumns: "1fr 52px 50px 50px",
+            padding: "10px 14px", borderBottom: `1px solid ${C.line}`,
+            background: "rgba(255,255,255,0.015)",
+          }}>
+            {["Candidate", "Score", "Match", "Status"].map(h => (
+              <div key={h} style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: C.inkFaint }}>{h}</div>
+            ))}
+          </div>
+
+          {CV_RESULTS.map((r, i) => (
+            <div key={i} style={{
+              display: "grid", gridTemplateColumns: "1fr 52px 50px 50px",
+              padding: "11px 14px",
+              borderBottom: i < CV_RESULTS.length - 1 ? `1px solid ${C.line}` : "none",
+              background: r.status === "suitable" ? "rgba(57,201,143,0.03)" : "transparent",
+              alignItems: "center",
+            }}>
+              <div>
+                <div style={{ fontSize: 13, fontWeight: 600, color: C.inkWhite }}>{r.name}</div>
+                <div style={{ fontSize: 11, color: C.inkFaint, marginTop: 1 }}>{r.gender === "M" ? "Male" : "Female"} · {r.exp}</div>
+              </div>
+              {/* Score pill */}
+              <div style={{
+                display: "inline-flex", alignItems: "center", justifyContent: "center",
+                height: 26, width: 44, borderRadius: 8,
+                background: r.score >= 80 ? C.greenDim : r.score >= 60 ? C.goldDim : r.score >= 50 ? C.yellowDim : C.redDim,
+                border: `1px solid ${r.score >= 80 ? "rgba(57,201,143,0.3)" : r.score >= 60 ? C.goldBorder : r.score >= 50 ? "rgba(227,196,102,0.3)" : "rgba(255,107,107,0.25)"}`,
+                fontSize: 12, fontWeight: 700,
+                color: r.score >= 80 ? C.green : r.score >= 60 ? C.goldBright : r.score >= 50 ? C.yellow : C.red,
+              }}>{r.score}</div>
+              {/* Match */}
+              <div style={{ fontSize: 11.5, fontWeight: 600, color: r.match === "High" ? C.green : r.match === "Med" ? C.yellow : C.inkMuted }}>{r.match}</div>
+              {/* Status icon */}
+              <div>
+                {r.status === "suitable"
+                  ? <UserCheck size={14} color={C.green} />
+                  : <UserX size={14} color={C.red} />}
+              </div>
+            </div>
+          ))}
+
+          <div style={{ padding: "10px 14px", borderTop: `1px solid ${C.line}`, background: "rgba(255,255,255,0.01)" }}>
+            <span style={{ fontSize: 11.5, color: C.inkFaint }}>Showing 8 of {CV_STATS.total} candidates · </span>
+            <span style={{ fontSize: 11.5, color: C.goldBright, cursor: "pointer", fontWeight: 600 }}>View all →</span>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// ─── Interview Results Panel ──────────────────────────────────────────────────
+const InterviewResultsPanel = ({ campaign }) => (
+  <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
+    {/* Funnel */}
+    <div>
+      <SectionLabel>Recruitment Funnel (X/Y Axis)</SectionLabel>
+      <AxisBarChart data={FUNNEL} />
+    </div>
+
+    <Divider />
+
+    {/* Interview stage stats */}
+    <div>
+      <SectionLabel>Stage Breakdown</SectionLabel>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+        {[
+          { label: "Avg Score",      value: "74",  sub: "Interview score",     color: C.goldBright },
+          { label: "Completion Rate",value: "91%", sub: "Started → Finished",  color: C.green      },
+          { label: "Top Scorers",    value: "9",   sub: "Score ≥ 80",          color: C.blue       },
+          { label: "Red Flags",      value: "4",   sub: "Flagged for review",  color: C.red        },
+        ].map(({ label, value, sub, color }) => (
+          <div key={label} style={{
+            background: "rgba(6,10,20,0.65)", border: `1px solid ${C.line}`,
+            borderRadius: 14, padding: "13px 14px",
+          }}>
+            <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: C.inkFaint, marginBottom: 5 }}>{label}</div>
+            <div style={{ fontFamily: "'DM Serif Display', serif", fontSize: "1.8rem", color, lineHeight: 1, marginBottom: 3 }}>{value}</div>
+            <div style={{ fontSize: 11.5, color: C.inkMuted }}>{sub}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
+);
+
+// ─── Campaign Detail Panel ────────────────────────────────────────────────────
+const CampaignDetail = ({ campaign, onClose }) => {
+  const [resultView, setResultView] = useState("interview");
+  const [copied, setCopied] = useState(null);
+  const copyRef = useRef(null);
+
+  const copy = (text, key) => {
+    navigator.clipboard?.writeText(text).catch(() => {});
+    setCopied(key);
+    clearTimeout(copyRef.current);
+    copyRef.current = setTimeout(() => setCopied(null), 1800);
+  };
+
+  const links = [
+    { key: "cv",        label: "CV Submission Link",   url: `https://mawahib.ai/apply/${campaign.intakeCode}`,         hint: "Share with candidates to submit their CV"      },
+    { key: "interview", label: "Avatar Interview Link", url: `https://mawahib.ai/interview?code=${campaign.code}`, hint: "Qualified candidates complete interview here"  },
+  ];
+
+  useEffect(() => {
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    const onKeyDown = (event) => {
+      if (event.key === "Escape") onClose();
+    };
+
+    window.addEventListener("keydown", onKeyDown);
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", onKeyDown);
+      clearTimeout(copyRef.current);
+    };
+  }, [onClose]);
+
+  const handleCvTabClick = () => setResultView("cv");
+
+  return (
+    <div
+      style={{
+        position: "fixed", inset: 0, zIndex: 190,
+        background: "rgba(4,7,16,0.8)", backdropFilter: "blur(7px)",
+        display: "flex", alignItems: "center", justifyContent: "center", padding: 18,
+      }}
+      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+    >
+      <div style={{
+        width: "100%", maxWidth: 980, maxHeight: "88vh",
+        background: "rgba(10,15,28,0.98)", border: `1px solid ${C.lineStrong}`,
+        borderRadius: 24, boxShadow: "0 32px 80px rgba(0,0,0,0.65)",
+        backdropFilter: "blur(16px)", display: "flex", flexDirection: "column", overflow: "hidden",
+      }}>
+      {/* Panel header */}
+      <div style={{
+        padding: "18px 20px 16px", borderBottom: `1px solid ${C.line}`,
+        display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12,
+      }}>
+        <div style={{ minWidth: 0 }}>
+          <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", color: C.inkFaint, marginBottom: 6 }}>Campaign Details</div>
+          <h3 style={{ fontFamily: "'DM Serif Display', serif", fontSize: "1.35rem", fontWeight: 400, color: C.inkWhite, margin: "0 0 3px", lineHeight: 1.2 }}>{campaign.title}</h3>
+          <p style={{ fontSize: 12.5, color: C.inkMuted, margin: "0 0 8px" }}>{campaign.company}</p>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 11.5, color: C.inkMuted, background: "rgba(255,255,255,0.04)", border: `1px solid ${C.line}`, borderRadius: 999, padding: "3px 9px" }}>
+              <Award size={10} /> {campaign.accessType}
+            </span>
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 11.5, color: C.inkMuted, background: "rgba(255,255,255,0.04)", border: `1px solid ${C.line}`, borderRadius: 999, padding: "3px 9px" }}>
+              <Globe size={10} /> {campaign.language}
+            </span>
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 11.5, color: C.inkMuted, background: "rgba(255,255,255,0.04)", border: `1px solid ${C.line}`, borderRadius: 999, padding: "3px 9px" }}>
+              <Calendar size={10} /> No end date
+            </span>
+          </div>
+        </div>
+        <button onClick={onClose} style={{
+          width: 30, height: 30, borderRadius: 8, border: `1px solid ${C.line}`,
+          background: "transparent", color: C.inkMuted, cursor: "pointer", display: "grid", placeItems: "center", flexShrink: 0,
+        }}
+          onMouseEnter={e => { e.currentTarget.style.color = C.inkSoft; e.currentTarget.style.borderColor = C.lineStrong; }}
+          onMouseLeave={e => { e.currentTarget.style.color = C.inkMuted; e.currentTarget.style.borderColor = C.line; }}
+        ><X size={14} /></button>
+      </div>
+
+      {/* Scrollable body */}
+      <div style={{ flex: 1, overflowY: "auto", padding: "18px 20px", display: "flex", flexDirection: "column", gap: 18, scrollbarWidth: "thin", scrollbarColor: `${C.goldBorder} transparent` }}>
+
+        {/* Result view tabs */}
+        <div style={{ display: "flex", gap: 4, background: "rgba(6,10,20,0.7)", border: `1px solid ${C.line}`, borderRadius: 12, padding: 4 }}>
+          <button onClick={() => setResultView("interview")} style={{
+            flex: 1, height: 34, borderRadius: 9,
+            border: `1px solid ${resultView === "interview" ? "rgba(240,201,122,0.55)" : "transparent"}`,
+            background: resultView === "interview" ? "linear-gradient(135deg,rgba(184,149,90,0.28),rgba(240,201,122,0.16))" : "transparent",
+            color: resultView === "interview" ? C.inkWhite : C.inkMuted,
+            fontSize: 12.5, fontWeight: 700, cursor: "pointer",
+            display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+            fontFamily: "'Sora', sans-serif", transition: "all 0.18s",
+          }}>
+            <BarChart size={13} /> Interview Results
+          </button>
+          <button onClick={handleCvTabClick} style={{
+            flex: 1, height: 34, borderRadius: 9,
+            border: `1px solid ${resultView === "cv" ? "rgba(240,201,122,0.55)" : C.line}`,
+            background: resultView === "cv" ? "linear-gradient(135deg,rgba(184,149,90,0.28),rgba(240,201,122,0.16))" : "transparent",
+            color: resultView === "cv" ? C.inkWhite : C.inkMuted,
+            fontSize: 12.5, fontWeight: 700, cursor: "pointer",
+            display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+            fontFamily: "'Sora', sans-serif", transition: "all 0.18s",
+          }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = C.goldBorder; e.currentTarget.style.color = C.inkSoft; }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = C.line; e.currentTarget.style.color = C.inkMuted; }}
+          >
+            <FileText size={13} /> CV Results
+          </button>
+        </div>
+
+        {/* Results content */}
+        {resultView === "interview" ? (
+          <InterviewResultsPanel campaign={campaign} />
+        ) : (
+          <div style={{
+            border: `1px solid ${C.line}`,
+            borderRadius: 14,
+            padding: 12,
+            background: "rgba(6,10,20,0.55)",
+          }}>
+            <CVResults embedded />
+          </div>
+        )}
+
+        <Divider />
+
+        {/* CV & Interview Status cards */}
+        <div>
+          <SectionLabel>Campaign Status</SectionLabel>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+            {[
+              { title: "CV Submission", status: "Enabled", end: campaign.cvEnd,        key: "cvSubmission" },
+              { title: "Interview",     status: "Enabled", end: campaign.interviewEnd, key: "interview"    },
+            ].map(({ title, status, end, key }) => (
+              <div key={key} style={{
+                background: "rgba(6,10,20,0.65)", border: `1px solid ${C.line}`,
+                borderRadius: 13, padding: "12px 14px",
+              }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+                  <span style={{ fontSize: 12.5, fontWeight: 700, color: C.inkSoft }}>{title}</span>
+                  <button style={{
+                    height: 24, padding: "0 10px", borderRadius: 7,
+                    border: `1px solid ${C.line}`, background: "rgba(184,149,90,0.07)",
+                    color: C.inkMuted, fontSize: 11, fontWeight: 600, cursor: "pointer",
+                    fontFamily: "'Sora', sans-serif",
+                  }}>Edit</button>
+                </div>
+                <div style={{ fontFamily: "'DM Serif Display', serif", fontSize: "1.5rem", color: C.green, lineHeight: 1, marginBottom: 4 }}>{status}</div>
+                <div style={{ fontSize: 11.5, color: C.inkFaint }}>Ends: {end}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Extend actions */}
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+          {["Edit end date", "Extend 7d", "Extend 30d"].map(label => (
+            <button key={label} style={{
+              height: 36, padding: "0 14px", borderRadius: 10,
+              border: `1px solid ${C.line}`, background: "rgba(255,255,255,0.03)",
+              color: C.inkSoft, fontSize: 12.5, fontWeight: 600, cursor: "pointer",
+              fontFamily: "'Sora', sans-serif", transition: "all 0.18s",
+            }}
+              onMouseEnter={e => { e.currentTarget.style.background = C.goldDim; e.currentTarget.style.borderColor = C.goldBorder; e.currentTarget.style.color = "#fff"; }}
+              onMouseLeave={e => { e.currentTarget.style.background = "rgba(255,255,255,0.03)"; e.currentTarget.style.borderColor = C.line; e.currentTarget.style.color = C.inkSoft; }}
+            >{label}</button>
+          ))}
+        </div>
+
+        <Divider />
+
+        {/* Campaign Links */}
+        <div>
+          <SectionLabel>Campaign Links</SectionLabel>
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            {links.map(({ key, label, url, hint }) => (
+              <div key={key} style={{
+                background: C.bgInput, border: `1px solid ${C.line}`,
+                borderRadius: 12, padding: "12px 14px",
+              }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                    <Link2 size={12} color={C.goldBright} />
+                    <span style={{ fontSize: 12, fontWeight: 600, color: C.inkSoft }}>{label}</span>
+                  </div>
+                  <div style={{ display: "flex", gap: 5 }}>
+                    <button onClick={() => copy(url, key)} style={{
+                      height: 26, padding: "0 10px", border: `1px solid ${C.line}`, borderRadius: 7,
+                      background: copied === key ? C.greenDim : "transparent",
+                      color: copied === key ? C.green : C.inkMuted,
+                      fontSize: 11, fontWeight: 600, cursor: "pointer",
+                      display: "flex", alignItems: "center", gap: 5,
+                      fontFamily: "'Sora', sans-serif", transition: "all 0.18s",
+                    }}>
+                      <Copy size={10} /> {copied === key ? "Copied!" : "Copy"}
+                    </button>
+                    <button onClick={() => window.open(url, "_blank", "noopener,noreferrer")} style={{
+                      height: 26, width: 26, border: `1px solid ${C.line}`, borderRadius: 7,
+                      background: "transparent", color: C.inkMuted,
+                      display: "grid", placeItems: "center", cursor: "pointer",
+                    }}
+                      onMouseEnter={e => { e.currentTarget.style.color = C.inkSoft; e.currentTarget.style.borderColor = C.goldBorder; }}
+                      onMouseLeave={e => { e.currentTarget.style.color = C.inkMuted; e.currentTarget.style.borderColor = C.line; }}
+                    ><ExternalLink size={10} /></button>
+                  </div>
+                </div>
+                <div style={{ fontSize: 11.5, color: C.blue, fontFamily: "monospace", wordBreak: "break-all", lineHeight: 1.5, marginBottom: 4 }}>{url}</div>
+                <div style={{ fontSize: 11, color: C.inkFaint }}>{hint}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Codes */}
+        <div style={{ background: "rgba(6,10,20,0.65)", border: `1px solid ${C.line}`, borderRadius: 12, padding: "12px 14px" }}>
+          <SectionLabel>Campaign Codes</SectionLabel>
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            {[
+              { label: "Interview Code", value: campaign.code },
+              { label: "Intake Code",    value: campaign.intakeCode },
+            ].map(({ label, value }) => (
+              <div key={label} style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                <span style={{ fontSize: 12, color: C.inkMuted }}>{label}</span>
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <span style={{ fontSize: 12, fontFamily: "monospace", color: C.inkSoft }}>{value}</span>
+                  <button onClick={() => copy(value, label)} style={{
+                    height: 22, padding: "0 8px", borderRadius: 6,
+                    border: `1px solid ${C.line}`, background: "transparent",
+                    color: copied === label ? C.green : C.inkFaint,
+                    fontSize: 10, fontWeight: 600, cursor: "pointer",
+                    fontFamily: "'Sora', sans-serif", transition: "all 0.15s",
+                  }}>{copied === label ? "✓" : "Copy"}</button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+  );
+};
+
+// ─── Create Campaign Modal ─────────────────────────────────────────────────────
+const CreateModal = ({ onClose }) => {
+  const [step, setStep] = useState(1); // 1 = pick type, 2 = configure
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("All");
-  const [resultView, setResultView] = useState("Interview Results");
-  const [searchQuery, setSearchQuery] = useState("");
-  const [copiedKey, setCopiedKey] = useState("");
-  const [currentSlide, setCurrentSlide] = useState(0);
-  const copyResetRef = useRef(null);
+  const [selectedType, setSelectedType] = useState(null);
+  const [form, setForm] = useState({
+    jobTitle: "", company: "", language: "English",
+    accessType: "open", cvEndDate: "", interviewEndDate: "",
+    cvEnabled: true, interviewEnabled: true,
+    threshold: "50",
+  });
+  const [created, setCreated] = useState(false);
+  const [generatedLinks, setGeneratedLinks] = useState(null);
 
-  const isAuthenticated = sessionStorage.getItem(DASHBOARD_AUTH_KEY) === "true";
-  const funnelShapes = useMemo(() => buildFunnelPolygons(), []);
+  const tabs = ["All", "General", "Stage 2", "Assessment", "Language"];
+  const filtered = activeTab === "All" ? CAMPAIGN_TYPES : CAMPAIGN_TYPES.filter(c => c.tag === activeTab);
 
-  useEffect(() => {
-    if (!isAuthenticated) navigate("/login", { replace: true });
-  }, [isAuthenticated, navigate]);
+  const set = (key, val) => setForm(f => ({ ...f, [key]: val }));
 
-  const templates = useMemo(() => {
-    if (activeTab === "All") return CREATE_CARDS;
-    return CREATE_CARDS.filter((c) => c.category.toLowerCase() === activeTab.toLowerCase());
-  }, [activeTab]);
-
-  // Compute visible cards per slide based on window width
-  const getCardsPerSlide = () => {
-    if (typeof window === "undefined") return 4;
-    if (window.innerWidth < 680) return 1;
-    if (window.innerWidth < 960) return 2;
-    if (window.innerWidth < 1280) return 3;
-    return 4;
+  const handleCreate = () => {
+    const code = `CAMP-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
+    const intake = `INT-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
+    setGeneratedLinks({
+      cvLink: `https://mawahib.ai/apply/${intake}`,
+      interviewLink: `https://mawahib.ai/interview?code=${code}`,
+      code, intake,
+    });
+    setCreated(true);
   };
 
-  const [cardsPerSlide, setCardsPerSlide] = useState(getCardsPerSlide);
-
-  useEffect(() => {
-    const handler = () => setCardsPerSlide(getCardsPerSlide());
-    window.addEventListener("resize", handler);
-    return () => window.removeEventListener("resize", handler);
-  }, []);
-
-  const totalSlides = Math.max(1, templates.length - cardsPerSlide + 1);
-
-  // Clamp currentSlide when templates or cardsPerSlide changes
-  useEffect(() => {
-    setCurrentSlide(0);
-  }, [activeTab, cardsPerSlide]);
-
-  const goTo = (idx) => {
-    setCurrentSlide(Math.max(0, Math.min(idx, totalSlides - 1)));
+  const [copied, setCopied] = useState(null);
+  const copy = (text, key) => {
+    navigator.clipboard?.writeText(text).catch(() => {});
+    setCopied(key);
+    setTimeout(() => setCopied(null), 1800);
   };
 
-  const handleLogout = () => {
-    sessionStorage.removeItem(DASHBOARD_AUTH_KEY);
-    navigate("/login", { replace: true });
-  };
-
-  const handleResultViewClick = (item) => {
-    if (item === "CV Results") {
-      navigate("/resume");
+  const handleTypeSelect = ({ id, label, tag, icon }) => {
+    if (id === "first") {
+      onClose();
+      navigate("/interview");
       return;
     }
-    setResultView(item);
+    setSelectedType({ id, label, tag, icon });
+    setStep(2);
   };
 
-  const handleCreateCampaignClick = () => {
-    navigate("/interview");
-  };
+  return (
+    <div
+      style={{
+        position: "fixed", inset: 0, zIndex: 200,
+        background: "rgba(4,7,16,0.8)", backdropFilter: "blur(6px)",
+        display: "flex", alignItems: "center", justifyContent: "center", padding: 20,
+        fontFamily: "'Sora', sans-serif",
+      }}
+      onClick={e => { if (e.target === e.currentTarget) onClose(); }}
+    >
+      <div style={{
+        width: "100%", maxWidth: created ? 540 : step === 2 ? 620 : 740,
+        background: "rgba(10,15,28,0.98)", border: `1px solid ${C.lineStrong}`,
+        borderRadius: 24, boxShadow: "0 32px 80px rgba(0,0,0,0.65)", overflow: "hidden",
+        transition: "max-width 0.3s ease",
+      }}>
 
-  const handleCopy = async (value, key) => {
-    try {
-      if (navigator?.clipboard?.writeText) {
-        await navigator.clipboard.writeText(value);
-      } else {
-        const textArea = document.createElement("textarea");
-        textArea.value = value;
-        textArea.style.position = "fixed";
-        textArea.style.opacity = "0";
-        document.body.appendChild(textArea);
-        textArea.focus();
-        textArea.select();
-        document.execCommand("copy");
-        document.body.removeChild(textArea);
-      }
-      setCopiedKey(key);
-      if (copyResetRef.current) clearTimeout(copyResetRef.current);
-      copyResetRef.current = setTimeout(() => setCopiedKey(""), 1600);
-    } catch {
-      // Ignore clipboard failures silently to avoid interrupting dashboard flow.
-    }
-  };
+        {/* Modal header */}
+        <div style={{
+          padding: "22px 26px 18px", borderBottom: `1px solid ${C.line}`,
+          display: "flex", alignItems: "flex-start", justifyContent: "space-between",
+        }}>
+          <div>
+            <h2 style={{ fontFamily: "'DM Serif Display', serif", fontSize: "1.65rem", fontWeight: 400, color: C.inkWhite, margin: "0 0 4px" }}>
+              {created ? "Campaign Created!" : step === 1 ? "Create Interview Campaign" : `Configure: ${selectedType?.label}`}
+            </h2>
+            <p style={{ fontSize: 13, color: C.inkMuted, margin: 0 }}>
+              {created ? "Your campaign is live. Share the links below." : step === 1 ? "Select a template to continue." : "Fill in the details for your new campaign."}
+            </p>
+          </div>
+          <button onClick={onClose} style={{
+            width: 34, height: 34, borderRadius: 9, border: `1px solid ${C.line}`,
+            background: "transparent", color: C.inkMuted, cursor: "pointer", display: "grid", placeItems: "center",
+          }}
+            onMouseEnter={e => { e.currentTarget.style.color = C.inkSoft; }}
+            onMouseLeave={e => { e.currentTarget.style.color = C.inkMuted; }}
+          ><X size={15} /></button>
+        </div>
 
-  useEffect(() => {
-    return () => {
-      if (copyResetRef.current) clearTimeout(copyResetRef.current);
-    };
-  }, []);
+        {/* ── Step 1: Pick type ── */}
+        {!created && step === 1 && (
+          <>
+            <div style={{ padding: "14px 26px 0", display: "flex", gap: 6, flexWrap: "wrap" }}>
+              {tabs.map(t => (
+                <button key={t} onClick={() => setActiveTab(t)} style={{
+                  height: 30, padding: "0 13px",
+                  border: `1px solid ${activeTab === t ? C.goldBorderHot : C.goldBorder}`,
+                  background: activeTab === t ? "linear-gradient(135deg,rgba(184,149,90,0.25),rgba(240,201,122,0.14))" : "transparent",
+                  color: activeTab === t ? C.inkWhite : C.inkMuted,
+                  borderRadius: 999, fontSize: 12, fontWeight: 600, cursor: "pointer",
+                  fontFamily: "'Sora', sans-serif", transition: "all 0.18s",
+                }}>{t}</button>
+              ))}
+            </div>
+            <div style={{
+              padding: "16px 26px 24px",
+              display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 10,
+              maxHeight: "52vh", overflowY: "auto",
+            }}>
+              {filtered.map(({ id, icon: Icon, label, tag, desc }) => (
+                <button key={id} onClick={() => handleTypeSelect({ id, label, tag, icon: Icon })} style={{
+                  background: C.bgCard, border: `1px solid ${C.line}`, borderRadius: 14,
+                  padding: "15px 17px", display: "flex", flexDirection: "column",
+                  alignItems: "flex-start", gap: 10, cursor: "pointer", textAlign: "left",
+                  transition: "all 0.2s ease", fontFamily: "'Sora', sans-serif",
+                }}
+                  onMouseEnter={e => { e.currentTarget.style.borderColor = C.goldBorderHot; e.currentTarget.style.background = C.bgCardHover; e.currentTarget.style.transform = "translateY(-2px)"; }}
+                  onMouseLeave={e => { e.currentTarget.style.borderColor = C.line; e.currentTarget.style.background = C.bgCard; e.currentTarget.style.transform = "translateY(0)"; }}
+                >
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%" }}>
+                    <div style={{ width: 36, height: 36, borderRadius: 9, background: C.goldDim, border: `1px solid ${C.goldBorder}`, display: "grid", placeItems: "center" }}>
+                      <Icon size={17} color={C.goldBright} />
+                    </div>
+                    <Tag label={tag} />
+                  </div>
+                  <div>
+                    <div style={{ fontSize: 13.5, fontWeight: 600, color: C.inkWhite, marginBottom: 4 }}>{label}</div>
+                    <div style={{ fontSize: 12, color: C.inkMuted, lineHeight: 1.6 }}>{desc}</div>
+                  </div>
+                  <div style={{ fontSize: 11.5, color: C.goldBright, fontWeight: 600, display: "flex", alignItems: "center", gap: 5 }}>
+                    Select <ArrowRight size={11} />
+                  </div>
+                </button>
+              ))}
+            </div>
+          </>
+        )}
 
-  if (!isAuthenticated) return null;
+        {/* ── Step 2: Configure ── */}
+        {!created && step === 2 && (
+          <div style={{ padding: "20px 26px 24px", display: "flex", flexDirection: "column", gap: 18, maxHeight: "70vh", overflowY: "auto" }}>
 
-  // Card width percent for transform
-  const slidePercent = (100 / cardsPerSlide);
-  const gap = 12;
+            {/* Selected type badge */}
+            {selectedType && (
+              <div style={{
+                display: "flex", alignItems: "center", gap: 10, padding: "10px 14px",
+                background: C.goldDim, border: `1px solid ${C.goldBorder}`, borderRadius: 12,
+              }}>
+                <div style={{ width: 32, height: 32, borderRadius: 8, background: "rgba(240,201,122,0.15)", border: `1px solid ${C.goldBorder}`, display: "grid", placeItems: "center" }}>
+                  <selectedType.icon size={15} color={C.goldBright} />
+                </div>
+                <div>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: C.inkWhite }}>{selectedType.label}</div>
+                  <Tag label={selectedType.tag} />
+                </div>
+                <button onClick={() => setStep(1)} style={{
+                  marginLeft: "auto", fontSize: 11.5, color: C.goldBright, fontWeight: 600,
+                  background: "none", border: "none", cursor: "pointer", fontFamily: "'Sora', sans-serif",
+                }}>Change →</button>
+              </div>
+            )}
+
+            {/* Job details */}
+            <div>
+              <SectionLabel>Job Details</SectionLabel>
+              <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                <InputField label="Job Title *" value={form.jobTitle} onChange={e => set("jobTitle", e.target.value)} placeholder="e.g. B2B Sales Representative" />
+                <InputField label="Company Name *" value={form.company} onChange={e => set("company", e.target.value)} placeholder="e.g. Acme Corp" />
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                  <SelectField label="Interview Language" value={form.language} onChange={e => set("language", e.target.value)}>
+                    <option>English</option>
+                    <option>Arabic</option>
+                    <option>French</option>
+                  </SelectField>
+                  <SelectField label="Access Type" value={form.accessType} onChange={e => set("accessType", e.target.value)}>
+                    <option value="open">Open Access</option>
+                    <option value="invite">Invite Only</option>
+                    <option value="code">Code Required</option>
+                  </SelectField>
+                </div>
+              </div>
+            </div>
+
+            <Divider />
+
+            {/* Stages */}
+            <div>
+              <SectionLabel>Campaign Stages</SectionLabel>
+              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                {[
+                  { key: "cvEnabled",        label: "CV Submission",      desc: "Candidates upload their CV for AI screening.",             dateKey: "cvEndDate"        },
+                  { key: "interviewEnabled",  label: "AI Interview",       desc: "Shortlisted candidates complete an avatar interview.",     dateKey: "interviewEndDate" },
+                ].map(({ key, label, desc, dateKey }) => (
+                  <div key={key} style={{
+                    background: form[key] ? "rgba(57,201,143,0.04)" : "rgba(6,10,20,0.5)",
+                    border: `1px solid ${form[key] ? "rgba(57,201,143,0.25)" : C.line}`,
+                    borderRadius: 12, padding: "13px 14px",
+                    transition: "all 0.2s",
+                  }}>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: form[key] ? 10 : 0 }}>
+                      <div>
+                        <div style={{ fontSize: 13, fontWeight: 600, color: form[key] ? C.inkWhite : C.inkMuted, marginBottom: 2 }}>{label}</div>
+                        <div style={{ fontSize: 11.5, color: C.inkFaint }}>{desc}</div>
+                      </div>
+                      {/* Toggle */}
+                      <div
+                        onClick={() => set(key, !form[key])}
+                        style={{
+                          width: 40, height: 22, borderRadius: 11, cursor: "pointer",
+                          background: form[key] ? C.green : "rgba(255,255,255,0.1)",
+                          position: "relative", transition: "background 0.2s", flexShrink: 0,
+                        }}
+                      >
+                        <div style={{
+                          position: "absolute", top: 3,
+                          left: form[key] ? 21 : 3,
+                          width: 16, height: 16, borderRadius: "50%",
+                          background: "#fff", transition: "left 0.2s",
+                        }} />
+                      </div>
+                    </div>
+                    {form[key] && (
+                      <InputField label="End Date (optional)" value={form[dateKey]} onChange={e => set(dateKey, e.target.value)} type="date" placeholder="Leave blank for no end date" />
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <Divider />
+
+            {/* CV Threshold (only if CV enabled) */}
+            {form.cvEnabled && (
+              <div>
+                <SectionLabel>CV Scoring</SectionLabel>
+                <div style={{ background: "rgba(6,10,20,0.6)", border: `1px solid ${C.line}`, borderRadius: 12, padding: "13px 14px" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+                    <div>
+                      <div style={{ fontSize: 13, fontWeight: 600, color: C.inkSoft, marginBottom: 2 }}>Suitability Threshold</div>
+                      <div style={{ fontSize: 11.5, color: C.inkFaint }}>Candidates scoring above this are marked suitable.</div>
+                    </div>
+                    <div style={{
+                      fontFamily: "'DM Serif Display', serif", fontSize: "1.6rem",
+                      color: C.goldBright, minWidth: 48, textAlign: "right",
+                    }}>{form.threshold}</div>
+                  </div>
+                  <input type="range" min="0" max="100" step="5" value={form.threshold}
+                    onChange={e => set("threshold", e.target.value)}
+                    style={{ width: "100%", accentColor: C.goldBright, cursor: "pointer", height: 4 }}
+                  />
+                  <div style={{ display: "flex", justifyContent: "space-between", marginTop: 4 }}>
+                    <span style={{ fontSize: 10.5, color: C.inkFaint }}>Lenient (0)</span>
+                    <span style={{ fontSize: 10.5, color: C.inkFaint }}>Strict (100)</span>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Action buttons */}
+            <div style={{ display: "flex", gap: 10, paddingTop: 4 }}>
+              <button onClick={() => setStep(1)} style={{
+                flex: 1, height: 44, borderRadius: 12,
+                border: `1px solid ${C.line}`, background: "transparent",
+                color: C.inkMuted, fontSize: 13, fontWeight: 600, cursor: "pointer",
+                fontFamily: "'Sora', sans-serif", transition: "all 0.18s",
+              }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = C.lineStrong; e.currentTarget.style.color = C.inkSoft; }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = C.line; e.currentTarget.style.color = C.inkMuted; }}
+              >← Back</button>
+              <button
+                onClick={handleCreate}
+                disabled={!form.jobTitle || !form.company}
+                style={{
+                  flex: 2, height: 44, borderRadius: 12, border: "none",
+                  background: form.jobTitle && form.company
+                    ? `linear-gradient(135deg,${C.gold},${C.goldBright})`
+                    : "rgba(255,255,255,0.06)",
+                  color: form.jobTitle && form.company ? "#1a1006" : C.inkFaint,
+                  fontSize: 14, fontWeight: 700, cursor: form.jobTitle && form.company ? "pointer" : "not-allowed",
+                  fontFamily: "'Sora', sans-serif",
+                  boxShadow: form.jobTitle && form.company ? `0 4px 20px rgba(184,149,90,0.3)` : "none",
+                  transition: "all 0.2s",
+                }}
+              >
+                <Plus size={15} style={{ display: "inline", marginRight: 7, verticalAlign: "middle" }} />
+                Create Campaign
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* ── Step 3: Created! ── */}
+        {created && generatedLinks && (
+          <div style={{ padding: "24px 26px 28px", display: "flex", flexDirection: "column", gap: 18 }}>
+            {/* Success icon */}
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10, paddingBottom: 4 }}>
+              <div style={{
+                width: 56, height: 56, borderRadius: "50%",
+                background: C.greenDim, border: `1px solid rgba(57,201,143,0.35)`,
+                display: "grid", placeItems: "center",
+              }}>
+                <CheckCircle2 size={26} color={C.green} />
+              </div>
+              <div style={{ textAlign: "center" }}>
+                <div style={{ fontSize: 14, fontWeight: 600, color: C.inkSoft, marginBottom: 2 }}>{form.jobTitle}</div>
+                <div style={{ fontSize: 12.5, color: C.inkMuted }}>{form.company} · {selectedType?.label}</div>
+              </div>
+            </div>
+
+            <Divider />
+
+            {/* Generated links */}
+            <div>
+              <SectionLabel>Your Campaign Links</SectionLabel>
+              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                {[
+                  { key: "cv",        label: "CV Submission Link",    url: generatedLinks.cvLink,        hint: "Share this with candidates to collect CVs." },
+                  { key: "interview", label: "Avatar Interview Link", url: generatedLinks.interviewLink, hint: "Send this to shortlisted candidates."          },
+                ].map(({ key, label, url, hint }) => (
+                  <div key={key} style={{ background: C.bgInput, border: `1px solid ${C.line}`, borderRadius: 12, padding: "12px 14px" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                        <Link2 size={12} color={C.goldBright} />
+                        <span style={{ fontSize: 12, fontWeight: 600, color: C.inkSoft }}>{label}</span>
+                      </div>
+                      <div style={{ display: "flex", gap: 5 }}>
+                        <button onClick={() => copy(url, key)} style={{
+                          height: 26, padding: "0 10px", borderRadius: 7,
+                          border: `1px solid ${C.line}`,
+                          background: copied === key ? C.greenDim : "transparent",
+                          color: copied === key ? C.green : C.inkMuted,
+                          fontSize: 11, fontWeight: 600, cursor: "pointer",
+                          display: "flex", alignItems: "center", gap: 5,
+                          fontFamily: "'Sora', sans-serif", transition: "all 0.18s",
+                        }}>
+                          <Copy size={10} /> {copied === key ? "Copied!" : "Copy"}
+                        </button>
+                      </div>
+                    </div>
+                    <div style={{ fontSize: 11.5, color: C.blue, fontFamily: "monospace", wordBreak: "break-all", lineHeight: 1.5, marginBottom: 3 }}>{url}</div>
+                    <div style={{ fontSize: 11, color: C.inkFaint }}>{hint}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Codes */}
+            <div style={{ background: "rgba(6,10,20,0.65)", border: `1px solid ${C.line}`, borderRadius: 12, padding: "12px 14px" }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                {[
+                  { label: "Interview Code", value: generatedLinks.code   },
+                  { label: "Intake Code",    value: generatedLinks.intake  },
+                ].map(({ label, value }) => (
+                  <div key={label} style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <span style={{ fontSize: 12, color: C.inkMuted }}>{label}</span>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                      <span style={{ fontSize: 12, fontFamily: "monospace", color: C.inkSoft }}>{value}</span>
+                      <button onClick={() => copy(value, `code-${label}`)} style={{
+                        height: 22, padding: "0 8px", borderRadius: 6,
+                        border: `1px solid ${C.line}`, background: "transparent",
+                        color: copied === `code-${label}` ? C.green : C.inkFaint,
+                        fontSize: 10, fontWeight: 600, cursor: "pointer",
+                        fontFamily: "'Sora', sans-serif",
+                      }}>{copied === `code-${label}` ? "✓" : "Copy"}</button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <button onClick={onClose} style={{
+              height: 44, borderRadius: 12, border: "none",
+              background: `linear-gradient(135deg,${C.gold},${C.goldBright})`,
+              color: "#1a1006", fontSize: 14, fontWeight: 700, cursor: "pointer",
+              fontFamily: "'Sora', sans-serif",
+              boxShadow: `0 4px 20px rgba(184,149,90,0.3)`,
+            }}>
+              Go to Dashboard
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+// ─── Campaign Table ───────────────────────────────────────────────────────────
+const CampaignTable = ({ onSelect, selected }) => {
+  const [search, setSearch] = useState("");
+  const filtered = useMemo(() => CAMPAIGNS.filter(c =>
+    c.title.toLowerCase().includes(search.toLowerCase()) ||
+    c.company.toLowerCase().includes(search.toLowerCase())
+  ), [search]);
+
+  return (
+    <div style={{ background: C.bgPanel, border: `1px solid ${C.line}`, borderRadius: 22, overflow: "hidden", backdropFilter: "blur(12px)" }}>
+      <div style={{ padding: "18px 22px", borderBottom: `1px solid ${C.line}`, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+        <div>
+          <h2 style={{ fontFamily: "'DM Serif Display', serif", fontSize: "1.4rem", fontWeight: 400, color: C.inkWhite, margin: 0 }}>Active Campaigns</h2>
+          <p style={{ fontSize: 12.5, color: C.inkMuted, margin: "3px 0 0" }}>Click a row to view details and analytics.</p>
+        </div>
+        <div style={{ position: "relative", flexShrink: 0 }}>
+          <Search size={14} color={C.inkFaint} style={{ position: "absolute", left: 11, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }} />
+          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search campaigns…" style={{
+            height: 36, width: 220, paddingLeft: 32, paddingRight: 12,
+            background: C.bgInput, border: `1px solid ${C.line}`, borderRadius: 10,
+            color: C.inkSoft, fontSize: 13, outline: "none", fontFamily: "'Sora', sans-serif", transition: "border-color 0.18s",
+          }}
+            onFocus={e => e.target.style.borderColor = C.goldBorder}
+            onBlur={e => e.target.style.borderColor = C.line}
+          />
+        </div>
+      </div>
+      <div style={{ display: "grid", gridTemplateColumns: "2.2fr 0.9fr 0.9fr 0.9fr 0.9fr 90px", padding: "10px 22px", borderBottom: `1px solid ${C.line}`, background: "rgba(255,255,255,0.015)" }}>
+        {["Campaign", "Status", "Applicants", "Interviewed", "Shortlisted", "Actions"].map(h => (
+          <div key={h} style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: C.inkFaint }}>{h}</div>
+        ))}
+      </div>
+      {filtered.map(c => {
+        const isSel = selected === c.id;
+        return (
+          <div key={c.id} onClick={() => onSelect(c.id)} style={{
+            display: "grid", gridTemplateColumns: "2.2fr 0.9fr 0.9fr 0.9fr 0.9fr 90px",
+            padding: "16px 22px", borderBottom: `1px solid ${C.line}`, cursor: "pointer",
+            background: isSel ? "rgba(95,158,255,0.05)" : "transparent",
+            borderLeft: `2px solid ${isSel ? C.blue : "transparent"}`, transition: "all 0.18s ease",
+            alignItems: "center",
+          }}
+            onMouseEnter={e => { if (!isSel) e.currentTarget.style.background = "rgba(184,149,90,0.04)"; }}
+            onMouseLeave={e => { if (!isSel) e.currentTarget.style.background = "transparent"; }}
+          >
+            <div>
+              <div style={{ fontSize: 14, fontWeight: 600, color: C.inkWhite, marginBottom: 3 }}>{c.title}</div>
+              <div style={{ fontSize: 12, color: C.inkMuted }}>{c.company} · <span style={{ fontFamily: "monospace" }}>{c.code}</span></div>
+              <div style={{ fontSize: 11, color: C.inkFaint, marginTop: 2, display: "flex", alignItems: "center", gap: 4 }}>
+                <Clock size={9} /> Created {c.created}
+              </div>
+            </div>
+            <div><StatusDot status={c.status} /></div>
+            {[c.applicants, c.interviewed, c.shortlisted].map((val, i) => (
+              <div key={i}>
+                <span style={{ fontSize: 16, fontWeight: 600, color: C.inkSoft, fontFamily: "'DM Serif Display', serif" }}>{val}</span>
+              </div>
+            ))}
+            <div style={{ display: "flex", gap: 6 }} onClick={e => e.stopPropagation()}>
+              <IconBtn title="Analytics" onClick={() => onSelect(c.id)}><BarChart2 size={14} /></IconBtn>
+              <IconBtn title="More" onClick={() => onSelect(c.id)}><MoreHorizontal size={14} /></IconBtn>
+            </div>
+          </div>
+        );
+      })}
+      {filtered.length === 0 && (
+        <div style={{ padding: "40px 22px", textAlign: "center", color: C.inkMuted, fontSize: 14 }}>No campaigns match your search.</div>
+      )}
+    </div>
+  );
+};
+
+// ─── Main Dashboard ───────────────────────────────────────────────────────────
+export default function Dashboard() {
+  const [showModal, setShowModal] = useState(false);
+  const [selectedId, setSelectedId] = useState(null);
+  const selectedCampaign = CAMPAIGNS.find(c => c.id === selectedId);
 
   return (
     <>
       <FontLink />
-      <GlobalStyles />
+      <style>{`
+        *, *::before, *::after { box-sizing: border-box; }
+        html, body { margin: 0; padding: 0; scrollbar-width: thin; scrollbar-color: rgba(184,149,90,0.2) transparent; }
+        body {
+          min-height: 100vh;
+          background:
+            radial-gradient(ellipse 80vw 55vh at 100% -5%, rgba(184,149,90,0.1) 0%, transparent 55%),
+            radial-gradient(ellipse 60vw 45vh at -5% 95%, rgba(95,158,255,0.06) 0%, transparent 50%),
+            #080d1c;
+          font-family: 'Sora', sans-serif;
+        }
+        input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(0.5); cursor: pointer; }
+        input::placeholder { color: rgba(245,240,235,0.28); }
+        @media (max-width: 900px) {
+          .stats-grid { grid-template-columns: repeat(2,1fr) !important; }
+          .main-layout { flex-direction: column !important; }
+        }
+        @media (max-width: 960px) {
+          .circular-kpi-grid { grid-template-columns: 1fr !important; }
+          .insight-copy-grid { grid-template-columns: 1fr !important; }
+        }
+        @media (max-width: 600px) {
+          .stats-grid { grid-template-columns: 1fr !important; }
+        }
+      `}</style>
 
+      <Navbar />
 
-      <div className="db-root">
-        <div className="db-frame">
-
-          {/* â”€â”€ Hero â”€â”€ */}
-          <motion.section
-            className="db-hero"
-            initial={{ opacity: 0, y: 18 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
+      <main style={{
+        maxWidth: 1360, margin: "0 auto",
+        padding: "clamp(84px,10vw,96px) clamp(16px,2.5vw,32px) 56px",
+        display: "flex", flexDirection: "column", gap: 24,
+      }}>
+        {/* Page header */}
+        <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
+          <div>
+            <div style={{
+              display: "inline-flex", alignItems: "center", gap: 6,
+              background: C.goldDim, border: `1px solid ${C.goldBorder}`,
+              borderRadius: 999, padding: "5px 12px",
+              fontSize: 10.5, fontWeight: 700, letterSpacing: "0.14em",
+              textTransform: "uppercase", color: C.goldBright, marginBottom: 12,
+            }}>
+              <span style={{ width: 6, height: 6, borderRadius: "50%", background: C.green, boxShadow: `0 0 6px ${C.green}` }} />
+              Dashboard
+            </div>
+            <h1 style={{ fontFamily: "'DM Serif Display', serif", fontStyle: "italic", fontSize: "clamp(2rem,4vw,3.2rem)", lineHeight: 1, letterSpacing: "-0.02em", margin: 0, color: C.inkWhite }}>
+              Hiring Campaigns
+            </h1>
+            <p style={{ fontSize: 14, color: C.inkMuted, marginTop: 8, marginBottom: 0 }}>Manage and track all your AI-powered interview campaigns.</p>
+          </div>
+          <button onClick={() => setShowModal(true)} style={{
+            height: 46, padding: "0 22px",
+            background: `linear-gradient(135deg,${C.gold},${C.goldBright})`,
+            border: "none", borderRadius: 13,
+            color: "#1a1006", fontSize: 14, fontWeight: 700,
+            cursor: "pointer", display: "flex", alignItems: "center", gap: 8,
+            fontFamily: "'Sora', sans-serif",
+            boxShadow: `0 4px 20px rgba(184,149,90,0.35)`, transition: "all 0.2s ease",
+          }}
+            onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = `0 8px 28px rgba(184,149,90,0.45)`; }}
+            onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = `0 4px 20px rgba(184,149,90,0.35)`; }}
           >
-            <div className="db-hero-content">
-              <div className="db-pill">
-                <Clock3 size={13} />
-                Today's Hiring Overview
-              </div>
-              <h1>
-                Build elite teams <span>faster</span> with AI precision.
-              </h1>
-              <p className="db-hero-desc">
-                Manage your full hiring pipeline in one place. Launch structured campaigns, monitor candidate
-                quality, and make decisions backed by clear AI interview intelligence.
-              </p>
-              <div className="db-hero-stats">
-                <div className="db-hero-stat">
-                  <div className="db-hero-stat-val">108</div>
-                  <div className="db-hero-stat-label">Total Applicants</div>
-                </div>
-                <div className="db-hero-stat-divider" />
-                <div className="db-hero-stat">
-                  <div className="db-hero-stat-val">28</div>
-                  <div className="db-hero-stat-label">Interviewed</div>
-                </div>
-                <div className="db-hero-stat-divider" />
-                <div className="db-hero-stat">
-                  <div className="db-hero-stat-val">5</div>
-                  <div className="db-hero-stat-label">Hired</div>
-                </div>
-              </div>
-            </div>
-            <div className="db-hero-image">
-              <img src="/hiring.jpeg" alt="Hiring meeting" />
-              <div className="db-hero-image-overlay" />
-            </div>
-          </motion.section>
-
-          {/* â”€â”€ Create Campaign â”€â”€ */}
-          <motion.section
-            className="db-section"
-            initial={{ opacity: 0, y: 18 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1, duration: 0.5 }}
-          >
-            <div className="db-section-inner">
-              <div className="db-section-head">
-                <h2>Create a Campaign</h2>
-                <p>Choose an interview focus to include both CV upload and AI interview in your campaign.</p>
-              </div>
-
-              <div className="db-tab-row">
-                {CREATE_TABS.map((tab) => (
-                  <button
-                    key={tab}
-                    type="button"
-                    className={`db-tab ${activeTab === tab ? "active" : ""}`}
-                    onClick={() => setActiveTab(tab)}
-                  >
-                    {tab}
-                  </button>
-                ))}
-              </div>
-
-              <div className="db-carousel-wrapper">
-                {/* Prev */}
-                <button
-                  className="db-carousel-nav prev"
-                  onClick={() => goTo(currentSlide - 1)}
-                  aria-label="Previous"
-                >
-                  <ChevronLeft size={17} />
-                </button>
-
-                <div className="db-carousel-viewport">
-                  <div
-                    className="db-create-track"
-                    style={{
-                      transform: `translateX(calc(-${currentSlide * slidePercent}% - ${currentSlide * gap}px))`,
-                    }}
-                  >
-                    {templates.map((item) => {
-                      const CardIcon = item.icon;
-                      return (
-                        <article key={item.title} className="db-create-card">
-                          <div>
-                            <div className="db-create-card-top">
-                              <span className="db-card-icon">
-                                <CardIcon size={22} />
-                              </span>
-                              <span className="db-category">{item.category}</span>
-                            </div>
-                            <h3>{item.title}</h3>
-                            <p>{item.description}</p>
-                          </div>
-                          <button
-                            type="button"
-                            className="db-create-btn"
-                            onClick={() => handleCreateCampaignClick(item.title)}
-                          >
-                            Create campaign
-                            <Plus size={14} />
-                          </button>
-                        </article>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                {/* Next */}
-                <button
-                  className="db-carousel-nav next"
-                  onClick={() => goTo(currentSlide + 1)}
-                  aria-label="Next"
-                >
-                  <ChevronRight size={17} />
-                </button>
-              </div>
-
-              {/* Dots */}
-              {totalSlides > 1 && (
-                <div className="db-carousel-dots">
-                  {Array.from({ length: totalSlides }).map((_, i) => (
-                    <button
-                      key={i}
-                      className={`db-carousel-dot ${i === currentSlide ? "active" : ""}`}
-                      onClick={() => goTo(i)}
-                      aria-label={`Go to slide ${i + 1}`}
-                    />
-                  ))}
-                </div>
-              )}
-            </div>
-          </motion.section>
-
-          <motion.div
-            className="db-main-grid"
-            initial={{ opacity: 0, y: 18 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2, duration: 0.5 }}
-          >
-            {/* Campaigns Table */}
-            <div className="db-pane">
-              <div className="db-pane-head">
-                <div className="db-pane-head-top">
-                  <h3>Your Campaigns</h3>
-                  <span className="db-count-badge">1 campaign</span>
-                </div>
-                <div className="db-filters">
-                  <div className="db-input-wrap">
-                    <Search size={14} />
-                    <input
-                      className="db-input"
-                      placeholder="Search campaignsâ€¦"
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                    />
-                  </div>
-                  <select className="db-select" defaultValue="">
-                    <option value="" disabled>Focus</option>
-                    <option>All</option>
-                    <option>General</option>
-                    <option>Assessment</option>
-                    <option>Language</option>
-                  </select>
-                  <select className="db-select" defaultValue="">
-                    <option value="" disabled>Status</option>
-                    <option>All</option>
-                    <option>Active</option>
-                    <option>Archived</option>
-                  </select>
-                  <select className="db-select" defaultValue="">
-                    <option value="" disabled>Sort</option>
-                    <option>Newest</option>
-                    <option>Oldest</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="db-table-wrap">
-                <table className="db-table">
-                  <thead>
-                    <tr>
-                      <th>Campaign</th>
-                      <th>Job Title</th>
-                      <th>Company</th>
-                      <th>Created</th>
-                      <th>CV End</th>
-                      <th>Interview End</th>
-                      <th></th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr className="db-row-active">
-                      <td>
-                        <div className="db-focus-name">{TABLE_ROW.focus}</div>
-                        <div className="db-mini">{TABLE_ROW.code}</div>
-                      </td>
-                      <td style={{ color: "#fff", fontWeight: 600 }}>{TABLE_ROW.job}</td>
-                      <td>{TABLE_ROW.company}</td>
-                      <td>{TABLE_ROW.created}</td>
-                      <td><span className="db-pill-light">{TABLE_ROW.cvEnd}</span></td>
-                      <td><span className="db-pill-light">{TABLE_ROW.interviewEnd}</span></td>
-                      <td>
-                        <button type="button" className="db-action-btn" aria-label="Campaign actions">
-                          <CircleEllipsis size={16} />
-                        </button>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-
-            {/* Side Panel */}
-            <aside className="db-side">
-              <div className="db-side-header">
-                <div>
-                  <h3 style={{ fontFamily: "'DM Serif Display', serif", fontSize: "1.3rem", fontWeight: 400, color: "#fff", margin: "0 0 4px" }}>
-                    Campaign Details
-                  </h3>
-                  <div className="db-mini">Select a campaign to view details.</div>
-                </div>
-                <div className="db-switch">
-                  {["CV Results", "Interview Results"].map((item) => (
-                    <button
-                      key={item}
-                      type="button"
-                      className={`db-switch-btn ${resultView === item ? "active" : ""}`}
-                      onClick={() => handleResultViewClick(item)}
-                    >
-                      {item}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <div className="db-campaign-title">demo</div>
-                <div className="db-campaign-sub">B2B Sales Representative Â· Demo Company</div>
-                <div className="db-campaign-meta">
-                  Interview code: {TABLE_ROW.code}<br />
-                  Intake code: {INTAKE_CODE}
-                </div>
-                <div className="db-tag-row">
-                  <span className="db-pill-light">Open access</span>
-                  <span className="db-pill-light">EN</span>
-                  <span className="db-pill-light">No end date</span>
-                </div>
-              </div>
-
-              <div className="db-ai-callout">
-                <div className="db-ai-chip">AI</div>
-                <div>
-                  <h4>Consultation Session</h4>
-                  <p>
-                    Run a premium consultation to validate hiring decisions, surface risks, and align on the
-                    strongest shortlist.
-                  </p>
-                </div>
-              </div>
-
-              <div className="db-stat-grid">
-                <div className="db-stat">
-                  <div className="db-stat-head">
-                    <label>Total CVs</label>
-                    <span className="db-pill-light">Intake</span>
-                  </div>
-                  <strong>108</strong>
-                  <p>Applicants who uploaded their CV</p>
-                  <div className="db-dot-row">
-                    <span className="db-dot">
-                      <span className="db-dot-circle" style={{ background: "#9aa7bd" }} />
-                      Male: 0
-                    </span>
-                    <span className="db-dot">
-                      <span className="db-dot-circle" style={{ background: "#7f8ca5" }} />
-                      Female: 0
-                    </span>
-                  </div>
-                </div>
-
-                <div className="db-stat" style={{ borderColor: "rgba(57,201,143,0.35)" }}>
-                  <div className="db-stat-head">
-                    <label style={{ color: "rgba(122,235,186,0.85)" }}>Suitable CVs</label>
-                    <span className="db-pill-light">Threshold &gt;50</span>
-                  </div>
-                  <strong style={{ color: "rgba(122,235,186,0.95)" }}>0</strong>
-                  <p>Out of 108 reviewed</p>
-                  <div className="db-dot-row">
-                    <span className="db-dot">
-                      <span className="db-dot-circle" style={{ background: "#1ea46f" }} />
-                      Male: 0
-                    </span>
-                    <span className="db-dot">
-                      <span className="db-dot-circle" style={{ background: "#56d3a0" }} />
-                      Female: 0
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="db-funnel-card">
-                <div className="db-funnel-head">
-                  <h4>Interview Funnel</h4>
-                  <span>Based on invited</span>
-                </div>
-                <div className="db-funnel-legend">
-                  {FUNNEL_STEPS.map((step) => (
-                    <span key={step.label} className="db-funnel-legend-item">
-                      <span className="db-funnel-legend-dot" style={{ background: step.color }} />
-                      {step.label}
-                    </span>
-                  ))}
-                </div>
-                <svg
-                  className="db-funnel-svg"
-                  viewBox="0 0 496 210"
-                  role="img"
-                  aria-label="Interview funnel visualization"
-                >
-                  {funnelShapes.map((shape) => (
-                    <polygon
-                      key={shape.label}
-                      points={shape.points}
-                      fill={shape.color}
-                      opacity="0.92"
-                    />
-                  ))}
-                  {funnelShapes.map((shape) => (
-                    <text
-                      key={`${shape.label}-v`}
-                      x={shape.labelX}
-                      y="198"
-                      textAnchor="middle"
-                    >
-                      {shape.value}
-                    </text>
-                  ))}
-                </svg>
-              </div>
-
-              <div className="db-manage-grid">
-                <div className="db-manage-card">
-                  <div className="db-manage-head">
-                    <h5>CV Submission</h5>
-                    <button type="button" className="db-subtle-btn">Edit</button>
-                  </div>
-                  <div className="db-manage-status">Enabled</div>
-                  <div className="db-manage-end">Ends: -</div>
-                </div>
-                <div className="db-manage-card">
-                  <div className="db-manage-head">
-                    <h5>Interview</h5>
-                    <button type="button" className="db-subtle-btn">Edit</button>
-                  </div>
-                  <div className="db-manage-status">Enabled</div>
-                  <div className="db-manage-end">Ends: -</div>
-                </div>
-              </div>
-
-              <div className="db-links-card">
-                <h4>Campaign Links</h4>
-
-                <div className="db-link-group">
-                  <label htmlFor="cv-submission-link">CV submission link</label>
-                  <div className="db-link-row">
-                    <input
-                      id="cv-submission-link"
-                      className="db-link-input"
-                      value={CAMPAIGN_LINKS.cvSubmission}
-                      readOnly
-                    />
-                    <button
-                      type="button"
-                      className={`db-copy-btn ${copiedKey === "cv" ? "copied" : ""}`}
-                      onClick={() => handleCopy(CAMPAIGN_LINKS.cvSubmission, "cv")}
-                    >
-                      {copiedKey === "cv" ? "Copied" : "Copy"}
-                    </button>
-                  </div>
-                </div>
-
-                <div className="db-link-group">
-                  <label htmlFor="avatar-interview-link">Avatar interview link</label>
-                  <div className="db-link-row">
-                    <input
-                      id="avatar-interview-link"
-                      className="db-link-input"
-                      value={CAMPAIGN_LINKS.avatarInterview}
-                      readOnly
-                    />
-                    <button
-                      type="button"
-                      className={`db-copy-btn ${copiedKey === "interview" ? "copied" : ""}`}
-                      onClick={() => handleCopy(CAMPAIGN_LINKS.avatarInterview, "interview")}
-                    >
-                      {copiedKey === "interview" ? "Copied" : "Copy"}
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              <div className="db-end-actions">
-                <button type="button" className="db-end-btn">Edit end date</button>
-                <button type="button" className="db-end-btn">Extend 7d</button>
-                <button type="button" className="db-end-btn">Extend 30d</button>
-              </div>
-            </aside>
-          </motion.div>
-
+            <Plus size={17} strokeWidth={2.5} /> New Campaign
+          </button>
         </div>
-      </div>
+
+        {/* Stats */}
+        <div className="stats-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 12 }}>
+          {[
+            { label: "Total Campaigns",  value: "1",   sub: "1 active",       icon: FileText,      color: C.blue       },
+            { label: "Total Applicants", value: "108", sub: "This month",      icon: Users,         color: C.goldBright },
+            { label: "Interviewed",      value: "28",  sub: "26% of total",    icon: MessageSquare, color: C.green      },
+            { label: "Shortlisted",      value: "12",  sub: "11% of total",    icon: TrendingUp,    color: C.yellow     },
+          ].map(({ label, value, sub, icon: Icon, color }) => (
+            <div key={label} style={{
+              background: C.bgPanel, border: `1px solid ${C.line}`,
+              borderRadius: 18, padding: "18px 20px",
+              display: "flex", alignItems: "center", gap: 14, backdropFilter: "blur(12px)",
+            }}>
+              <div style={{
+                width: 42, height: 42, borderRadius: 12, flexShrink: 0,
+                background: `${color}1a`, border: `1px solid ${color}40`,
+                display: "grid", placeItems: "center",
+              }}>
+                <Icon size={18} color={color} />
+              </div>
+              <div>
+                <div style={{ fontSize: 22, fontWeight: 700, color: C.inkWhite, lineHeight: 1, fontFamily: "'DM Serif Display', serif" }}>{value}</div>
+                <div style={{ fontSize: 12, color: C.inkMuted, marginTop: 3 }}>{label}</div>
+                <div style={{ fontSize: 11, color: C.inkFaint, marginTop: 1 }}>{sub}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Main layout */}
+        <div className="main-layout" style={{ display: "flex", gap: 16, alignItems: "flex-start" }}>
+          <div style={{
+            flex: selectedCampaign ? "0 0 auto" : "1 1 100%",
+            width: selectedCampaign ? "calc(100% - 420px - 16px)" : "100%",
+            minWidth: 0, transition: "width 0.3s ease",
+          }}>
+            <CampaignTable onSelect={setSelectedId} selected={selectedId} />
+          </div>
+
+          {selectedCampaign && (
+            <div style={{ flexShrink: 0, width: 420 }}>
+              <CampaignDetail campaign={selectedCampaign} onClose={() => setSelectedId(null)} />
+            </div>
+          )}
+        </div>
+
+        {/* Circular Dashboard Insights */}
+        {!selectedCampaign && (
+          <DashboardCircularInsights campaign={CAMPAIGNS[0]} onCreateCampaign={() => setShowModal(true)} />
+        )}
+      </main>
+
+      {showModal && <CreateModal onClose={() => setShowModal(false)} />}
     </>
   );
 }
+
+
