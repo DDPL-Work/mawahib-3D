@@ -1,4 +1,4 @@
-﻿import { useState, useMemo, useRef, useEffect } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import {
   Plus, Search, Settings, LogOut, Clock, Copy, ExternalLink,
   BarChart2, Users, CheckCircle2, ArrowRight, MoreHorizontal,
@@ -8,34 +8,35 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import CVResults from "./resume";
+import InterviewResults from "./Inter";
 
 // ─── Design Tokens ────────────────────────────────────────────────────────────
 const C = {
-  bgDark:        "#080d1c",
-  bgPanel:       "rgba(11,17,34,0.90)",
-  bgCard:        "rgba(8,12,24,0.85)",
-  bgCardHover:   "rgba(12,18,36,0.95)",
-  bgInput:       "rgba(6,10,20,0.75)",
-  gold:          "#b8955a",
-  goldBright:    "#f0c97a",
-  goldDim:       "rgba(240,201,122,0.14)",
-  goldBorder:    "rgba(184,149,90,0.28)",
+  bgDark: "#080d1c",
+  bgPanel: "rgba(11,17,34,0.90)",
+  bgCard: "rgba(8,12,24,0.85)",
+  bgCardHover: "rgba(12,18,36,0.95)",
+  bgInput: "rgba(6,10,20,0.75)",
+  gold: "#b8955a",
+  goldBright: "#f0c97a",
+  goldDim: "rgba(240,201,122,0.14)",
+  goldBorder: "rgba(184,149,90,0.28)",
   goldBorderHot: "rgba(240,201,122,0.55)",
-  inkWhite:      "#ffffff",
-  inkSoft:       "rgba(245,240,235,0.82)",
-  inkMuted:      "rgba(245,240,235,0.48)",
-  inkFaint:      "rgba(245,240,235,0.22)",
-  line:          "rgba(184,149,90,0.16)",
-  lineStrong:    "rgba(184,149,90,0.32)",
-  blue:          "#5f9eff",
-  blueDim:       "rgba(95,158,255,0.12)",
-  green:         "#39c98f",
-  greenDim:      "rgba(57,201,143,0.12)",
-  greenBright:   "rgba(57,201,143,0.9)",
-  yellow:        "#e3c466",
-  yellowDim:     "rgba(227,196,102,0.12)",
-  red:           "#ff6b6b",
-  redDim:        "rgba(255,107,107,0.12)",
+  inkWhite: "#ffffff",
+  inkSoft: "rgba(245,240,235,0.82)",
+  inkMuted: "rgba(245,240,235,0.48)",
+  inkFaint: "rgba(245,240,235,0.22)",
+  line: "rgba(184,149,90,0.16)",
+  lineStrong: "rgba(184,149,90,0.32)",
+  blue: "#5f9eff",
+  blueDim: "rgba(95,158,255,0.12)",
+  green: "#39c98f",
+  greenDim: "rgba(57,201,143,0.12)",
+  greenBright: "rgba(57,201,143,0.9)",
+  yellow: "#e3c466",
+  yellowDim: "rgba(227,196,102,0.12)",
+  red: "#ff6b6b",
+  redDim: "rgba(255,107,107,0.12)",
 };
 
 // ─── Fonts ────────────────────────────────────────────────────────────────────
@@ -49,19 +50,19 @@ const FontLink = () => (
 
 // ─── Data ─────────────────────────────────────────────────────────────────────
 const CAMPAIGN_TYPES = [
-  { id: "first",    icon: Users,   label: "First Interview",      tag: "General",    desc: "CV-based screening for core qualifications." },
-  { id: "second",   icon: Search,  label: "Second Interview",     tag: "Stage 2",    desc: "Strict follow-up based on Stage 1 results."  },
-  { id: "problem",  icon: Layers,  label: "Problem Solving",      tag: "Assessment", desc: "Real workplace challenges under pressure."    },
-  { id: "judgment", icon: Gavel,   label: "Situational Judgment", tag: "Assessment", desc: "Measure professional ethics and reasoning."   },
-  { id: "cognitive",icon: Brain,   label: "Cognitive Ability",    tag: "Assessment", desc: "Pattern recognition & learning agility."      },
-  { id: "english",  icon: Globe,   label: "English Communication",tag: "Language",   desc: "Fluency, grammar, and expression clarity."   },
+  { id: "first", icon: Users, label: "First Interview", tag: "General", desc: "CV-based screening for core qualifications." },
+  { id: "second", icon: Search, label: "Second Interview", tag: "Stage 2", desc: "Strict follow-up based on Stage 1 results." },
+  { id: "problem", icon: Layers, label: "Problem Solving", tag: "Assessment", desc: "Real workplace challenges under pressure." },
+  { id: "judgment", icon: Gavel, label: "Situational Judgment", tag: "Assessment", desc: "Measure professional ethics and reasoning." },
+  { id: "cognitive", icon: Brain, label: "Cognitive Ability", tag: "Assessment", desc: "Pattern recognition & learning agility." },
+  { id: "english", icon: Globe, label: "English Communication", tag: "Language", desc: "Fluency, grammar, and expression clarity." },
 ];
 
 const TAG_COLORS = {
-  "General":    { bg: C.blueDim,   border: "rgba(95,158,255,0.3)",  text: C.blue       },
-  "Stage 2":    { bg: C.goldDim,   border: C.goldBorder,            text: C.goldBright },
-  "Assessment": { bg: C.greenDim,  border: "rgba(57,201,143,0.3)",  text: C.green      },
-  "Language":   { bg: C.yellowDim, border: "rgba(227,196,102,0.3)", text: C.yellow     },
+  "General": { bg: C.blueDim, border: "rgba(95,158,255,0.3)", text: C.blue },
+  "Stage 2": { bg: C.goldDim, border: C.goldBorder, text: C.goldBright },
+  "Assessment": { bg: C.greenDim, border: "rgba(57,201,143,0.3)", text: C.green },
+  "Language": { bg: C.yellowDim, border: "rgba(227,196,102,0.3)", text: C.yellow },
 };
 
 const CAMPAIGNS = [{
@@ -75,33 +76,33 @@ const CAMPAIGNS = [{
 }];
 
 const FUNNEL = [
-  { label: "Invited",      value: 108, pct: 100, color: C.blue       },
-  { label: "CV Submitted", value: 62,  pct: 57,  color: C.goldBright },
-  { label: "Interviewed",  value: 28,  pct: 26,  color: C.yellow     },
-  { label: "Shortlisted",  value: 12,  pct: 11,  color: C.green      },
-  { label: "Hired",        value: 5,   pct: 5,   color: "#28a66f"    },
+  { label: "Invited", value: 108, pct: 100, color: C.blue },
+  { label: "CV Submitted", value: 62, pct: 57, color: C.goldBright },
+  { label: "Interviewed", value: 28, pct: 26, color: C.yellow },
+  { label: "Shortlisted", value: 12, pct: 11, color: C.green },
+  { label: "Hired", value: 5, pct: 5, color: "#28a66f" },
 ];
 
 // Mock CV results data
 const CV_RESULTS = [
-  { name: "Sarah Al-Farsi",    score: 84, status: "suitable",    gender: "F", exp: "5 yrs", match: "High" },
-  { name: "Omar Khalid",       score: 77, status: "suitable",    gender: "M", exp: "3 yrs", match: "High" },
-  { name: "Lina Mansoor",      score: 71, status: "suitable",    gender: "F", exp: "4 yrs", match: "Med"  },
-  { name: "Tariq Hassan",      score: 68, status: "suitable",    gender: "M", exp: "6 yrs", match: "Med"  },
-  { name: "Noor Al-Rashid",    score: 62, status: "suitable",    gender: "F", exp: "2 yrs", match: "Med"  },
-  { name: "Khalid Ibrahim",    score: 44, status: "unsuitable",  gender: "M", exp: "1 yr",  match: "Low"  },
-  { name: "Fatima Zahra",      score: 38, status: "unsuitable",  gender: "F", exp: "0 yrs", match: "Low"  },
-  { name: "Yousef Al-Mutairi", score: 31, status: "unsuitable",  gender: "M", exp: "2 yrs", match: "Low"  },
+  { name: "Sarah Al-Farsi", score: 84, status: "suitable", gender: "F", exp: "5 yrs", match: "High" },
+  { name: "Omar Khalid", score: 77, status: "suitable", gender: "M", exp: "3 yrs", match: "High" },
+  { name: "Lina Mansoor", score: 71, status: "suitable", gender: "F", exp: "4 yrs", match: "Med" },
+  { name: "Tariq Hassan", score: 68, status: "suitable", gender: "M", exp: "6 yrs", match: "Med" },
+  { name: "Noor Al-Rashid", score: 62, status: "suitable", gender: "F", exp: "2 yrs", match: "Med" },
+  { name: "Khalid Ibrahim", score: 44, status: "unsuitable", gender: "M", exp: "1 yr", match: "Low" },
+  { name: "Fatima Zahra", score: 38, status: "unsuitable", gender: "F", exp: "0 yrs", match: "Low" },
+  { name: "Yousef Al-Mutairi", score: 31, status: "unsuitable", gender: "M", exp: "2 yrs", match: "Low" },
 ];
 
 const CV_STATS = {
   total: 108, suitable: 62, unsuitable: 46, threshold: 50,
   male: 58, female: 50,
   scoreRanges: [
-    { range: "80–100", count: 12, color: C.green      },
-    { range: "60–79",  count: 28, color: C.goldBright },
-    { range: "40–59",  count: 22, color: C.yellow     },
-    { range: "0–39",   count: 46, color: C.red        },
+    { range: "80–100", count: 12, color: C.green },
+    { range: "60–79", count: 28, color: C.goldBright },
+    { range: "40–59", count: 22, color: C.yellow },
+    { range: "0–39", count: 46, color: C.red },
   ],
 };
 
@@ -436,7 +437,12 @@ const SelectField = ({ label, value, onChange, children }) => (
 
 const IconBtn = ({ children, onClick, title, active }) => (
   <button
-    title={title} onClick={onClick}
+    type="button"
+    title={title}
+    onClick={(e) => {
+      e.preventDefault();
+      onClick?.(e);
+    }}
     style={{
       width: 32, height: 32, borderRadius: 8,
       border: `1px solid ${active ? C.goldBorder : C.line}`,
@@ -478,8 +484,8 @@ const CVResultsPanel = ({ campaign }) => {
       {/* Sub-tabs */}
       <div style={{ display: "flex", gap: 4, background: "rgba(6,10,20,0.7)", border: `1px solid ${C.line}`, borderRadius: 12, padding: 4 }}>
         {[
-          { id: "overview",   label: "Overview",   icon: PieChart  },
-          { id: "candidates", label: "Candidates", icon: Users     },
+          { id: "overview", label: "Overview", icon: PieChart },
+          { id: "candidates", label: "Candidates", icon: Users },
         ].map(({ id, label, icon: Icon }) => (
           <button key={id} onClick={() => setView(id)} style={{
             flex: 1, height: 32, borderRadius: 9,
@@ -500,10 +506,10 @@ const CVResultsPanel = ({ campaign }) => {
           {/* Summary cards */}
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
             {[
-              { label: "Total CVs",   value: CV_STATS.total,     sub: "Uploaded",            color: C.blue,       border: "rgba(95,158,255,0.25)"   },
-              { label: "Suitable",    value: CV_STATS.suitable,  sub: `Score ≥ ${CV_STATS.threshold}`, color: C.green, border: "rgba(57,201,143,0.3)"  },
-              { label: "Unsuitable",  value: CV_STATS.unsuitable,sub: "Below threshold",     color: C.red,        border: "rgba(255,107,107,0.25)"   },
-              { label: "Pass Rate",   value: `${Math.round(CV_STATS.suitable/CV_STATS.total*100)}%`, sub: "Of reviewed", color: C.goldBright, border: C.goldBorder },
+              { label: "Total CVs", value: CV_STATS.total, sub: "Uploaded", color: C.blue, border: "rgba(95,158,255,0.25)" },
+              { label: "Suitable", value: CV_STATS.suitable, sub: `Score ≥ ${CV_STATS.threshold}`, color: C.green, border: "rgba(57,201,143,0.3)" },
+              { label: "Unsuitable", value: CV_STATS.unsuitable, sub: "Below threshold", color: C.red, border: "rgba(255,107,107,0.25)" },
+              { label: "Pass Rate", value: `${Math.round(CV_STATS.suitable / CV_STATS.total * 100)}%`, sub: "Of reviewed", color: C.goldBright, border: C.goldBorder },
             ].map(({ label, value, sub, color, border }) => (
               <div key={label} style={{
                 background: "rgba(6,10,20,0.65)", border: `1px solid ${border}`,
@@ -526,7 +532,7 @@ const CVResultsPanel = ({ campaign }) => {
                   <span style={{ fontSize: 12, color: C.inkSoft, fontWeight: 600 }}>{CV_STATS.male}</span>
                 </div>
                 <div style={{ height: 6, borderRadius: 99, background: C.line, overflow: "hidden" }}>
-                  <div style={{ height: "100%", width: `${Math.round(CV_STATS.male/CV_STATS.total*100)}%`, borderRadius: 99, background: C.blue }} />
+                  <div style={{ height: "100%", width: `${Math.round(CV_STATS.male / CV_STATS.total * 100)}%`, borderRadius: 99, background: C.blue }} />
                 </div>
               </div>
               <div style={{ flex: 1 }}>
@@ -535,18 +541,18 @@ const CVResultsPanel = ({ campaign }) => {
                   <span style={{ fontSize: 12, color: C.inkSoft, fontWeight: 600 }}>{CV_STATS.female}</span>
                 </div>
                 <div style={{ height: 6, borderRadius: 99, background: C.line, overflow: "hidden" }}>
-                  <div style={{ height: "100%", width: `${Math.round(CV_STATS.female/CV_STATS.total*100)}%`, borderRadius: 99, background: "#e06fa5" }} />
+                  <div style={{ height: "100%", width: `${Math.round(CV_STATS.female / CV_STATS.total * 100)}%`, borderRadius: 99, background: "#e06fa5" }} />
                 </div>
               </div>
             </div>
             {/* Visual split bar */}
             <div style={{ height: 8, borderRadius: 99, overflow: "hidden", display: "flex" }}>
-              <div style={{ width: `${Math.round(CV_STATS.male/CV_STATS.total*100)}%`, background: C.blue }} />
+              <div style={{ width: `${Math.round(CV_STATS.male / CV_STATS.total * 100)}%`, background: C.blue }} />
               <div style={{ flex: 1, background: "#e06fa5" }} />
             </div>
             <div style={{ display: "flex", justifyContent: "space-between", marginTop: 6 }}>
-              <span style={{ fontSize: 11, color: C.inkFaint }}>♂ {Math.round(CV_STATS.male/CV_STATS.total*100)}% Male</span>
-              <span style={{ fontSize: 11, color: C.inkFaint }}>{Math.round(CV_STATS.female/CV_STATS.total*100)}% Female ♀</span>
+              <span style={{ fontSize: 11, color: C.inkFaint }}>♂ {Math.round(CV_STATS.male / CV_STATS.total * 100)}% Male</span>
+              <span style={{ fontSize: 11, color: C.inkFaint }}>{Math.round(CV_STATS.female / CV_STATS.total * 100)}% Female ♀</span>
             </div>
           </div>
 
@@ -661,10 +667,10 @@ const InterviewResultsPanel = ({ campaign }) => (
       <SectionLabel>Stage Breakdown</SectionLabel>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
         {[
-          { label: "Avg Score",      value: "74",  sub: "Interview score",     color: C.goldBright },
-          { label: "Completion Rate",value: "91%", sub: "Started → Finished",  color: C.green      },
-          { label: "Top Scorers",    value: "9",   sub: "Score ≥ 80",          color: C.blue       },
-          { label: "Red Flags",      value: "4",   sub: "Flagged for review",  color: C.red        },
+          { label: "Avg Score", value: "74", sub: "Interview score", color: C.goldBright },
+          { label: "Completion Rate", value: "91%", sub: "Started → Finished", color: C.green },
+          { label: "Top Scorers", value: "9", sub: "Score ≥ 80", color: C.blue },
+          { label: "Red Flags", value: "4", sub: "Flagged for review", color: C.red },
         ].map(({ label, value, sub, color }) => (
           <div key={label} style={{
             background: "rgba(6,10,20,0.65)", border: `1px solid ${C.line}`,
@@ -687,15 +693,15 @@ const CampaignDetail = ({ campaign, onClose }) => {
   const copyRef = useRef(null);
 
   const copy = (text, key) => {
-    navigator.clipboard?.writeText(text).catch(() => {});
+    navigator.clipboard?.writeText(text).catch(() => { });
     setCopied(key);
     clearTimeout(copyRef.current);
     copyRef.current = setTimeout(() => setCopied(null), 1800);
   };
 
   const links = [
-    { key: "cv",        label: "CV Submission Link",   url: `https://mawahib.ai/apply/${campaign.intakeCode}`,         hint: "Share with candidates to submit their CV"      },
-    { key: "interview", label: "Avatar Interview Link", url: `https://mawahib.ai/interview?code=${campaign.code}`, hint: "Qualified candidates complete interview here"  },
+    { key: "cv", label: "CV Submission Link", url: `https://mawahib.ai/apply/${campaign.intakeCode}`, hint: "Share with candidates to submit their CV" },
+    { key: "interview", label: "Avatar Interview Link", url: `https://mawahib.ai/interview?code=${campaign.code}`, hint: "Qualified candidates complete interview here" },
   ];
 
   useEffect(() => {
@@ -732,199 +738,199 @@ const CampaignDetail = ({ campaign, onClose }) => {
         borderRadius: 24, boxShadow: "0 32px 80px rgba(0,0,0,0.65)",
         backdropFilter: "blur(16px)", display: "flex", flexDirection: "column", overflow: "hidden",
       }}>
-      {/* Panel header */}
-      <div style={{
-        padding: "18px 20px 16px", borderBottom: `1px solid ${C.line}`,
-        display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12,
-      }}>
-        <div style={{ minWidth: 0 }}>
-          <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", color: C.inkFaint, marginBottom: 6 }}>Campaign Details</div>
-          <h3 style={{ fontFamily: "'DM Serif Display', serif", fontSize: "1.35rem", fontWeight: 400, color: C.inkWhite, margin: "0 0 3px", lineHeight: 1.2 }}>{campaign.title}</h3>
-          <p style={{ fontSize: 12.5, color: C.inkMuted, margin: "0 0 8px" }}>{campaign.company}</p>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-            <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 11.5, color: C.inkMuted, background: "rgba(255,255,255,0.04)", border: `1px solid ${C.line}`, borderRadius: 999, padding: "3px 9px" }}>
-              <Award size={10} /> {campaign.accessType}
-            </span>
-            <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 11.5, color: C.inkMuted, background: "rgba(255,255,255,0.04)", border: `1px solid ${C.line}`, borderRadius: 999, padding: "3px 9px" }}>
-              <Globe size={10} /> {campaign.language}
-            </span>
-            <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 11.5, color: C.inkMuted, background: "rgba(255,255,255,0.04)", border: `1px solid ${C.line}`, borderRadius: 999, padding: "3px 9px" }}>
-              <Calendar size={10} /> No end date
-            </span>
+        {/* Panel header */}
+        <div style={{
+          padding: "18px 20px 16px", borderBottom: `1px solid ${C.line}`,
+          display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12,
+        }}>
+          <div style={{ minWidth: 0 }}>
+            <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", color: C.inkFaint, marginBottom: 6 }}>Campaign Details</div>
+            <h3 style={{ fontFamily: "'DM Serif Display', serif", fontSize: "1.35rem", fontWeight: 400, color: C.inkWhite, margin: "0 0 3px", lineHeight: 1.2 }}>{campaign.title}</h3>
+            <p style={{ fontSize: 12.5, color: C.inkMuted, margin: "0 0 8px" }}>{campaign.company}</p>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+              <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 11.5, color: C.inkMuted, background: "rgba(255,255,255,0.04)", border: `1px solid ${C.line}`, borderRadius: 999, padding: "3px 9px" }}>
+                <Award size={10} /> {campaign.accessType}
+              </span>
+              <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 11.5, color: C.inkMuted, background: "rgba(255,255,255,0.04)", border: `1px solid ${C.line}`, borderRadius: 999, padding: "3px 9px" }}>
+                <Globe size={10} /> {campaign.language}
+              </span>
+              <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 11.5, color: C.inkMuted, background: "rgba(255,255,255,0.04)", border: `1px solid ${C.line}`, borderRadius: 999, padding: "3px 9px" }}>
+                <Calendar size={10} /> No end date
+              </span>
+            </div>
           </div>
-        </div>
-        <button onClick={onClose} style={{
-          width: 30, height: 30, borderRadius: 8, border: `1px solid ${C.line}`,
-          background: "transparent", color: C.inkMuted, cursor: "pointer", display: "grid", placeItems: "center", flexShrink: 0,
-        }}
-          onMouseEnter={e => { e.currentTarget.style.color = C.inkSoft; e.currentTarget.style.borderColor = C.lineStrong; }}
-          onMouseLeave={e => { e.currentTarget.style.color = C.inkMuted; e.currentTarget.style.borderColor = C.line; }}
-        ><X size={14} /></button>
-      </div>
-
-      {/* Scrollable body */}
-      <div style={{ flex: 1, overflowY: "auto", padding: "18px 20px", display: "flex", flexDirection: "column", gap: 18, scrollbarWidth: "thin", scrollbarColor: `${C.goldBorder} transparent` }}>
-
-        {/* Result view tabs */}
-        <div style={{ display: "flex", gap: 4, background: "rgba(6,10,20,0.7)", border: `1px solid ${C.line}`, borderRadius: 12, padding: 4 }}>
-          <button onClick={() => setResultView("interview")} style={{
-            flex: 1, height: 34, borderRadius: 9,
-            border: `1px solid ${resultView === "interview" ? "rgba(240,201,122,0.55)" : "transparent"}`,
-            background: resultView === "interview" ? "linear-gradient(135deg,rgba(184,149,90,0.28),rgba(240,201,122,0.16))" : "transparent",
-            color: resultView === "interview" ? C.inkWhite : C.inkMuted,
-            fontSize: 12.5, fontWeight: 700, cursor: "pointer",
-            display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
-            fontFamily: "'Sora', sans-serif", transition: "all 0.18s",
-          }}>
-            <BarChart size={13} /> Interview Results
-          </button>
-          <button onClick={handleCvTabClick} style={{
-            flex: 1, height: 34, borderRadius: 9,
-            border: `1px solid ${resultView === "cv" ? "rgba(240,201,122,0.55)" : C.line}`,
-            background: resultView === "cv" ? "linear-gradient(135deg,rgba(184,149,90,0.28),rgba(240,201,122,0.16))" : "transparent",
-            color: resultView === "cv" ? C.inkWhite : C.inkMuted,
-            fontSize: 12.5, fontWeight: 700, cursor: "pointer",
-            display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
-            fontFamily: "'Sora', sans-serif", transition: "all 0.18s",
+          <button onClick={onClose} style={{
+            width: 30, height: 30, borderRadius: 8, border: `1px solid ${C.line}`,
+            background: "transparent", color: C.inkMuted, cursor: "pointer", display: "grid", placeItems: "center", flexShrink: 0,
           }}
-            onMouseEnter={e => { e.currentTarget.style.borderColor = C.goldBorder; e.currentTarget.style.color = C.inkSoft; }}
-            onMouseLeave={e => { e.currentTarget.style.borderColor = C.line; e.currentTarget.style.color = C.inkMuted; }}
-          >
-            <FileText size={13} /> CV Results
-          </button>
+            onMouseEnter={e => { e.currentTarget.style.color = C.inkSoft; e.currentTarget.style.borderColor = C.lineStrong; }}
+            onMouseLeave={e => { e.currentTarget.style.color = C.inkMuted; e.currentTarget.style.borderColor = C.line; }}
+          ><X size={14} /></button>
         </div>
 
-        {/* Results content */}
-        {resultView === "interview" ? (
-          <InterviewResultsPanel campaign={campaign} />
-        ) : (
-          <div style={{
-            border: `1px solid ${C.line}`,
-            borderRadius: 14,
-            padding: 12,
-            background: "rgba(6,10,20,0.55)",
-          }}>
-            <CVResults embedded />
-          </div>
-        )}
+        {/* Scrollable body */}
+        <div style={{ flex: 1, overflowY: "auto", padding: "18px 20px", display: "flex", flexDirection: "column", gap: 18, scrollbarWidth: "thin", scrollbarColor: `${C.goldBorder} transparent` }}>
 
-        <Divider />
-
-        {/* CV & Interview Status cards */}
-        <div>
-          <SectionLabel>Campaign Status</SectionLabel>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-            {[
-              { title: "CV Submission", status: "Enabled", end: campaign.cvEnd,        key: "cvSubmission" },
-              { title: "Interview",     status: "Enabled", end: campaign.interviewEnd, key: "interview"    },
-            ].map(({ title, status, end, key }) => (
-              <div key={key} style={{
-                background: "rgba(6,10,20,0.65)", border: `1px solid ${C.line}`,
-                borderRadius: 13, padding: "12px 14px",
-              }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-                  <span style={{ fontSize: 12.5, fontWeight: 700, color: C.inkSoft }}>{title}</span>
-                  <button style={{
-                    height: 24, padding: "0 10px", borderRadius: 7,
-                    border: `1px solid ${C.line}`, background: "rgba(184,149,90,0.07)",
-                    color: C.inkMuted, fontSize: 11, fontWeight: 600, cursor: "pointer",
-                    fontFamily: "'Sora', sans-serif",
-                  }}>Edit</button>
-                </div>
-                <div style={{ fontFamily: "'DM Serif Display', serif", fontSize: "1.5rem", color: C.green, lineHeight: 1, marginBottom: 4 }}>{status}</div>
-                <div style={{ fontSize: 11.5, color: C.inkFaint }}>Ends: {end}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Extend actions */}
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-          {["Edit end date", "Extend 7d", "Extend 30d"].map(label => (
-            <button key={label} style={{
-              height: 36, padding: "0 14px", borderRadius: 10,
-              border: `1px solid ${C.line}`, background: "rgba(255,255,255,0.03)",
-              color: C.inkSoft, fontSize: 12.5, fontWeight: 600, cursor: "pointer",
+          {/* Result view tabs */}
+          <div style={{ display: "flex", gap: 4, background: "rgba(6,10,20,0.7)", border: `1px solid ${C.line}`, borderRadius: 12, padding: 4 }}>
+            <button onClick={() => setResultView("interview")} style={{
+              flex: 1, height: 34, borderRadius: 9,
+              border: `1px solid ${resultView === "interview" ? "rgba(240,201,122,0.55)" : "transparent"}`,
+              background: resultView === "interview" ? "linear-gradient(135deg,rgba(184,149,90,0.28),rgba(240,201,122,0.16))" : "transparent",
+              color: resultView === "interview" ? C.inkWhite : C.inkMuted,
+              fontSize: 12.5, fontWeight: 700, cursor: "pointer",
+              display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+              fontFamily: "'Sora', sans-serif", transition: "all 0.18s",
+            }}>
+              <BarChart size={13} /> Analytics
+            </button>
+            <button onClick={handleCvTabClick} style={{
+              flex: 1, height: 34, borderRadius: 9,
+              border: `1px solid ${resultView === "cv" ? "rgba(240,201,122,0.55)" : C.line}`,
+              background: resultView === "cv" ? "linear-gradient(135deg,rgba(184,149,90,0.28),rgba(240,201,122,0.16))" : "transparent",
+              color: resultView === "cv" ? C.inkWhite : C.inkMuted,
+              fontSize: 12.5, fontWeight: 700, cursor: "pointer",
+              display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
               fontFamily: "'Sora', sans-serif", transition: "all 0.18s",
             }}
-              onMouseEnter={e => { e.currentTarget.style.background = C.goldDim; e.currentTarget.style.borderColor = C.goldBorder; e.currentTarget.style.color = "#fff"; }}
-              onMouseLeave={e => { e.currentTarget.style.background = "rgba(255,255,255,0.03)"; e.currentTarget.style.borderColor = C.line; e.currentTarget.style.color = C.inkSoft; }}
-            >{label}</button>
-          ))}
-        </div>
+              onMouseEnter={e => { e.currentTarget.style.borderColor = C.goldBorder; e.currentTarget.style.color = C.inkSoft; }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = C.line; e.currentTarget.style.color = C.inkMuted; }}
+            >
+              <FileText size={13} /> CV Results
+            </button>
+          </div>
 
-        <Divider />
+          {/* Results content */}
+          {resultView === "interview" ? (
+            <InterviewResultsPanel campaign={campaign} />
+          ) : (
+            <div style={{
+              border: `1px solid ${C.line}`,
+              borderRadius: 14,
+              padding: 12,
+              background: "rgba(6,10,20,0.55)",
+            }}>
+              <CVResults embedded />
+            </div>
+          )}
 
-        {/* Campaign Links */}
-        <div>
-          <SectionLabel>Campaign Links</SectionLabel>
-          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-            {links.map(({ key, label, url, hint }) => (
-              <div key={key} style={{
-                background: C.bgInput, border: `1px solid ${C.line}`,
-                borderRadius: 12, padding: "12px 14px",
-              }}>
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                    <Link2 size={12} color={C.goldBright} />
-                    <span style={{ fontSize: 12, fontWeight: 600, color: C.inkSoft }}>{label}</span>
+          <Divider />
+
+          {/* CV & Interview Status cards */}
+          <div>
+            <SectionLabel>Campaign Status</SectionLabel>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+              {[
+                { title: "CV Submission", status: "Enabled", end: campaign.cvEnd, key: "cvSubmission" },
+                { title: "Interview", status: "Enabled", end: campaign.interviewEnd, key: "interview" },
+              ].map(({ title, status, end, key }) => (
+                <div key={key} style={{
+                  background: "rgba(6,10,20,0.65)", border: `1px solid ${C.line}`,
+                  borderRadius: 13, padding: "12px 14px",
+                }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+                    <span style={{ fontSize: 12.5, fontWeight: 700, color: C.inkSoft }}>{title}</span>
+                    <button style={{
+                      height: 24, padding: "0 10px", borderRadius: 7,
+                      border: `1px solid ${C.line}`, background: "rgba(184,149,90,0.07)",
+                      color: C.inkMuted, fontSize: 11, fontWeight: 600, cursor: "pointer",
+                      fontFamily: "'Sora', sans-serif",
+                    }}>Edit</button>
                   </div>
-                  <div style={{ display: "flex", gap: 5 }}>
-                    <button onClick={() => copy(url, key)} style={{
-                      height: 26, padding: "0 10px", border: `1px solid ${C.line}`, borderRadius: 7,
-                      background: copied === key ? C.greenDim : "transparent",
-                      color: copied === key ? C.green : C.inkMuted,
-                      fontSize: 11, fontWeight: 600, cursor: "pointer",
-                      display: "flex", alignItems: "center", gap: 5,
-                      fontFamily: "'Sora', sans-serif", transition: "all 0.18s",
-                    }}>
-                      <Copy size={10} /> {copied === key ? "Copied!" : "Copy"}
-                    </button>
-                    <button onClick={() => window.open(url, "_blank", "noopener,noreferrer")} style={{
-                      height: 26, width: 26, border: `1px solid ${C.line}`, borderRadius: 7,
-                      background: "transparent", color: C.inkMuted,
-                      display: "grid", placeItems: "center", cursor: "pointer",
-                    }}
-                      onMouseEnter={e => { e.currentTarget.style.color = C.inkSoft; e.currentTarget.style.borderColor = C.goldBorder; }}
-                      onMouseLeave={e => { e.currentTarget.style.color = C.inkMuted; e.currentTarget.style.borderColor = C.line; }}
-                    ><ExternalLink size={10} /></button>
-                  </div>
+                  <div style={{ fontFamily: "'DM Serif Display', serif", fontSize: "1.5rem", color: C.green, lineHeight: 1, marginBottom: 4 }}>{status}</div>
+                  <div style={{ fontSize: 11.5, color: C.inkFaint }}>Ends: {end}</div>
                 </div>
-                <div style={{ fontSize: 11.5, color: C.blue, fontFamily: "monospace", wordBreak: "break-all", lineHeight: 1.5, marginBottom: 4 }}>{url}</div>
-                <div style={{ fontSize: 11, color: C.inkFaint }}>{hint}</div>
-              </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Extend actions */}
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+            {["Edit end date", "Extend 7d", "Extend 30d"].map(label => (
+              <button key={label} style={{
+                height: 36, padding: "0 14px", borderRadius: 10,
+                border: `1px solid ${C.line}`, background: "rgba(255,255,255,0.03)",
+                color: C.inkSoft, fontSize: 12.5, fontWeight: 600, cursor: "pointer",
+                fontFamily: "'Sora', sans-serif", transition: "all 0.18s",
+              }}
+                onMouseEnter={e => { e.currentTarget.style.background = C.goldDim; e.currentTarget.style.borderColor = C.goldBorder; e.currentTarget.style.color = "#fff"; }}
+                onMouseLeave={e => { e.currentTarget.style.background = "rgba(255,255,255,0.03)"; e.currentTarget.style.borderColor = C.line; e.currentTarget.style.color = C.inkSoft; }}
+              >{label}</button>
             ))}
           </div>
-        </div>
 
-        {/* Codes */}
-        <div style={{ background: "rgba(6,10,20,0.65)", border: `1px solid ${C.line}`, borderRadius: 12, padding: "12px 14px" }}>
-          <SectionLabel>Campaign Codes</SectionLabel>
-          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-            {[
-              { label: "Interview Code", value: campaign.code },
-              { label: "Intake Code",    value: campaign.intakeCode },
-            ].map(({ label, value }) => (
-              <div key={label} style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                <span style={{ fontSize: 12, color: C.inkMuted }}>{label}</span>
-                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  <span style={{ fontSize: 12, fontFamily: "monospace", color: C.inkSoft }}>{value}</span>
-                  <button onClick={() => copy(value, label)} style={{
-                    height: 22, padding: "0 8px", borderRadius: 6,
-                    border: `1px solid ${C.line}`, background: "transparent",
-                    color: copied === label ? C.green : C.inkFaint,
-                    fontSize: 10, fontWeight: 600, cursor: "pointer",
-                    fontFamily: "'Sora', sans-serif", transition: "all 0.15s",
-                  }}>{copied === label ? "✓" : "Copy"}</button>
+          <Divider />
+
+          {/* Campaign Links */}
+          <div>
+            <SectionLabel>Campaign Links</SectionLabel>
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              {links.map(({ key, label, url, hint }) => (
+                <div key={key} style={{
+                  background: C.bgInput, border: `1px solid ${C.line}`,
+                  borderRadius: 12, padding: "12px 14px",
+                }}>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                      <Link2 size={12} color={C.goldBright} />
+                      <span style={{ fontSize: 12, fontWeight: 600, color: C.inkSoft }}>{label}</span>
+                    </div>
+                    <div style={{ display: "flex", gap: 5 }}>
+                      <button onClick={() => copy(url, key)} style={{
+                        height: 26, padding: "0 10px", border: `1px solid ${C.line}`, borderRadius: 7,
+                        background: copied === key ? C.greenDim : "transparent",
+                        color: copied === key ? C.green : C.inkMuted,
+                        fontSize: 11, fontWeight: 600, cursor: "pointer",
+                        display: "flex", alignItems: "center", gap: 5,
+                        fontFamily: "'Sora', sans-serif", transition: "all 0.18s",
+                      }}>
+                        <Copy size={10} /> {copied === key ? "Copied!" : "Copy"}
+                      </button>
+                      <button onClick={() => window.open(url, "_blank", "noopener,noreferrer")} style={{
+                        height: 26, width: 26, border: `1px solid ${C.line}`, borderRadius: 7,
+                        background: "transparent", color: C.inkMuted,
+                        display: "grid", placeItems: "center", cursor: "pointer",
+                      }}
+                        onMouseEnter={e => { e.currentTarget.style.color = C.inkSoft; e.currentTarget.style.borderColor = C.goldBorder; }}
+                        onMouseLeave={e => { e.currentTarget.style.color = C.inkMuted; e.currentTarget.style.borderColor = C.line; }}
+                      ><ExternalLink size={10} /></button>
+                    </div>
+                  </div>
+                  <div style={{ fontSize: 11.5, color: C.blue, fontFamily: "monospace", wordBreak: "break-all", lineHeight: 1.5, marginBottom: 4 }}>{url}</div>
+                  <div style={{ fontSize: 11, color: C.inkFaint }}>{hint}</div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
 
+          {/* Codes */}
+          <div style={{ background: "rgba(6,10,20,0.65)", border: `1px solid ${C.line}`, borderRadius: 12, padding: "12px 14px" }}>
+            <SectionLabel>Campaign Codes</SectionLabel>
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              {[
+                { label: "Interview Code", value: campaign.code },
+                { label: "Intake Code", value: campaign.intakeCode },
+              ].map(({ label, value }) => (
+                <div key={label} style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                  <span style={{ fontSize: 12, color: C.inkMuted }}>{label}</span>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <span style={{ fontSize: 12, fontFamily: "monospace", color: C.inkSoft }}>{value}</span>
+                    <button onClick={() => copy(value, label)} style={{
+                      height: 22, padding: "0 8px", borderRadius: 6,
+                      border: `1px solid ${C.line}`, background: "transparent",
+                      color: copied === label ? C.green : C.inkFaint,
+                      fontSize: 10, fontWeight: 600, cursor: "pointer",
+                      fontFamily: "'Sora', sans-serif", transition: "all 0.15s",
+                    }}>{copied === label ? "✓" : "Copy"}</button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+        </div>
       </div>
     </div>
-  </div>
   );
 };
 
@@ -961,7 +967,7 @@ const CreateModal = ({ onClose }) => {
 
   const [copied, setCopied] = useState(null);
   const copy = (text, key) => {
-    navigator.clipboard?.writeText(text).catch(() => {});
+    navigator.clipboard?.writeText(text).catch(() => { });
     setCopied(key);
     setTimeout(() => setCopied(null), 1800);
   };
@@ -1116,8 +1122,8 @@ const CreateModal = ({ onClose }) => {
               <SectionLabel>Campaign Stages</SectionLabel>
               <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                 {[
-                  { key: "cvEnabled",        label: "CV Submission",      desc: "Candidates upload their CV for AI screening.",             dateKey: "cvEndDate"        },
-                  { key: "interviewEnabled",  label: "AI Interview",       desc: "Shortlisted candidates complete an avatar interview.",     dateKey: "interviewEndDate" },
+                  { key: "cvEnabled", label: "CV Submission", desc: "Candidates upload their CV for AI screening.", dateKey: "cvEndDate" },
+                  { key: "interviewEnabled", label: "AI Interview", desc: "Shortlisted candidates complete an avatar interview.", dateKey: "interviewEndDate" },
                 ].map(({ key, label, desc, dateKey }) => (
                   <div key={key} style={{
                     background: form[key] ? "rgba(57,201,143,0.04)" : "rgba(6,10,20,0.5)",
@@ -1242,8 +1248,8 @@ const CreateModal = ({ onClose }) => {
               <SectionLabel>Your Campaign Links</SectionLabel>
               <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                 {[
-                  { key: "cv",        label: "CV Submission Link",    url: generatedLinks.cvLink,        hint: "Share this with candidates to collect CVs." },
-                  { key: "interview", label: "Avatar Interview Link", url: generatedLinks.interviewLink, hint: "Send this to shortlisted candidates."          },
+                  { key: "cv", label: "CV Submission Link", url: generatedLinks.cvLink, hint: "Share this with candidates to collect CVs." },
+                  { key: "interview", label: "Avatar Interview Link", url: generatedLinks.interviewLink, hint: "Send this to shortlisted candidates." },
                 ].map(({ key, label, url, hint }) => (
                   <div key={key} style={{ background: C.bgInput, border: `1px solid ${C.line}`, borderRadius: 12, padding: "12px 14px" }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
@@ -1276,8 +1282,8 @@ const CreateModal = ({ onClose }) => {
             <div style={{ background: "rgba(6,10,20,0.65)", border: `1px solid ${C.line}`, borderRadius: 12, padding: "12px 14px" }}>
               <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                 {[
-                  { label: "Interview Code", value: generatedLinks.code   },
-                  { label: "Intake Code",    value: generatedLinks.intake  },
+                  { label: "Interview Code", value: generatedLinks.code },
+                  { label: "Intake Code", value: generatedLinks.intake },
                 ].map(({ label, value }) => (
                   <div key={label} style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                     <span style={{ fontSize: 12, color: C.inkMuted }}>{label}</span>
@@ -1313,7 +1319,7 @@ const CreateModal = ({ onClose }) => {
 };
 
 // ─── Campaign Table ───────────────────────────────────────────────────────────
-const CampaignTable = ({ onSelect, selected }) => {
+const CampaignTable = ({ onSelect, selected, onInterviewResults }) => {
   const [search, setSearch] = useState("");
   const filtered = useMemo(() => CAMPAIGNS.filter(c =>
     c.title.toLowerCase().includes(search.toLowerCase()) ||
@@ -1371,7 +1377,7 @@ const CampaignTable = ({ onSelect, selected }) => {
               </div>
             ))}
             <div style={{ display: "flex", gap: 6 }} onClick={e => e.stopPropagation()}>
-              <IconBtn title="Analytics" onClick={() => onSelect(c.id)}><BarChart2 size={14} /></IconBtn>
+              <IconBtn title="Interview Results" onClick={() => onInterviewResults && onInterviewResults(c.id)}><BarChart2 size={14} /></IconBtn>
               <IconBtn title="More" onClick={() => onSelect(c.id)}><MoreHorizontal size={14} /></IconBtn>
             </div>
           </div>
@@ -1388,6 +1394,7 @@ const CampaignTable = ({ onSelect, selected }) => {
 export default function Dashboard() {
   const [showModal, setShowModal] = useState(false);
   const [selectedId, setSelectedId] = useState(null);
+  const [showInterModal, setShowInterModal] = useState(false);
   const selectedCampaign = CAMPAIGNS.find(c => c.id === selectedId);
 
   return (
@@ -1463,10 +1470,10 @@ export default function Dashboard() {
         {/* Stats */}
         <div className="stats-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 12 }}>
           {[
-            { label: "Total Campaigns",  value: "1",   sub: "1 active",       icon: FileText,      color: C.blue       },
-            { label: "Total Applicants", value: "108", sub: "This month",      icon: Users,         color: C.goldBright },
-            { label: "Interviewed",      value: "28",  sub: "26% of total",    icon: MessageSquare, color: C.green      },
-            { label: "Shortlisted",      value: "12",  sub: "11% of total",    icon: TrendingUp,    color: C.yellow     },
+            { label: "Total Campaigns", value: "1", sub: "1 active", icon: FileText, color: C.blue },
+            { label: "Total Applicants", value: "108", sub: "This month", icon: Users, color: C.goldBright },
+            { label: "Interviewed", value: "28", sub: "26% of total", icon: MessageSquare, color: C.green },
+            { label: "Shortlisted", value: "12", sub: "11% of total", icon: TrendingUp, color: C.yellow },
           ].map(({ label, value, sub, icon: Icon, color }) => (
             <div key={label} style={{
               background: C.bgPanel, border: `1px solid ${C.line}`,
@@ -1496,7 +1503,7 @@ export default function Dashboard() {
             width: selectedCampaign ? "calc(100% - 420px - 16px)" : "100%",
             minWidth: 0, transition: "width 0.3s ease",
           }}>
-            <CampaignTable onSelect={setSelectedId} selected={selectedId} />
+            <CampaignTable onSelect={setSelectedId} selected={selectedId} onInterviewResults={() => setShowInterModal(true)} />
           </div>
 
           {selectedCampaign && (
@@ -1513,6 +1520,7 @@ export default function Dashboard() {
       </main>
 
       {showModal && <CreateModal onClose={() => setShowModal(false)} />}
+      {showInterModal && <InterviewResults onClose={() => setShowInterModal(false)} />}
     </>
   );
 }

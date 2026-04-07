@@ -1,0 +1,810 @@
+import { useState, useMemo } from "react";
+import {
+    ArrowLeft, Search, ChevronLeft, ChevronRight, Copy,
+    Check, Eye, RotateCcw, Trash2, AlertCircle, Users,
+    BarChart2, CheckCircle2, XCircle, Clock, Filter,
+    ChevronDown, Sparkles, Globe, MoreHorizontal,
+} from "lucide-react";
+
+// ─── Design Tokens ────────────────────────────────────────────────────────────
+const C = {
+    bgDark: "#080d1c",
+    bgPanel: "rgba(11,17,34,0.90)",
+    bgCard: "rgba(8,12,24,0.85)",
+    bgInput: "rgba(6,10,20,0.75)",
+    gold: "#b8955a",
+    goldBright: "#f0c97a",
+    goldDim: "rgba(240,201,122,0.14)",
+    goldBorder: "rgba(184,149,90,0.28)",
+    inkWhite: "#ffffff",
+    inkSoft: "rgba(245,240,235,0.82)",
+    inkMuted: "rgba(245,240,235,0.48)",
+    inkFaint: "rgba(245,240,235,0.20)",
+    line: "rgba(184,149,90,0.16)",
+    lineStrong: "rgba(184,149,90,0.32)",
+    blue: "#5f9eff",
+    blueDim: "rgba(95,158,255,0.12)",
+    blueBorder: "rgba(95,158,255,0.28)",
+    green: "#39c98f",
+    greenDim: "rgba(57,201,143,0.10)",
+    greenBorder: "rgba(57,201,143,0.28)",
+    yellow: "#e3c466",
+    yellowDim: "rgba(227,196,102,0.10)",
+    yellowBorder: "rgba(227,196,102,0.28)",
+    red: "#ff6b6b",
+    redDim: "rgba(255,107,107,0.10)",
+    redBorder: "rgba(255,107,107,0.28)",
+    purple: "#a78bfa",
+    purpleDim: "rgba(167,139,250,0.12)",
+    purpleBorder: "rgba(167,139,250,0.28)",
+};
+
+// ─── Mock Data ─────────────────────────────────────────────────────────────────
+const INTERVIEW_META = {
+    title: "B2B Sales Representative",
+    company: "Demo Company",
+    code: "DEMO-073298",
+    created: "Apr 06, 2026, 12:10 PM",
+    started: "Apr 07, 2026, 05:10 AM",
+    passed: 4, needsReview: 0, failed: 0,
+    totalCandidates: 4, avgScore: 79, passCount: 4,
+    passThreshold: 70, reviewRange: "40–69", failThreshold: 40,
+};
+
+const EVAL_CARDS = {
+    1: [
+        { id: "ai", label: "AI Assessment", color: C.blue, dot: true, content: { type: "text", text: "Excellent communicator. Demonstrated strong CRM knowledge and pipeline discipline. High confidence in closing." } },
+        { id: "profile", label: "Candidate Profile", color: C.green, dot: true, content: { type: "kv", items: [{ k: "Expected Salary", v: "11,000 SAR" }, { k: "Relocation", v: "Yes" }, { k: "Notice Period", v: "30 days" }] } },
+        { id: "scores", label: "Score Breakdown", color: C.gold, dot: false, content: { type: "scores", items: [{ k: "Communication", v: 92 }, { k: "CRM Knowledge", v: 88 }, { k: "Closing Skills", v: 94 }] } },
+        { id: "q1", label: "Q1: Tell me about your last role", color: C.purple, dot: false, content: { type: "text", text: "Managed a portfolio of 40+ enterprise accounts at a SaaS company. Consistently hit 120% of quota over 3 years." } },
+        { id: "q2", label: "Q2: How do you handle rejection?", color: C.purple, dot: false, content: { type: "text", text: "I treat rejection as data. I log objections, refine my pitch, and follow up at the right cadence." } },
+        { id: "q3", label: "Q3: Describe your pipeline process", color: C.purple, dot: false, content: { type: "text", text: "Weekly pipeline reviews, deal staging, and close-date tracking in Salesforce. I prioritize by deal size × probability." } },
+    ],
+    2: [
+        { id: "ai", label: "AI Assessment", color: C.blue, dot: true, content: { type: "text", text: "Solid product understanding. Calm under pressure." } },
+        { id: "profile", label: "Candidate Profile", color: C.green, dot: true, content: { type: "kv", items: [{ k: "Expected Salary", v: "9,000 SAR" }, { k: "Relocation", v: "No" }] } },
+        { id: "scores", label: "Score Breakdown", color: C.gold, dot: false, content: { type: "scores", items: [{ k: "Communication", v: 60 }, { k: "CRM Knowledge", v: 65 }, { k: "Closing Skills", v: 62 }] } },
+        { id: "q1", label: "Q1: Tell me about your last role", color: C.purple, dot: false, content: { type: "text", text: "Worked in B2B tech sales for 2 years, handled inbound leads and some outbound prospecting." } },
+        { id: "q2", label: "Q2: How do you handle rejection?", color: C.purple, dot: false, content: { type: "text", text: "I stay positive and move to the next prospect. Rejection is part of the job." } },
+        { id: "q3", label: "Q3: Describe your pipeline process", color: C.purple, dot: false, content: { type: "text", text: "I use a CRM to track all leads and follow up weekly." } },
+    ],
+    3: [
+        { id: "ai", label: "AI Assessment", color: C.blue, dot: true, content: { type: "text", text: "Good interpersonal skills. Needs improvement in strategic pipeline management." } },
+        { id: "profile", label: "Candidate Profile", color: C.green, dot: true, content: { type: "kv", items: [{ k: "Expected Salary", v: "10,000 SAR" }, { k: "Relocation", v: "Yes" }] } },
+        { id: "scores", label: "Score Breakdown", color: C.gold, dot: false, content: { type: "scores", items: [{ k: "Communication", v: 78 }, { k: "CRM Knowledge", v: 70 }, { k: "Closing Skills", v: 74 }] } },
+        { id: "q1", label: "Q1: Tell me about your last role", color: C.purple, dot: false, content: { type: "text", text: "3 years in pharma sales, managed 20 accounts across Riyadh." } },
+        { id: "q2", label: "Q2: How do you handle rejection?", color: C.purple, dot: false, content: { type: "text", text: "I analyze what went wrong and adjust my approach for the next opportunity." } },
+        { id: "q3", label: "Q3: Describe your pipeline process", color: C.purple, dot: false, content: { type: "text", text: "Monthly reviews with my manager, CRM updates, and target tracking." } },
+    ],
+    4: [
+        { id: "ai", label: "AI Assessment", color: C.blue, dot: true, content: { type: "text", text: "Strong analytical mindset. Very structured in approach. Top performer profile." } },
+        { id: "profile", label: "Candidate Profile", color: C.green, dot: true, content: { type: "kv", items: [{ k: "Expected Salary", v: "12,000 SAR" }, { k: "Relocation", v: "No" }, { k: "Notice Period", v: "Immediate" }] } },
+        { id: "scores", label: "Score Breakdown", color: C.gold, dot: false, content: { type: "scores", items: [{ k: "Communication", v: 90 }, { k: "CRM Knowledge", v: 85 }, { k: "Closing Skills", v: 89 }] } },
+        { id: "q1", label: "Q1: Tell me about your last role", color: C.purple, dot: false, content: { type: "text", text: "Led an enterprise sales team of 5 at a logistics tech company. Grew ARR by 40% in two years." } },
+        { id: "q2", label: "Q2: How do you handle rejection?", color: C.purple, dot: false, content: { type: "text", text: "I document every lost deal for pattern analysis and use it to coach the team." } },
+        { id: "q3", label: "Q3: Describe your pipeline process", color: C.purple, dot: false, content: { type: "text", text: "Weekly 1:1 pipeline reviews, Salesforce hygiene, probability weighting, and forecast accuracy tracking." } },
+    ],
+};
+
+const CANDIDATES = [
+    { id: 1, num: 1, initials: "SN", name: "Sara Nasser", email: "sara.demo@example.com", phone: "0500000004", session: "DEMO-SESSION-004", started: "Apr 07, 2026, 08:10 AM", status: "Completed", score: 91, rank: null, verdict: "pass" },
+    { id: 2, num: 2, initials: "YK", name: "Yousef Khalid", email: "yousef.demo@example.com", phone: "0500000003", session: "DEMO-SESSION-003", started: "Apr 07, 2026, 07:10 AM", status: "Completed", score: 62, rank: null, verdict: "pass" },
+    { id: 3, num: 3, initials: "MS", name: "Mona Saleh", email: "mona.demo@example.com", phone: "0500000002", session: "DEMO-SESSION-002", started: "Apr 07, 2026, 06:10 AM", status: "Completed", score: 74, rank: null, verdict: "pass" },
+    { id: 4, num: 4, initials: "AA", name: "Ahmad Alotaibi", email: "ahmad.demo@example.com", phone: "0500000001", session: "DEMO-SESSION-001", started: "Apr 07, 2026, 05:10 AM", status: "Completed", score: 88, rank: null, verdict: "pass" },
+];
+
+const INTERVIEW_TABS = ["First Interview", "Second Interview (0)"];
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+const verdictStyle = (v) => ({
+    pass: { bg: C.greenDim, border: C.greenBorder, color: C.green, label: "Pass" },
+    review: { bg: C.yellowDim, border: C.yellowBorder, color: C.yellow, label: "Needs Review" },
+    fail: { bg: C.redDim, border: C.redBorder, color: C.red, label: "Fail" },
+})[v] || { bg: C.goldDim, border: C.goldBorder, color: C.goldBright, label: "—" };
+
+const scoreColor = (s) => s >= 70 ? C.green : s >= 40 ? C.yellow : C.red;
+
+const avatarColors = ["#3a7bd5", "#8b5cf6", "#ec4899", "#f59e0b", "#10b981", "#ef4444"];
+const avatarColor = (name) => avatarColors[name.charCodeAt(0) % avatarColors.length];
+
+// ─── Small Components ─────────────────────────────────────────────────────────
+const Pill = ({ label, color, bg, border, small }) => (
+    <span style={{
+        display: "inline-flex", alignItems: "center", gap: 4,
+        padding: small ? "3px 9px" : "5px 13px",
+        borderRadius: 999, fontSize: small ? 10.5 : 12, fontWeight: 700,
+        background: bg, border: `1px solid ${border}`, color,
+        letterSpacing: "0.06em", whiteSpace: "nowrap",
+    }}>{label}</span>
+);
+
+const Avatar = ({ initials, name, size = 36 }) => (
+    <div style={{
+        width: size, height: size, borderRadius: "50%", flexShrink: 0,
+        background: avatarColor(name),
+        display: "grid", placeItems: "center",
+        fontSize: Math.round(size * 0.35), fontWeight: 700, color: "#fff",
+        letterSpacing: "0.04em",
+    }}>{initials}</div>
+);
+
+const IconBtn = ({ children, onClick, title, active, danger, small }) => (
+    <button title={title} onClick={onClick} style={{
+        width: small ? 28 : 32, height: small ? 28 : 32, borderRadius: small ? 7 : 8,
+        border: `1px solid ${danger ? C.redBorder : active ? C.goldBorder : C.line}`,
+        background: danger ? C.redDim : active ? C.goldDim : "transparent",
+        color: danger ? C.red : active ? C.goldBright : C.inkMuted,
+        display: "grid", placeItems: "center", cursor: "pointer", transition: "all 0.18s",
+    }}
+        onMouseEnter={e => { e.currentTarget.style.background = danger ? "rgba(255,107,107,0.18)" : C.goldDim; e.currentTarget.style.borderColor = danger ? C.red : C.goldBorder; e.currentTarget.style.color = danger ? "#ffaaaa" : C.inkSoft; }}
+        onMouseLeave={e => { e.currentTarget.style.background = danger ? C.redDim : active ? C.goldDim : "transparent"; e.currentTarget.style.borderColor = danger ? C.redBorder : active ? C.goldBorder : C.line; e.currentTarget.style.color = danger ? C.red : active ? C.goldBright : C.inkMuted; }}
+    >{children}</button>
+);
+
+const CopyBtn = ({ value, small }) => {
+    const [copied, setCopied] = useState(false);
+    return (
+        <button
+            onClick={() => { navigator.clipboard?.writeText(value).catch(() => { }); setCopied(true); setTimeout(() => setCopied(false), 1600); }}
+            style={{
+                height: small ? 22 : 26, padding: "0 8px", borderRadius: 6,
+                border: `1px solid ${copied ? C.greenBorder : C.line}`,
+                background: copied ? C.greenDim : "rgba(255,255,255,0.03)",
+                color: copied ? C.green : C.inkFaint,
+                fontSize: 10.5, fontWeight: 600, cursor: "pointer",
+                display: "inline-flex", alignItems: "center", gap: 4,
+                fontFamily: "'Sora', sans-serif", transition: "all 0.18s", whiteSpace: "nowrap",
+            }}
+        >
+            {copied ? <Check size={10} /> : <Copy size={10} />}
+            {copied ? "Copied" : "Copy"}
+        </button>
+    );
+};
+
+const Input = ({ value, onChange, placeholder, icon: Icon }) => (
+    <div style={{ position: "relative" }}>
+        {Icon && <Icon size={14} color={C.inkFaint} style={{ position: "absolute", left: 11, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }} />}
+        <input
+            value={value} onChange={onChange} placeholder={placeholder}
+            style={{
+                width: "100%", height: 38, paddingLeft: Icon ? 34 : 12, paddingRight: 12,
+                background: C.bgInput, border: `1px solid ${C.line}`,
+                borderRadius: 10, color: C.inkSoft, fontSize: 13, outline: "none",
+                fontFamily: "'Sora', sans-serif", transition: "border-color 0.18s",
+            }}
+            onFocus={e => e.target.style.borderColor = C.goldBorder}
+            onBlur={e => e.target.style.borderColor = C.line}
+        />
+    </div>
+);
+
+const SelectField = ({ value, onChange, children }) => (
+    <div style={{ position: "relative" }}>
+        <select value={value} onChange={onChange} style={{
+            width: "100%", height: 38, padding: "0 32px 0 12px",
+            background: C.bgInput, border: `1px solid ${C.line}`,
+            borderRadius: 10, color: C.inkSoft, fontSize: 13, outline: "none",
+            fontFamily: "'Sora', sans-serif", cursor: "pointer", appearance: "none",
+            transition: "border-color 0.18s",
+        }}
+            onFocus={e => e.target.style.borderColor = C.goldBorder}
+            onBlur={e => e.target.style.borderColor = C.line}
+        >{children}</select>
+        <ChevronDown size={13} color={C.inkFaint} style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }} />
+    </div>
+);
+
+// ─── Score Bar ────────────────────────────────────────────────────────────────
+const ScoreBar = ({ score }) => (
+    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+        <span style={{ fontSize: 14, fontWeight: 700, color: scoreColor(score), minWidth: 50, fontFamily: "'DM Serif Display', serif" }}>
+            {score} <span style={{ fontSize: 11, color: C.inkFaint, fontWeight: 400, fontFamily: "'Sora', sans-serif" }}>/ 100</span>
+        </span>
+        <div style={{ flex: 1, maxWidth: 120, height: 5, borderRadius: 99, background: C.line, overflow: "hidden" }}>
+            <div style={{ height: "100%", width: `${score}%`, borderRadius: 99, background: scoreColor(score), transition: "width 0.4s ease" }} />
+        </div>
+    </div>
+);
+
+// ─── Evaluation Card Carousel ─────────────────────────────────────────────────
+const EvalCarousel = ({ candidateId, lang, setLang }) => {
+    const [idx, setIdx] = useState(0);
+    const cards = EVAL_CARDS[candidateId] || [];
+    const card = cards[idx];
+
+    return (
+        <div style={{
+            background: "rgba(4,8,20,0.6)", borderTop: `1px solid ${C.line}`,
+            borderLeft: `3px solid ${C.green}`,
+        }}>
+            {/* Eval header */}
+            <div style={{
+                padding: "12px 20px", borderBottom: `1px solid ${C.line}`,
+                display: "flex", alignItems: "center", justifyContent: "space-between",
+            }}>
+                <div style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: "0.16em", textTransform: "uppercase", color: C.inkFaint }}>
+                    Evaluation
+                </div>
+                {/* Lang toggle */}
+                <div style={{ display: "flex", gap: 4, background: "rgba(6,10,20,0.8)", border: `1px solid ${C.line}`, borderRadius: 9, padding: 3 }}>
+                    {["EN", "AR"].map(l => (
+                        <button key={l} onClick={() => setLang(l)} style={{
+                            height: 26, padding: "0 12px", borderRadius: 7,
+                            border: `1px solid ${lang === l ? C.goldBorder : "transparent"}`,
+                            background: lang === l ? C.goldDim : "transparent",
+                            color: lang === l ? C.goldBright : C.inkMuted,
+                            fontSize: 11.5, fontWeight: 700, cursor: "pointer",
+                            fontFamily: "'Sora', sans-serif", transition: "all 0.18s",
+                        }}>{l}</button>
+                    ))}
+                </div>
+            </div>
+
+            <div style={{ padding: "16px 20px", display: "flex", alignItems: "stretch", gap: 0 }}>
+                {/* Prev arrow */}
+                <button onClick={() => setIdx(i => Math.max(0, i - 1))} disabled={idx === 0} style={{
+                    width: 36, height: 36, borderRadius: "50%", flexShrink: 0, alignSelf: "center",
+                    border: `1px solid ${C.line}`, background: "rgba(8,12,24,0.9)",
+                    color: idx === 0 ? C.inkFaint : C.inkSoft, cursor: idx === 0 ? "not-allowed" : "pointer",
+                    display: "grid", placeItems: "center", marginRight: 12, transition: "all 0.18s",
+                }}
+                    onMouseEnter={e => { if (idx > 0) { e.currentTarget.style.borderColor = C.goldBorder; e.currentTarget.style.color = C.goldBright; } }}
+                    onMouseLeave={e => { e.currentTarget.style.borderColor = C.line; e.currentTarget.style.color = idx === 0 ? C.inkFaint : C.inkSoft; }}
+                ><ChevronLeft size={16} /></button>
+
+                {/* Card area */}
+                <div style={{ flex: 1, minWidth: 0 }}>
+                    {card && (
+                        <div style={{
+                            background: "rgba(8,12,28,0.85)", border: `1px solid ${C.line}`,
+                            borderRadius: 16, overflow: "hidden",
+                        }}>
+                            {/* Card header */}
+                            <div style={{
+                                padding: "12px 16px", borderBottom: `2px solid ${card.color}`,
+                                display: "flex", alignItems: "center", gap: 8,
+                                background: `${card.color}08`,
+                            }}>
+                                {card.dot && <span style={{ width: 9, height: 9, borderRadius: "50%", background: card.color, boxShadow: `0 0 6px ${card.color}`, flexShrink: 0 }} />}
+                                <span style={{ fontSize: 13.5, fontWeight: 700, color: C.inkWhite }}>{card.label}</span>
+                            </div>
+
+                            {/* Card body */}
+                            <div style={{ padding: "16px" }}>
+                                {card.content.type === "text" && (
+                                    <p style={{ fontSize: 13.5, color: C.inkSoft, lineHeight: 1.75, margin: 0 }}>{card.content.text}</p>
+                                )}
+                                {card.content.type === "kv" && (
+                                    <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
+                                        {card.content.items.map(({ k, v }, i) => (
+                                            <div key={k} style={{
+                                                display: "flex", justifyContent: "space-between", alignItems: "center",
+                                                padding: "10px 0",
+                                                borderBottom: i < card.content.items.length - 1 ? `1px solid ${C.line}` : "none",
+                                            }}>
+                                                <span style={{ fontSize: 13, color: C.inkMuted }}>{k}</span>
+                                                <span style={{ fontSize: 13.5, fontWeight: 600, color: C.inkSoft }}>{v}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                                {card.content.type === "scores" && (
+                                    <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                                        {card.content.items.map(({ k, v }) => (
+                                            <div key={k}>
+                                                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 5 }}>
+                                                    <span style={{ fontSize: 12.5, color: C.inkMuted }}>{k}</span>
+                                                    <span style={{ fontSize: 12.5, fontWeight: 700, color: scoreColor(v) }}>{v}</span>
+                                                </div>
+                                                <div style={{ height: 5, borderRadius: 99, background: C.line, overflow: "hidden" }}>
+                                                    <div style={{ height: "100%", width: `${v}%`, borderRadius: 99, background: scoreColor(v) }} />
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Dots */}
+                    <div style={{ display: "flex", justifyContent: "center", gap: 6, marginTop: 12 }}>
+                        {cards.map((_, i) => (
+                            <button key={i} onClick={() => setIdx(i)} style={{
+                                width: i === idx ? 18 : 6, height: 6, borderRadius: 3,
+                                background: i === idx ? C.goldBright : "rgba(184,149,90,0.25)",
+                                border: "none", cursor: "pointer", padding: 0, transition: "all 0.2s",
+                            }} />
+                        ))}
+                    </div>
+                </div>
+
+                {/* Next arrow */}
+                <button onClick={() => setIdx(i => Math.min(cards.length - 1, i + 1))} disabled={idx === cards.length - 1} style={{
+                    width: 36, height: 36, borderRadius: "50%", flexShrink: 0, alignSelf: "center",
+                    border: `1px solid ${C.line}`, background: "rgba(8,12,24,0.9)",
+                    color: idx === cards.length - 1 ? C.inkFaint : C.inkSoft,
+                    cursor: idx === cards.length - 1 ? "not-allowed" : "pointer",
+                    display: "grid", placeItems: "center", marginLeft: 12, transition: "all 0.18s",
+                }}
+                    onMouseEnter={e => { if (idx < cards.length - 1) { e.currentTarget.style.borderColor = C.goldBorder; e.currentTarget.style.color = C.goldBright; } }}
+                    onMouseLeave={e => { e.currentTarget.style.borderColor = C.line; e.currentTarget.style.color = idx === cards.length - 1 ? C.inkFaint : C.inkSoft; }}
+                ><ChevronRight size={16} /></button>
+            </div>
+        </div>
+    );
+};
+
+// ─── Candidate Row ────────────────────────────────────────────────────────────
+const CandidateRow = ({ c, expanded, onToggle, checked, onCheck, lang, setLang }) => {
+    const vs = verdictStyle(c.verdict);
+    return (
+        <div style={{
+            border: `1px solid ${expanded ? C.lineStrong : C.line}`,
+            borderRadius: 16, overflow: "hidden",
+            background: expanded ? "rgba(10,16,34,0.95)" : C.bgCard,
+            transition: "all 0.2s ease",
+            boxShadow: expanded ? `0 4px 24px rgba(0,0,0,0.3), inset 0 0 0 1px ${C.lineStrong}` : "none",
+        }}>
+            {/* Main row */}
+            <div style={{
+                display: "grid",
+                gridTemplateColumns: "28px 44px 1fr 140px 130px 180px 90px 90px 120px",
+                gap: 10, padding: "14px 16px", alignItems: "center",
+                borderLeft: `3px solid ${expanded ? C.green : "transparent"}`,
+                transition: "border-color 0.2s",
+            }}>
+                {/* Checkbox */}
+                <div>
+                    <input type="checkbox" checked={checked} onChange={onCheck} style={{ cursor: "pointer", accentColor: C.goldBright, width: 15, height: 15 }} />
+                </div>
+
+                {/* Num */}
+                <div style={{ fontSize: 13, color: C.inkFaint, fontWeight: 600, textAlign: "center" }}>{c.num}</div>
+
+                {/* Candidate info */}
+                <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
+                    <Avatar initials={c.initials} name={c.name} size={36} />
+                    <div style={{ minWidth: 0 }}>
+                        <div style={{ fontSize: 13.5, fontWeight: 700, color: C.inkWhite, marginBottom: 1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{c.name}</div>
+                        <div style={{ fontSize: 11.5, color: C.inkFaint, marginBottom: 2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{c.email}</div>
+                        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                            <span style={{ fontSize: 11, color: C.inkFaint, fontFamily: "monospace" }}>Session: {c.session}</span>
+                            <CopyBtn value={c.session} small />
+                        </div>
+                    </div>
+                </div>
+
+                {/* Phone */}
+                <div style={{ fontSize: 13, color: C.inkMuted, fontFamily: "monospace" }}>{c.phone}</div>
+
+                {/* Started */}
+                <div style={{ fontSize: 11.5, color: C.inkFaint, lineHeight: 1.5 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 4, marginBottom: 1 }}>
+                        <Clock size={10} color={C.inkFaint} /> {c.started}
+                    </div>
+                </div>
+
+                {/* Interview Status */}
+                <div>
+                    <Pill
+                        label={c.status}
+                        color={c.status === "Completed" ? C.green : C.yellow}
+                        bg={c.status === "Completed" ? C.greenDim : C.yellowDim}
+                        border={c.status === "Completed" ? C.greenBorder : C.yellowBorder}
+                        small
+                    />
+                </div>
+
+                {/* Score */}
+                <div><ScoreBar score={c.score} /></div>
+
+                {/* Qualifier rank */}
+                <div style={{ fontSize: 13, color: C.inkFaint, textAlign: "center" }}>{c.rank ?? "—"}</div>
+
+                {/* Actions */}
+                <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+                    <Pill label={vs.label} color={vs.color} bg={vs.bg} border={vs.border} small />
+                    <div style={{ display: "flex", gap: 4, marginTop: 4, width: "100%", justifyContent: "flex-start" }}>
+                        <button
+                            onClick={onToggle}
+                            style={{
+                                height: 26, padding: "0 10px", borderRadius: 7,
+                                border: `1px solid ${expanded ? C.goldBorder : C.line}`,
+                                background: expanded ? C.goldDim : "transparent",
+                                color: expanded ? C.goldBright : C.inkMuted,
+                                fontSize: 11, fontWeight: 600, cursor: "pointer",
+                                fontFamily: "'Sora', sans-serif", transition: "all 0.18s",
+                                display: "flex", alignItems: "center", gap: 5,
+                            }}
+                            onMouseEnter={e => { e.currentTarget.style.borderColor = C.goldBorder; e.currentTarget.style.color = C.goldBright; e.currentTarget.style.background = C.goldDim; }}
+                            onMouseLeave={e => { if (!expanded) { e.currentTarget.style.borderColor = C.line; e.currentTarget.style.color = C.inkMuted; e.currentTarget.style.background = "transparent"; } }}
+                        >
+                            <Eye size={10} /> {expanded ? "Hide" : "View"}
+                        </button>
+                        {/* R W I D icons */}
+                        {[
+                            { label: "R", title: "Resume", color: C.blue },
+                            { label: "W", title: "Workspace", color: C.green },
+                            { label: "I", title: "Interview", color: C.yellow },
+                            { label: "D", title: "Delete", color: C.red },
+                        ].map(({ label, title, color }) => (
+                            <button key={label} title={title} style={{
+                                width: 22, height: 22, borderRadius: 6,
+                                border: `1px solid ${C.line}`, background: "transparent",
+                                color: C.inkFaint, fontSize: 10, fontWeight: 700, cursor: "pointer",
+                                display: "grid", placeItems: "center", transition: "all 0.15s",
+                                fontFamily: "'Sora', sans-serif",
+                            }}
+                                onMouseEnter={e => { e.currentTarget.style.borderColor = `${color}50`; e.currentTarget.style.background = `${color}15`; e.currentTarget.style.color = color; }}
+                                onMouseLeave={e => { e.currentTarget.style.borderColor = C.line; e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = C.inkFaint; }}
+                            >{label}</button>
+                        ))}
+                    </div>
+                </div>
+            </div>
+
+            {/* Evaluation panel */}
+            {expanded && <EvalCarousel candidateId={c.id} lang={lang} setLang={setLang} />}
+        </div>
+    );
+};
+
+export default function InterviewResults({ onClose }) {
+    const [activeTab, setActiveTab] = useState(0);
+    const [search, setSearch] = useState("");
+    const [statusFilter, setStatusFilter] = useState("All");
+    const [sortBy, setSortBy] = useState("Newest");
+    const [pageSize, setPageSize] = useState("10");
+    const [completedOnly, setCompletedOnly] = useState(false);
+    const [expandedId, setExpandedId] = useState(null);
+    const [checkedIds, setCheckedIds] = useState(new Set());
+    const [lang, setLang] = useState("EN");
+    const [page, setPage] = useState(1);
+
+    const m = INTERVIEW_META;
+
+    const filtered = useMemo(() => {
+        let list = [...CANDIDATES];
+        if (search) list = list.filter(c =>
+            c.name.toLowerCase().includes(search.toLowerCase()) ||
+            c.email.toLowerCase().includes(search.toLowerCase()) ||
+            c.phone.includes(search)
+        );
+        if (statusFilter !== "All") list = list.filter(c =>
+            statusFilter === "Pass" ? c.verdict === "pass" :
+                statusFilter === "Needs Review" ? c.verdict === "review" : c.verdict === "fail"
+        );
+        if (completedOnly) list = list.filter(c => c.status === "Completed");
+        if (sortBy === "Newest") list = list.sort((a, b) => b.id - a.id);
+        if (sortBy === "Highest Score") list = list.sort((a, b) => b.score - a.score);
+        if (sortBy === "Lowest Score") list = list.sort((a, b) => a.score - b.score);
+        return list;
+    }, [search, statusFilter, completedOnly, sortBy]);
+
+    const ps = parseInt(pageSize) || 10;
+    const totalPages = Math.max(1, Math.ceil(filtered.length / ps));
+    const paginated = filtered.slice((page - 1) * ps, page * ps);
+
+    const allChecked = paginated.length > 0 && paginated.every(c => checkedIds.has(c.id));
+    const toggleAll = () => {
+        if (allChecked) setCheckedIds(s => { const n = new Set(s); paginated.forEach(c => n.delete(c.id)); return n; });
+        else setCheckedIds(s => { const n = new Set(s); paginated.forEach(c => n.add(c.id)); return n; });
+    };
+
+    const statCards = [
+        { label: "Total Candidates", value: m.totalCandidates, sub: `Completed: ${m.totalCandidates}`, color: C.blue, icon: Users },
+        { label: "Average Score", value: `${m.avgScore}/100`, sub: "Based on completed", color: C.goldBright, icon: BarChart2 },
+        { label: "Pass", value: m.passCount, sub: `Score ≥ ${m.passThreshold}`, color: C.green, icon: CheckCircle2 },
+        { label: "Needs Review / Fail", value: `${m.needsReview} / ${m.failed}`, sub: `${m.reviewRange} / < ${m.failThreshold}`, color: C.yellow, icon: AlertCircle },
+    ];
+
+    return (
+        <>
+            <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=DM+Serif+Display:ital@0;1&display=swap');
+        .inter-modal * { box-sizing: border-box; }
+        .inter-modal { scrollbar-width: thin; scrollbar-color: rgba(184,149,90,0.2) transparent; }
+        .inter-modal input::placeholder { color: rgba(245,240,235,0.28); }
+        .inter-modal input[type="checkbox"] { accent-color: #f0c97a; }
+        .inter-modal select option { background: #0d1528; color: #f5f0eb; }
+        @media (max-width: 1100px) {
+          .cand-grid { grid-template-columns: 28px 44px 1fr 110px 120px 130px 80px 80px 110px !important; }
+        }
+        @media (max-width: 860px) {
+          .cand-grid { grid-template-columns: 28px 1fr 100px 100px !important; }
+          .cand-hide-md { display: none !important; }
+        }
+        @keyframes interFadeIn  { from { opacity: 0 } to { opacity: 1 } }
+        @keyframes interSlideUp { from { opacity: 0; transform: translateY(24px) } to { opacity: 1; transform: translateY(0) } }
+      `}</style>
+
+            <div
+                className="inter-modal"
+                style={{
+                    position: "fixed", inset: 0, zIndex: 9999,
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    fontFamily: "'Sora', sans-serif", color: "#f5f0eb",
+                    animation: "interFadeIn 0.25s ease forwards",
+                    padding: "clamp(10px,2vw,20px)",
+                }}
+            >
+                {/* Backdrop — click to close */}
+                <div
+                    onClick={onClose}
+                    style={{ position: "absolute", inset: 0, background: "rgba(3,5,14,0.78)" }}
+                />
+
+                {/* Scrollable content panel */}
+                <div
+                    style={{
+                        position: "relative", zIndex: 1,
+                        width: "min(1360px, 96vw)",
+                        maxHeight: "94vh",
+                        overflowY: "auto",
+                        borderRadius: 22,
+                        border: `1px solid ${C.line}`,
+                        background:
+                            "radial-gradient(ellipse 80vw 55vh at 100% -5%, rgba(184,149,90,0.12) 0%, transparent 55%), " +
+                            "radial-gradient(ellipse 60vw 45vh at -5% 95%, rgba(95,158,255,0.08) 0%, transparent 50%), " +
+                            "#080d1c",
+                        animation: "interSlideUp 0.35s cubic-bezier(0.22,1,0.36,1) forwards",
+                        boxShadow: "inset 0 1px 0 rgba(184,149,90,0.18)",
+                        padding: "clamp(16px,2.5vw,32px)",
+                    }}
+                >
+                <div style={{ maxWidth: 1360, margin: "0 auto", display: "flex", flexDirection: "column", gap: 20 }}>
+
+                    {/* ── Top bar ── */}
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
+                        <div>
+                            <div style={{ fontSize: 11, color: C.inkFaint, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 6 }}>
+                                <span style={{ color: C.blue, cursor: "pointer" }}>Dashboard</span>
+                                <span style={{ margin: "0 6px", color: C.inkFaint }}>/</span>
+                                <span>Interview Details</span>
+                            </div>
+                            <h1 style={{ fontFamily: "'DM Serif Display', serif", fontStyle: "italic", fontSize: "clamp(1.8rem,3.5vw,2.6rem)", color: C.inkWhite, margin: "0 0 4px", lineHeight: 1 }}>
+                                Interview Results
+                            </h1>
+                            <div style={{ fontSize: 13, color: C.inkMuted }}>
+                                Interview Code: <span style={{ fontFamily: "monospace", color: C.inkSoft, fontWeight: 600 }}>{m.code}</span>
+                            </div>
+                        </div>
+                        <button onClick={onClose} style={{
+                            height: 40, padding: "0 18px", borderRadius: 11,
+                            border: `1px solid ${C.line}`, background: "rgba(184,149,90,0.07)",
+                            color: C.inkMuted, fontSize: 13, fontWeight: 600, cursor: "pointer",
+                            display: "flex", alignItems: "center", gap: 7, fontFamily: "'Sora', sans-serif",
+                            transition: "all 0.18s",
+                        }}
+                            onMouseEnter={e => { e.currentTarget.style.borderColor = C.lineStrong; e.currentTarget.style.color = C.inkSoft; }}
+                            onMouseLeave={e => { e.currentTarget.style.borderColor = C.line; e.currentTarget.style.color = C.inkMuted; }}
+                        >
+                            <ArrowLeft size={14} /> Back
+                        </button>
+                    </div>
+
+                    {/* ── Interview Details card ── */}
+                    <div style={{
+                        background: C.bgPanel, border: `1px solid ${C.line}`,
+                        borderRadius: 22, padding: "20px 22px", backdropFilter: "blur(16px)",
+                    }}>
+                        {/* Header row */}
+                        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12, marginBottom: 14 }}>
+                            <div>
+                                <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", color: C.inkFaint, marginBottom: 6 }}>Interview Details</div>
+                                <h2 style={{ fontFamily: "'DM Serif Display', serif", fontSize: "1.5rem", fontWeight: 400, color: C.inkWhite, margin: "0 0 3px" }}>{m.title}</h2>
+                                <div style={{ fontSize: 13, color: C.inkMuted }}>{m.company}</div>
+                            </div>
+                            <IconBtn title="More options"><MoreHorizontal size={15} /></IconBtn>
+                        </div>
+
+                        {/* Meta chips */}
+                        <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 14 }}>
+                            {[
+                                { label: `Code: ${m.code}`, color: C.inkMuted, bg: "rgba(255,255,255,0.03)", border: C.line },
+                                { label: `Created: ${m.created}`, color: C.inkMuted, bg: "rgba(255,255,255,0.03)", border: C.line },
+                                { label: `Started: ${m.started}`, color: C.inkMuted, bg: "rgba(255,255,255,0.03)", border: C.line },
+                            ].map(({ label, color, bg, border }) => (
+                                <span key={label} style={{
+                                    fontSize: 12, color, background: bg, border: `1px solid ${border}`,
+                                    borderRadius: 8, padding: "5px 10px", fontFamily: "monospace",
+                                }}>{label}</span>
+                            ))}
+                        </div>
+
+                        {/* Verdict pills */}
+                        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 20 }}>
+                            <Pill label={`Passed: ${m.passed}`} color={C.green} bg={C.greenDim} border={C.greenBorder} />
+                            <Pill label={`Needs Review: ${m.needsReview}`} color={C.yellow} bg={C.yellowDim} border={C.yellowBorder} />
+                            <Pill label={`Failed: ${m.failed}`} color={C.red} bg={C.redDim} border={C.redBorder} />
+                        </div>
+
+                        {/* Stat cards */}
+                        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(180px,1fr))", gap: 12 }}>
+                            {statCards.map(({ label, value, sub, color, icon: Icon }) => (
+                                <div key={label} style={{
+                                    background: "rgba(6,10,20,0.6)", border: `1px solid ${C.line}`,
+                                    borderRadius: 14, padding: "14px 16px",
+                                }}>
+                                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+                                        <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: C.inkFaint }}>{label}</div>
+                                        <Icon size={14} color={color} />
+                                    </div>
+                                    <div style={{ fontFamily: "'DM Serif Display', serif", fontSize: "2rem", color, lineHeight: 1, marginBottom: 4 }}>{value}</div>
+                                    <div style={{ fontSize: 11.5, color: C.inkFaint }}>{sub}</div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* ── Interview type tabs ── */}
+                    <div style={{ display: "flex", gap: 4, background: C.bgPanel, border: `1px solid ${C.line}`, borderRadius: 14, padding: 5, backdropFilter: "blur(12px)", alignSelf: "flex-start" }}>
+                        {INTERVIEW_TABS.map((tab, i) => (
+                            <button key={tab} onClick={() => setActiveTab(i)} style={{
+                                height: 36, padding: "0 18px", borderRadius: 10,
+                                border: `1px solid ${activeTab === i ? C.goldBorder : "transparent"}`,
+                                background: activeTab === i ? `linear-gradient(135deg,rgba(184,149,90,0.25),rgba(240,201,122,0.14))` : "transparent",
+                                color: activeTab === i ? C.inkWhite : C.inkMuted,
+                                fontSize: 13, fontWeight: 600, cursor: "pointer",
+                                fontFamily: "'Sora', sans-serif", transition: "all 0.18s", whiteSpace: "nowrap",
+                            }}>{tab}</button>
+                        ))}
+                    </div>
+
+                    {/* ── Filter bar ── */}
+                    <div style={{
+                        background: C.bgPanel, border: `1px solid ${C.line}`,
+                        borderRadius: 18, padding: "16px 20px", backdropFilter: "blur(12px)",
+                    }}>
+                        <div style={{ display: "grid", gridTemplateColumns: "1fr auto auto auto", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+                            <div>
+                                <div style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: C.inkFaint, marginBottom: 6 }}>Search</div>
+                                <Input value={search} onChange={e => { setSearch(e.target.value); setPage(1); }} placeholder="Search by name, email, or phone…" icon={Search} />
+                            </div>
+                            <div style={{ minWidth: 130 }}>
+                                <div style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: C.inkFaint, marginBottom: 6 }}>Status</div>
+                                <SelectField value={statusFilter} onChange={e => { setStatusFilter(e.target.value); setPage(1); }}>
+                                    <option>All</option>
+                                    <option>Pass</option>
+                                    <option>Needs Review</option>
+                                    <option>Fail</option>
+                                </SelectField>
+                            </div>
+                            <div style={{ minWidth: 160 }}>
+                                <div style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: C.inkFaint, marginBottom: 6 }}>Sort</div>
+                                <SelectField value={sortBy} onChange={e => setSortBy(e.target.value)}>
+                                    <option>Newest</option>
+                                    <option>Highest Score</option>
+                                    <option>Lowest Score</option>
+                                </SelectField>
+                            </div>
+                            <div style={{ minWidth: 110 }}>
+                                <div style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: C.inkFaint, marginBottom: 6 }}>Page Size</div>
+                                <SelectField value={pageSize} onChange={e => { setPageSize(e.target.value); setPage(1); }}>
+                                    <option>10</option>
+                                    <option>25</option>
+                                    <option>50</option>
+                                </SelectField>
+                            </div>
+                        </div>
+
+                        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 12, flexWrap: "wrap", gap: 10 }}>
+                            <label style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer", fontSize: 13, color: C.inkMuted, userSelect: "none" }}>
+                                <input type="checkbox" checked={completedOnly} onChange={() => { setCompletedOnly(v => !v); setPage(1); }} />
+                                Show only completed interviews
+                            </label>
+                            <div style={{
+                                fontSize: 12.5, color: C.inkMuted, fontWeight: 600,
+                                background: "rgba(255,255,255,0.03)", border: `1px solid ${C.line}`,
+                                borderRadius: 8, padding: "5px 12px",
+                            }}>
+                                Showing {filtered.length} result{filtered.length !== 1 ? "s" : ""}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* ── Candidates Results ── */}
+                    <div style={{
+                        background: C.bgPanel, border: `1px solid ${C.line}`,
+                        borderRadius: 22, backdropFilter: "blur(12px)", overflow: "hidden",
+                    }}>
+                        {/* Section header */}
+                        <div style={{
+                            padding: "16px 20px", borderBottom: `1px solid ${C.line}`,
+                            display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 10,
+                        }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                                <h2 style={{ fontFamily: "'DM Serif Display', serif", fontSize: "1.35rem", fontWeight: 400, color: C.inkWhite, margin: 0 }}>
+                                    Candidates Results
+                                </h2>
+                                <span style={{
+                                    fontSize: 12, color: C.inkMuted, border: `1px solid ${C.line}`,
+                                    borderRadius: 999, padding: "2px 10px", fontWeight: 600,
+                                }}>{filtered.length} candidates</span>
+                            </div>
+                            <div style={{ fontSize: 12.5, color: C.inkFaint }}>
+                                Page <strong style={{ color: C.inkSoft }}>{page}</strong> / {totalPages}
+                            </div>
+                        </div>
+
+                        {/* Column headers */}
+                        <div className="cand-grid" style={{
+                            display: "grid",
+                            gridTemplateColumns: "28px 44px 1fr 140px 130px 180px 90px 90px 120px",
+                            gap: 10, padding: "10px 16px",
+                            borderBottom: `1px solid ${C.line}`,
+                            background: "rgba(255,255,255,0.015)",
+                        }}>
+                            <div>
+                                <input type="checkbox" checked={allChecked} onChange={toggleAll} style={{ cursor: "pointer", accentColor: C.goldBright, width: 15, height: 15 }} />
+                            </div>
+                            <div style={{ fontSize: 10.5, fontWeight: 700, color: C.inkFaint, letterSpacing: "0.1em" }}>#</div>
+                            {["Candidate", "Phone", "Interview Status", "Interview Status", "Initial Score", "Qualifier Rank", "Action"].map((h, i) => (
+                                <div key={i} style={{ fontSize: 10.5, fontWeight: 700, color: C.inkFaint, letterSpacing: "0.1em", textTransform: "uppercase" }}>
+                                    {["Candidate", "Phone", "Started", "Status", "Initial Score", "Qualifier Rank", "Action"][i]}
+                                </div>
+                            ))}
+                        </div>
+
+                        {/* Rows */}
+                        <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
+                            {paginated.length === 0 ? (
+                                <div style={{ padding: "48px 20px", textAlign: "center", color: C.inkFaint, fontSize: 14 }}>
+                                    No candidates match your filters.
+                                </div>
+                            ) : paginated.map(c => (
+                                <div key={c.id} style={{ borderBottom: `1px solid ${C.line}` }}>
+                                    <CandidateRow
+                                        c={c}
+                                        expanded={expandedId === c.id}
+                                        onToggle={() => setExpandedId(expandedId === c.id ? null : c.id)}
+                                        checked={checkedIds.has(c.id)}
+                                        onCheck={() => setCheckedIds(s => { const n = new Set(s); n.has(c.id) ? n.delete(c.id) : n.add(c.id); return n; })}
+                                        lang={lang}
+                                        setLang={setLang}
+                                    />
+                                </div>
+                            ))}
+                        </div>
+
+                        {/* Pagination footer */}
+                        <div style={{
+                            padding: "14px 20px", borderTop: `1px solid ${C.line}`,
+                            display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 10,
+                        }}>
+                            <div style={{ fontSize: 13, color: C.inkMuted }}>
+                                Showing <strong style={{ color: C.inkSoft }}>{(page - 1) * ps + 1}</strong> to{" "}
+                                <strong style={{ color: C.inkSoft }}>{Math.min(page * ps, filtered.length)}</strong> of{" "}
+                                <strong style={{ color: C.inkSoft }}>{filtered.length}</strong>
+                            </div>
+                            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                                {[
+                                    { label: "First", action: () => setPage(1), disabled: page === 1 },
+                                    { label: "Prev", action: () => setPage(p => p - 1), disabled: page === 1 },
+                                    { label: "Next", action: () => setPage(p => p + 1), disabled: page === totalPages },
+                                    { label: "Last", action: () => setPage(totalPages), disabled: page === totalPages },
+                                ].map(({ label, action, disabled }) => (
+                                    <button key={label} onClick={action} disabled={disabled} style={{
+                                        height: 34, padding: "0 14px", borderRadius: 9,
+                                        border: `1px solid ${C.line}`, background: "transparent",
+                                        color: disabled ? C.inkFaint : C.inkMuted,
+                                        fontSize: 12.5, fontWeight: 600, cursor: disabled ? "not-allowed" : "pointer",
+                                        fontFamily: "'Sora', sans-serif", transition: "all 0.18s",
+                                        opacity: disabled ? 0.45 : 1,
+                                    }}
+                                        onMouseEnter={e => { if (!disabled) { e.currentTarget.style.borderColor = C.goldBorder; e.currentTarget.style.color = C.inkSoft; } }}
+                                        onMouseLeave={e => { e.currentTarget.style.borderColor = C.line; e.currentTarget.style.color = disabled ? C.inkFaint : C.inkMuted; }}
+                                    >{label}</button>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+        </>
+    );
+}

@@ -79,7 +79,7 @@ const GlobalStyles = () => (
     body{background:#0a0f1e;color:#f5f0eb;font-family:'Sora',sans-serif}
     #root{width:100%;overflow-x:hidden}
     img,svg{max-width:100%;height:auto}
-    @media(min-width:769px){body,a,button{cursor:none}}
+    body, a, button, input, select, textarea, [role="button"] { cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24'><path fill='%23b8955a' stroke='white' stroke-width='1.5' stroke-linejoin='round' d='M5 4 L5 20 L9 15 L13 21 L16 19 L12 13 L18 13 Z'/></svg>") 5 4, auto !important; }
     ::-webkit-scrollbar{width:2px}
     ::-webkit-scrollbar-track{background:#0a0f1e}
     ::-webkit-scrollbar-thumb{background:#b8955a;border-radius:2px}
@@ -595,12 +595,13 @@ function Lights() {
 
 function GlobeBackground() {
   const [show, setShow] = useState(false);
+  const location = useLocation();
   useEffect(() => {
     const fn = () => setShow(window.innerWidth > 768);
     fn(); window.addEventListener("resize", fn);
     return () => window.removeEventListener("resize", fn);
   }, []);
-  if(!show) return null;
+  if(!show || location.pathname === "/dashboard" || location.pathname === "/interview") return null;
   return(
     <div style={{position:"fixed",inset:0,zIndex:0,pointerEvents:"none"}}>
       <Canvas
@@ -661,43 +662,7 @@ function PageLoader({ onDone }) {
 /* ══════════════════════════════════════════════════════════════════════
    CUSTOM CURSOR
 ══════════════════════════════════════════════════════════════════════ */
-function CustomCursor() {
-  const outer = useRef(null), dot = useRef(null);
-  const [show, setShow] = useState(false);
-  useEffect(() => {
-    if(window.innerWidth <= 768) return;
-    setShow(true);
-    const pos={x:0,y:0},lag={x:0,y:0}; let raf;
-    const move = e => {
-      pos.x=e.clientX; pos.y=e.clientY;
-      if(dot.current){dot.current.style.left=`${e.clientX}px`;dot.current.style.top=`${e.clientY}px`;}
-    };
-    const loop = () => {
-      lag.x+=(pos.x-lag.x)*.09; lag.y+=(pos.y-lag.y)*.09;
-      if(outer.current){outer.current.style.left=`${lag.x}px`;outer.current.style.top=`${lag.y}px`;}
-      raf=requestAnimationFrame(loop);
-    };
-    const over = e => {
-      if(!e.target.closest("a,button")) return;
-      if(outer.current){outer.current.style.width="48px";outer.current.style.height="48px";outer.current.style.borderColor="rgba(184,149,90,.7)";}
-      if(dot.current) dot.current.style.opacity="0";
-    };
-    const out = () => {
-      if(outer.current){outer.current.style.width="28px";outer.current.style.height="28px";outer.current.style.borderColor="rgba(184,149,90,.35)";}
-      if(dot.current) dot.current.style.opacity="1";
-    };
-    window.addEventListener("mousemove",move);window.addEventListener("mouseover",over);window.addEventListener("mouseout",out);
-    raf=requestAnimationFrame(loop);
-    return()=>{window.removeEventListener("mousemove",move);window.removeEventListener("mouseover",over);window.removeEventListener("mouseout",out);cancelAnimationFrame(raf);};
-  },[]);
-  if(!show) return null;
-  return(
-    <>
-      <div ref={outer} style={{position:"fixed",pointerEvents:"none",zIndex:9999,width:28,height:28,borderRadius:"50%",border:"1px solid rgba(184,149,90,.35)",background:"transparent",transform:"translate(-50%,-50%)",left:0,top:0,transition:"width .2s,height .2s,border-color .2s",mixBlendMode:"difference"}}/>
-      <div ref={dot} style={{position:"fixed",pointerEvents:"none",zIndex:9999,width:5,height:5,borderRadius:"50%",background:C.gold,transform:"translate(-50%,-50%)",left:0,top:0,boxShadow:`0 0 10px ${C.goldBright}`,transition:"opacity .15s"}}/>
-    </>
-  );
-}
+// CustomCursor removed — golden pointer cursor is applied globally via CSS
 
 /* ══════════════════════════════════════════════════════════════════════
    SCROLL PROGRESS BAR
@@ -1977,7 +1942,6 @@ export default function App() {
         animate={loaded ? { opacity: 1 } : {}}
         transition={{ duration: .5 }}
         style={{ position: "relative", zIndex: 10 }}>
-        <CustomCursor/>
         <ScrollProgress/>
         <AppChrome/>
         <Routes>

@@ -1,4 +1,4 @@
-﻿import { useState, useMemo } from "react";
+import { useState, useMemo } from "react";
 import {
   Search, Download, Mail, X, Eye, ChevronDown,
   ChevronUp, CheckSquare, Square,
@@ -87,7 +87,7 @@ const GlobalStyles = ({ embedded = false }) => {
        ${C.bgDark}`;
 
   return (
-  <style>{`
+    <style>{`
     @import url('https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=DM+Serif+Display:ital@0;1&display=swap');
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -149,7 +149,7 @@ const GlobalStyles = ({ embedded = false }) => {
     /* â”€â”€ Summary Cards â”€â”€ */
     .cv-summary-row {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
+      grid-template-columns: ${embedded ? "repeat(2, 1fr)" : "repeat(4, 1fr)"};
       gap: 12px;
       margin-bottom: 18px;
     }
@@ -347,12 +347,12 @@ const GlobalStyles = ({ embedded = false }) => {
       width: 100%;
       border-collapse: separate;
       border-spacing: 0;
-      min-width: 1000px;
+      min-width: ${embedded ? "100%" : "1000px"};
     }
     .cv-table thead tr th {
-      padding: 12px 16px;
+      padding: ${embedded ? "10px 12px" : "12px 16px"};
       text-align: left;
-      font-size: 10.5px;
+      font-size: ${embedded ? "9.5px" : "10.5px"};
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.12em;
@@ -382,7 +382,7 @@ const GlobalStyles = ({ embedded = false }) => {
     .cv-table tbody tr.cv-row-selected td:first-child {
       box-shadow: inset 3px 0 0 ${C.blue};
     }
-    .cv-td { padding: 16px; }
+    .cv-td { padding: ${embedded ? "12px 10px" : "16px"}; }
 
     /* â”€â”€ Candidate Cell â”€â”€ */
     .cv-candidate-name {
@@ -778,376 +778,382 @@ export default function CVResults({ embedded = false }) {
       <GlobalStyles embedded={embedded} />
       <div className="cv-root">
         <div className="cv-shell">
-          <header className="cv-top">
-            {!embedded && (
+          {!embedded && (
+            <header className="cv-top">
               <div className="cv-breadcrumb">
                 <button type="button" className="cv-crumb-link" onClick={() => navigate("/dashboard")}>Dashboard</button>
                 <span>/</span>
                 <span>CvResults</span>
               </div>
-            )}
-            <h1>Resume Results</h1>
-            <p className="cv-desc">Review submitted CVs, compare scores, and shortlist the right candidates.</p>
-          </header>
+              <h1>Resume Results</h1>
+              <p className="cv-desc">Review submitted CVs, compare scores, and shortlist the right candidates.</p>
+            </header>
+          )}
 
           {/* â”€â”€ Summary Cards â”€â”€ */}
           <div className="cv-summary-row">
-          <div className="cv-summary-card">
-            <div>
-              <div className="cv-summary-val">{CANDIDATES.length}</div>
-              <div className="cv-summary-label">Total Submitted</div>
-            </div>
-            <div className="cv-summary-icon" style={{ background: "rgba(95,158,255,0.12)", border: "1px solid rgba(95,158,255,0.2)" }}>
-              <Users size={19} color={C.blue} />
-            </div>
-          </div>
-          <div className="cv-summary-card">
-            <div>
-              <div className="cv-summary-val" style={{ color: "#5df5b8" }}>{suitable.length}</div>
-              <div className="cv-summary-label">Suitable</div>
-            </div>
-            <div className="cv-summary-icon" style={{ background: "rgba(57,201,143,0.1)", border: "1px solid rgba(57,201,143,0.22)" }}>
-              <Award size={19} color={C.green} />
-            </div>
-          </div>
-          <div className="cv-summary-card">
-            <div>
-              <div className="cv-summary-val" style={{ color: C.goldBright }}>{avgScore}</div>
-              <div className="cv-summary-label">Avg. Final Score</div>
-            </div>
-            <div className="cv-summary-icon" style={{ background: "rgba(184,149,90,0.1)", border: "1px solid rgba(184,149,90,0.25)" }}>
-              <TrendingUp size={19} color={C.goldBright} />
-            </div>
-          </div>
-          <div className="cv-summary-card">
-            <div>
-              <div className="cv-summary-val">{filtered.filter((c) => c.status === "Pending").length}</div>
-              <div className="cv-summary-label">Pending Review</div>
-            </div>
-            <div className="cv-summary-icon" style={{ background: "rgba(227,196,102,0.08)", border: "1px solid rgba(227,196,102,0.2)" }}>
-              <FileText size={19} color={C.yellow} />
-            </div>
-          </div>
-        </div>
-
-        {/* â”€â”€ Filters Bar â”€â”€ */}
-        <div className="cv-filters-bar">
-          <div className="cv-search-wrap">
-            <Search size={14} />
-            <input
-              className="cv-search"
-              placeholder="Search by name, email, country!"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-          </div>
-          <div className="cv-filter-divider" />
-          <select
-            className="cv-filter-select"
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-          >
-            <option value="All">All Status</option>
-            <option>Pending</option>
-            <option>Reviewed</option>
-            <option>Shortlisted</option>
-          </select>
-          <select
-            className="cv-filter-select"
-            value={countryFilter}
-            onChange={(e) => setCountryFilter(e.target.value)}
-          >
-            {countries.map((c) => (
-              <option key={c}>{c}</option>
-            ))}
-          </select>
-          <select
-            className="cv-filter-select"
-            value={`${sortField}-${sortDir}`}
-            onChange={(e) => {
-              const [f, d] = e.target.value.split("-");
-              setSortField(f);
-              setSortDir(d);
-            }}
-          >
-            <option value="score-desc">Score: High to Low</option>
-            <option value="score-asc">Score: Low to High</option>
-            <option value="name-asc">Name: A to Z</option>
-            <option value="date-desc">Date: Newest</option>
-          </select>
-        </div>
-
-        {/* â”€â”€ Table Panel â”€â”€ */}
-        <div className="cv-panel">
-          <div className="cv-panel-head">
-            <div>
-              <div className="cv-panel-title">CV Submissions</div>
-              <div className="cv-panel-meta">
-                Showing {filtered.length} of {CANDIDATES.length} candidates Threshold 50
+            <div className="cv-summary-card">
+              <div>
+                <div className="cv-summary-val">{CANDIDATES.length}</div>
+                <div className="cv-summary-label">Total Submitted</div>
+              </div>
+              <div className="cv-summary-icon" style={{ background: "rgba(95,158,255,0.12)", border: "1px solid rgba(95,158,255,0.2)" }}>
+                <Users size={19} color={C.blue} />
               </div>
             </div>
-            <span className="cv-badge cv-badge-neutral">
-              {suitable.length} suitable
-            </span>
+            <div className="cv-summary-card">
+              <div>
+                <div className="cv-summary-val" style={{ color: "#5df5b8" }}>{suitable.length}</div>
+                <div className="cv-summary-label">Suitable</div>
+              </div>
+              <div className="cv-summary-icon" style={{ background: "rgba(57,201,143,0.1)", border: "1px solid rgba(57,201,143,0.22)" }}>
+                <Award size={19} color={C.green} />
+              </div>
+            </div>
+            <div className="cv-summary-card">
+              <div>
+                <div className="cv-summary-val" style={{ color: C.goldBright }}>{avgScore}</div>
+                <div className="cv-summary-label">Avg. Final Score</div>
+              </div>
+              <div className="cv-summary-icon" style={{ background: "rgba(184,149,90,0.1)", border: "1px solid rgba(184,149,90,0.25)" }}>
+                <TrendingUp size={19} color={C.goldBright} />
+              </div>
+            </div>
+            <div className="cv-summary-card">
+              <div>
+                <div className="cv-summary-val">{filtered.filter((c) => c.status === "Pending").length}</div>
+                <div className="cv-summary-label">Pending Review</div>
+              </div>
+              <div className="cv-summary-icon" style={{ background: "rgba(227,196,102,0.08)", border: "1px solid rgba(227,196,102,0.2)" }}>
+                <FileText size={19} color={C.yellow} />
+              </div>
+            </div>
           </div>
 
-          {/* Bulk bar */}
-          {selected.size > 0 && (
-            <div className="cv-bulk-bar">
-              <span className="cv-bulk-text">{selected.size} selected</span>
-              <button className="cv-bulk-btn">
-                <Mail size={13} /> Send Invite
-              </button>
-              <button className="cv-bulk-btn">
-                <Download size={13} /> Export
-              </button>
-              <button className="cv-bulk-btn cv-bulk-btn-danger">
-                <X size={13} /> Reject
-              </button>
+          {/* â”€â”€ Filters Bar â”€â”€ */}
+          <div className="cv-filters-bar">
+            <div className="cv-search-wrap">
+              <Search size={14} />
+              <input
+                className="cv-search"
+                placeholder="Search by name, email, country!"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
             </div>
-          )}
+            <div className="cv-filter-divider" />
+            <select
+              className="cv-filter-select"
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+            >
+              <option value="All">All Status</option>
+              <option>Pending</option>
+              <option>Invited</option>
+              <option>Rejected</option>
+            </select>
+            <select
+              className="cv-filter-select"
+              value={countryFilter}
+              onChange={(e) => setCountryFilter(e.target.value)}
+            >
+              {countries.map((c) => (
+                <option key={c}>{c}</option>
+              ))}
+            </select>
+            <select
+              className="cv-filter-select"
+              value={`${sortField}-${sortDir}`}
+              onChange={(e) => {
+                const [f, d] = e.target.value.split("-");
+                setSortField(f);
+                setSortDir(d);
+              }}
+            >
+              <option value="score-desc">Score: High to Low</option>
+              <option value="score-asc">Score: Low to High</option>
+              <option value="name-asc">Name: A to Z</option>
+              <option value="date-desc">Date: Newest</option>
+            </select>
+          </div>
 
-          <div className="cv-table-scroll">
-            <table className="cv-table">
-              <thead>
-                <tr>
-                  <th style={{ width: 44 }}>
-                    <button
-                      className={`cv-checkbox ${selected.size === filtered.length && filtered.length > 0 ? "checked" : ""}`}
-                      onClick={toggleAll}
-                      aria-label="Select all"
-                    >
-                      {selected.size === filtered.length && filtered.length > 0
-                        ? <CheckSquare size={16} />
-                        : <Square size={16} />}
-                    </button>
-                  </th>
-                  <th style={{ width: 22 }} />
-                  <th className="sortable" onClick={() => toggleSort("name")}>
-                    <span className="cv-th-inner">Candidate <SortIcon field="name" /></span>
-                  </th>
-                  <th>CV File</th>
-                  <th>Status</th>
-                  <th className="sortable" onClick={() => toggleSort("country")}>
-                    <span className="cv-th-inner">Location <SortIcon field="country" /></span>
-                  </th>
-                  <th>Phone</th>
-                  <th className="sortable" onClick={() => toggleSort("finalScore")}>
-                    <span className="cv-th-inner">Score <SortIcon field="finalScore" /></span>
-                  </th>
-                  <th>Suitable</th>
-                  <th style={{ width: 110 }}>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filtered.map((c) => (
-                  <>
-                    <tr
-                      key={c.id}
-                      className={selected.has(c.id) ? "cv-row-selected" : ""}
-                    >
-                      {/* Checkbox */}
-                      <td>
-                        <div className="cv-td" style={{ paddingRight: 4 }}>
-                          <button
-                            className={`cv-checkbox ${selected.has(c.id) ? "checked" : ""}`}
-                            onClick={() => toggleSelect(c.id)}
-                            aria-label={`Select ${c.name}`}
-                          >
-                            {selected.has(c.id)
-                              ? <CheckSquare size={15} />
-                              : <Square size={15} />}
-                          </button>
-                        </div>
-                      </td>
+          {/* â”€â”€ Table Panel â”€â”€ */}
+          <div className="cv-panel">
+            <div className="cv-panel-head">
+              <div>
+                <div className="cv-panel-title">CV Submissions</div>
+                <div className="cv-panel-meta">
+                  Showing {filtered.length} of {CANDIDATES.length} candidates Threshold 50
+                </div>
+              </div>
+              <span className="cv-badge cv-badge-neutral">
+                {suitable.length} suitable
+              </span>
+            </div>
 
-                      {/* Expand */}
-                      <td>
-                        <div className="cv-td" style={{ paddingLeft: 4, paddingRight: 4 }}>
-                          <button
-                            className="cv-expand-btn"
-                            onClick={() => toggleExpand(c.id)}
-                            aria-label="Expand row"
-                          >
-                            {expanded.has(c.id)
-                              ? <ChevronUp size={14} />
-                              : <ChevronDown size={14} />}
-                          </button>
-                        </div>
-                      </td>
+            {/* Bulk bar */}
+            {selected.size > 0 && (
+              <div className="cv-bulk-bar">
+                <span className="cv-bulk-text">{selected.size} selected</span>
+                <button className="cv-bulk-btn">
+                  <Mail size={13} /> Send Invite
+                </button>
+                <button className="cv-bulk-btn">
+                  <Download size={13} /> Export
+                </button>
+                <button className="cv-bulk-btn cv-bulk-btn-danger">
+                  <X size={13} /> Reject
+                </button>
+              </div>
+            )}
 
-                      {/* Candidate */}
-                      <td>
-                        <div className="cv-td">
-                          <div className="cv-candidate-name">{c.name}</div>
-                          <div className="cv-candidate-email">{c.email}</div>
-                          <div className="cv-candidate-date">{c.date}</div>
-                        </div>
-                      </td>
+            <div className="cv-table-scroll">
+              <table className="cv-table">
+                <thead>
+                  <tr>
+                    <th style={{ width: 44 }}>
+                      <button
+                        className={`cv-checkbox ${selected.size === filtered.length && filtered.length > 0 ? "checked" : ""}`}
+                        onClick={toggleAll}
+                        aria-label="Select all"
+                      >
+                        {selected.size === filtered.length && filtered.length > 0
+                          ? <CheckSquare size={16} />
+                          : <Square size={16} />}
+                      </button>
+                    </th>
+                    <th style={{ width: 22 }} />
+                    <th className="sortable" onClick={() => toggleSort("name")}>
+                      <span className="cv-th-inner">Candidate <SortIcon field="name" /></span>
+                    </th>
+                    <th>CV File</th>
+                    <th>Status</th>
+                    {!embedded && (
+                      <th className="sortable" onClick={() => toggleSort("country")}>
+                        <span className="cv-th-inner">Location <SortIcon field="country" /></span>
+                      </th>
+                    )}
+                    {!embedded && <th>Phone</th>}
+                    <th className="sortable" onClick={() => toggleSort("finalScore")}>
+                      <span className="cv-th-inner">Score <SortIcon field="finalScore" /></span>
+                    </th>
+                    <th>Suitable</th>
+                    <th style={{ width: 110 }}>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filtered.map((c) => (
+                    <>
+                      <tr
+                        key={c.id}
+                        className={selected.has(c.id) ? "cv-row-selected" : ""}
+                      >
+                        {/* Checkbox */}
+                        <td>
+                          <div className="cv-td" style={{ paddingRight: 4 }}>
+                            <button
+                              className={`cv-checkbox ${selected.has(c.id) ? "checked" : ""}`}
+                              onClick={() => toggleSelect(c.id)}
+                              aria-label={`Select ${c.name}`}
+                            >
+                              {selected.has(c.id)
+                                ? <CheckSquare size={15} />
+                                : <Square size={15} />}
+                            </button>
+                          </div>
+                        </td>
 
-                      {/* CV */}
-                      <td>
-                        <div className="cv-td">
-                          <a href={`/demo/cv/${c.cv}`} className="cv-file-link" target="_blank" rel="noreferrer">
-                            <FileText size={13} />
-                            {c.cv}
-                          </a>
-                        </div>
-                      </td>
+                        {/* Expand */}
+                        <td>
+                          <div className="cv-td" style={{ paddingLeft: 4, paddingRight: 4 }}>
+                            <button
+                              className="cv-expand-btn"
+                              onClick={() => toggleExpand(c.id)}
+                              aria-label="Expand row"
+                            >
+                              {expanded.has(c.id)
+                                ? <ChevronUp size={14} />
+                                : <ChevronDown size={14} />}
+                            </button>
+                          </div>
+                        </td>
 
-                      {/* Status */}
-                      <td>
-                        <div className="cv-td">
-                          <span className={`cv-status ${statusClass(c.status)}`}>
-                            <span className="cv-status-dot" style={{ background: statusDotColor(c.status) }} />
-                            {c.status}
-                          </span>
-                        </div>
-                      </td>
+                        {/* Candidate */}
+                        <td>
+                          <div className="cv-td">
+                            <div className="cv-candidate-name">{c.name}</div>
+                            <div className="cv-candidate-email">{c.email}</div>
+                            <div className="cv-candidate-date">{c.date}</div>
+                          </div>
+                        </td>
 
-                      {/* Location */}
-                      <td>
-                        <div className="cv-td">
-                          <div className="cv-location-country">{c.country}</div>
-                          <div className="cv-location-city">{c.city}</div>
-                        </div>
-                      </td>
+                        {/* CV */}
+                        <td>
+                          <div className="cv-td">
+                            <a href={`/demo/cv/${c.cv}`} className="cv-file-link" target="_blank" rel="noreferrer">
+                              <FileText size={13} />
+                              {c.cv}
+                            </a>
+                          </div>
+                        </td>
 
-                      {/* Phone */}
-                      <td>
-                        <div className="cv-td">
-                          <span className="cv-phone">{c.phone}</span>
-                        </div>
-                      </td>
-
-                      {/* Score */}
-                      <td>
-                        <div className="cv-td">
-                          <div className="cv-score-wrap">
-                            <span className={`cv-score-badge ${scoreClass(c.finalScore)}`}>
-                              {c.finalScore}/100
+                        {/* Status */}
+                        <td>
+                          <div className="cv-td">
+                            <span className={`cv-status ${statusClass(c.status)}`}>
+                              <span className="cv-status-dot" style={{ background: statusDotColor(c.status) }} />
+                              {c.status}
                             </span>
-                            <div className="cv-score-threshold">Score â‰¥ 50</div>
-                            <div className="cv-score-breakdown">
-                              <div className="cv-breakdown-row">
-                                <span>JD Score</span>
-                                <strong>{c.jdScore}</strong>
-                              </div>
-                              <div className="cv-breakdown-row">
-                                <span>Penalty</span>
-                                <strong>{c.penalty}</strong>
-                              </div>
-                              <div className="cv-breakdown-row">
-                                <span>Overqual.</span>
-                                <strong>{c.overqualPenalty}</strong>
+                          </div>
+                        </td>
+
+                        {/* Location */}
+                        {!embedded && (
+                          <td>
+                            <div className="cv-td">
+                              <div className="cv-location-country">{c.country}</div>
+                              <div className="cv-location-city">{c.city}</div>
+                            </div>
+                          </td>
+                        )}
+
+                        {/* Phone */}
+                        {!embedded && (
+                          <td>
+                            <div className="cv-td">
+                              <span className="cv-phone">{c.phone}</span>
+                            </div>
+                          </td>
+                        )}
+
+                        {/* Score */}
+                        <td>
+                          <div className="cv-td">
+                            <div className="cv-score-wrap">
+                              <span className={`cv-score-badge ${scoreClass(c.finalScore)}`}>
+                                {c.finalScore}/100
+                              </span>
+                              <div className="cv-score-threshold">Score ≥ 50</div>
+                              <div className="cv-score-breakdown">
+                                <div className="cv-breakdown-row">
+                                  <span>JD Score</span>
+                                  <strong>{c.jdScore}</strong>
+                                </div>
+                                <div className="cv-breakdown-row">
+                                  <span>Penalty</span>
+                                  <strong>{c.penalty}</strong>
+                                </div>
+                                <div className="cv-breakdown-row">
+                                  <span>Overqual.</span>
+                                  <strong>{c.overqualPenalty}</strong>
+                                </div>
                               </div>
                             </div>
                           </div>
-                        </div>
-                      </td>
+                        </td>
 
-                      {/* Suitable */}
-                      <td>
-                        <div className="cv-td">
-                          {c.disqualified ? (
-                            <div>
-                              <span className="cv-suitable-no">NO</span>
-                              <div className="cv-disq-tag">Disqualified</div>
-                            </div>
-                          ) : (
-                            <span className={c.finalScore >= 50 ? "cv-suitable-yes" : "cv-suitable-no"}>
-                              {c.finalScore >= 50 ? "YES" : "NO"}
-                            </span>
-                          )}
-                        </div>
-                      </td>
-
-                      {/* Actions */}
-                      <td>
-                        <div className="cv-td">
-                          <div className="cv-actions">
-                            <button className="cv-action-btn" title="View details">
-                              <Eye size={15} />
-                            </button>
-                            <button className="cv-action-btn cv-action-btn-mail" title="Send email">
-                              <Mail size={15} />
-                            </button>
-                            <button className="cv-action-btn cv-action-btn-reject" title="Reject">
-                              <X size={15} />
-                            </button>
+                        {/* Suitable */}
+                        <td>
+                          <div className="cv-td">
+                            {c.disqualified ? (
+                              <div>
+                                <span className="cv-suitable-no">NO</span>
+                                <div className="cv-disq-tag">Disqualified</div>
+                              </div>
+                            ) : (
+                              <span className={c.finalScore >= 50 ? "cv-suitable-yes" : "cv-suitable-no"}>
+                                {c.finalScore >= 50 ? "YES" : "NO"}
+                              </span>
+                            )}
                           </div>
-                        </div>
-                      </td>
-                    </tr>
+                        </td>
 
-                    {/* Expanded detail row */}
-                    {expanded.has(c.id) && (
-                      <tr key={`${c.id}-exp`} className="cv-expanded-row">
-                        <td colSpan={10}>
-                          <div className="cv-expanded-inner">
-                            <div className="cv-expanded-item">
-                              <label>Full Name</label>
-                              <span>{c.name}</span>
-                            </div>
-                            <div className="cv-expanded-item">
-                              <label>Email</label>
-                              <span>{c.email}</span>
-                            </div>
-                            <div className="cv-expanded-item">
-                              <label>Phone</label>
-                              <span>{c.phone}</span>
-                            </div>
-                            <div className="cv-expanded-item">
-                              <label>Country</label>
-                              <span>{c.country}</span>
-                            </div>
-                            <div className="cv-expanded-item">
-                              <label>City</label>
-                              <span>{c.city}</span>
-                            </div>
-                            <div className="cv-expanded-item">
-                              <label>Submitted</label>
-                              <span>{c.date}</span>
-                            </div>
-                            <div className="cv-expanded-item">
-                              <label>JD Score</label>
-                              <span>{c.jdScore}</span>
-                            </div>
-                            <div className="cv-expanded-item">
-                              <label>Penalty</label>
-                              <span>{c.penalty}</span>
-                            </div>
-                            <div className="cv-expanded-item">
-                              <label>Overqual Penalty</label>
-                              <span>{c.overqualPenalty}</span>
-                            </div>
-                            <div className="cv-expanded-item">
-                              <label>Final Score</label>
-                              <span style={{ color: scoreClass(c.finalScore) === "cv-score-high" ? "#5df5b8" : scoreClass(c.finalScore) === "cv-score-mid" ? C.goldBright : C.red }}>
-                                {c.finalScore}
-                              </span>
-                            </div>
-                            <div className="cv-expanded-item">
-                              <label>Disqualified</label>
-                              <span style={{ color: c.disqualified ? C.red : C.green }}>
-                                {c.disqualified ? "YES" : "NO"}
-                              </span>
+                        {/* Actions */}
+                        <td>
+                          <div className="cv-td">
+                            <div className="cv-actions">
+                              <button className="cv-action-btn" title="View details">
+                                <Eye size={15} />
+                              </button>
+                              <button className="cv-action-btn cv-action-btn-mail" title="Send email">
+                                <Mail size={15} />
+                              </button>
+                              <button className="cv-action-btn cv-action-btn-reject" title="Reject">
+                                <X size={15} />
+                              </button>
                             </div>
                           </div>
                         </td>
                       </tr>
-                    )}
-                  </>
-                ))}
-              </tbody>
-            </table>
-          </div>
 
-          {/* Demo note */}
-          <div className="cv-demo-note">
-            Demo note: CV links are placeholders (e.g. <code>/demo/cv/ahmad.pdf</code>). Add files under your backend/static to serve them.
+                      {/* Expanded detail row */}
+                      {expanded.has(c.id) && (
+                        <tr key={`${c.id}-exp`} className="cv-expanded-row">
+                          <td colSpan={embedded ? 8 : 10}>
+                            <div className="cv-expanded-inner">
+                              <div className="cv-expanded-item">
+                                <label>Full Name</label>
+                                <span>{c.name}</span>
+                              </div>
+                              <div className="cv-expanded-item">
+                                <label>Email</label>
+                                <span>{c.email}</span>
+                              </div>
+                              <div className="cv-expanded-item">
+                                <label>Phone</label>
+                                <span>{c.phone}</span>
+                              </div>
+                              <div className="cv-expanded-item">
+                                <label>Country</label>
+                                <span>{c.country}</span>
+                              </div>
+                              <div className="cv-expanded-item">
+                                <label>City</label>
+                                <span>{c.city}</span>
+                              </div>
+                              <div className="cv-expanded-item">
+                                <label>Submitted</label>
+                                <span>{c.date}</span>
+                              </div>
+                              <div className="cv-expanded-item">
+                                <label>JD Score</label>
+                                <span>{c.jdScore}</span>
+                              </div>
+                              <div className="cv-expanded-item">
+                                <label>Penalty</label>
+                                <span>{c.penalty}</span>
+                              </div>
+                              <div className="cv-expanded-item">
+                                <label>Overqual Penalty</label>
+                                <span>{c.overqualPenalty}</span>
+                              </div>
+                              <div className="cv-expanded-item">
+                                <label>Final Score</label>
+                                <span style={{ color: scoreClass(c.finalScore) === "cv-score-high" ? "#5df5b8" : scoreClass(c.finalScore) === "cv-score-mid" ? C.goldBright : C.red }}>
+                                  {c.finalScore}
+                                </span>
+                              </div>
+                              <div className="cv-expanded-item">
+                                <label>Disqualified</label>
+                                <span style={{ color: c.disqualified ? C.red : C.green }}>
+                                  {c.disqualified ? "YES" : "NO"}
+                                </span>
+                              </div>
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                    </>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Demo note */}
+            <div className="cv-demo-note">
+              Demo note: CV links are placeholders (e.g. <code>/demo/cv/ahmad.pdf</code>). Add files under your backend/static to serve them.
+            </div>
           </div>
-        </div>
 
         </div>
       </div>

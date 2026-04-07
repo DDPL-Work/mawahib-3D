@@ -12,7 +12,7 @@ import {
 function FeatureCard({ feature, index }) {
   const cardRef = useRef(null);
   const isInView = useInView(cardRef, { once: false, amount: 0.2 });
-  
+
   // Mouse tracking motion values
   const mouseX = useMotionValue(0);
   const mouseY = useMotionValue(0);
@@ -43,10 +43,10 @@ function FeatureCard({ feature, index }) {
       onMouseLeave={handleMouseLeave}
       initial={{ opacity: 0, y: 50, rotateX: 20, scale: 0.9 }}
       animate={isInView ? { opacity: 1, y: 0, rotateX: 0, scale: 1 } : { opacity: 0, y: 50 }}
-      transition={{ 
-        duration: 0.8, 
-        delay: index * 0.1, 
-        ease: [0.23, 1, 0.32, 1] 
+      transition={{
+        duration: 0.8,
+        delay: index * 0.1,
+        ease: [0.23, 1, 0.32, 1]
       }}
       style={{
         perspective: "1000px", // Enables 3D space
@@ -72,18 +72,18 @@ function FeatureCard({ feature, index }) {
         }}
       >
         {/* Animated Background Gradient Pulse */}
-        <motion.div 
-           style={{
-             position: "absolute", inset: 0,
-             background: "radial-gradient(circle at center, rgba(59,130,246,0.1) 0%, transparent 70%)",
-             zIndex: -1
-           }}
-           animate={{ opacity: [0.3, 0.6, 0.3] }}
-           transition={{ duration: 4, repeat: Infinity }}
+        <motion.div
+          style={{
+            position: "absolute", inset: 0,
+            background: "radial-gradient(circle at center, rgba(59,130,246,0.1) 0%, transparent 70%)",
+            zIndex: -1
+          }}
+          animate={{ opacity: [0.3, 0.6, 0.3] }}
+          transition={{ duration: 4, repeat: Infinity }}
         />
 
-        <div style={{ 
-          width: 40, height: 40, borderRadius: 12, 
+        <div style={{
+          width: 40, height: 40, borderRadius: 12,
           background: "linear-gradient(135deg, #3b82f6 0%, #1e3a8a 100%)",
           display: "flex", alignItems: "center", justifyContent: "center",
           fontSize: 18, color: "white", fontWeight: "bold",
@@ -92,14 +92,14 @@ function FeatureCard({ feature, index }) {
           {index + 1}
         </div>
 
-        <h3 style={{ 
+        <h3 style={{
           fontSize: 20, fontWeight: 700, color: "#f8fafc",
-          transform: "translateZ(20px)" 
+          transform: "translateZ(20px)"
         }}>
           {feature.title}
         </h3>
-        
-        <p style={{ 
+
+        <p style={{
           color: "#94a3b8", fontSize: 14, lineHeight: 1.6,
           transform: "translateZ(10px)"
         }}>
@@ -122,7 +122,7 @@ function FeatureCard({ feature, index }) {
 function FeaturesSection() {
   const ref = useRef();
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
-  
+
   // Header Parallax & 3D Tilt
   const headerOpacity = useTransform(scrollYProgress, [0, 0.2], [0, 1]);
   const headerScale = useTransform(scrollYProgress, [0, 0.2], [0.8, 1]);
@@ -146,13 +146,13 @@ function FeaturesSection() {
       perspective: "1500px" // Global section perspective
     }}>
       <div style={{ maxWidth: 1280, margin: "0 auto" }}>
-        
-        <motion.div style={{ 
-          opacity: headerOpacity, 
+
+        <motion.div style={{
+          opacity: headerOpacity,
           scale: headerScale,
           rotateX: headerRotateX,
-          textAlign: "center", 
-          marginBottom: "clamp(60px,10vw,90px)" 
+          textAlign: "center",
+          marginBottom: "clamp(60px,10vw,90px)"
         }}>
           <Label>PLATFORM FEATURES</Label>
           <h2 style={{
