@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import {
     ArrowLeft, Search, ChevronLeft, ChevronRight, Copy,
     Check, Eye, RotateCcw, Trash2, AlertCircle, Users,
@@ -499,6 +499,18 @@ export default function InterviewResults({ onClose }) {
         { label: "Pass", value: m.passCount, sub: `Score ≥ ${m.passThreshold}`, color: C.green, icon: CheckCircle2 },
         { label: "Needs Review / Fail", value: `${m.needsReview} / ${m.failed}`, sub: `${m.reviewRange} / < ${m.failThreshold}`, color: C.yellow, icon: AlertCircle },
     ];
+    useEffect(() => {
+        const onKeyDown = (event) => {
+            if (event.key === "Escape") onClose?.();
+        };
+        const previousOverflow = document.body.style.overflow;
+        document.body.style.overflow = "hidden";
+        document.addEventListener("keydown", onKeyDown);
+        return () => {
+            document.removeEventListener("keydown", onKeyDown);
+            document.body.style.overflow = previousOverflow;
+        };
+    }, [onClose]);
 
     return (
         <>
@@ -506,9 +518,22 @@ export default function InterviewResults({ onClose }) {
         @import url('https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=DM+Serif+Display:ital@0;1&display=swap');
         .inter-modal * { box-sizing: border-box; }
         .inter-modal { scrollbar-width: thin; scrollbar-color: rgba(184,149,90,0.2) transparent; }
+        .inter-shell { width: min(1240px, 96vw); max-height: 94vh; }
+        .inter-content { width: 100%; max-width: 1120px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
+        .inter-hero { display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center; }
+        .inter-hero-top { width: 100%; display: flex; justify-content: flex-end; }
         .inter-modal input::placeholder { color: rgba(245,240,235,0.28); }
         .inter-modal input[type="checkbox"] { accent-color: #f0c97a; }
         .inter-modal select option { background: #0d1528; color: #f5f0eb; }
+        @media (max-width: 980px) {
+          .inter-filter-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+        }
+        @media (max-width: 720px) {
+          .inter-shell { width: 96vw; max-height: 96vh; }
+          .inter-content { max-width: 100%; gap: 16px; }
+          .inter-hero-top { justify-content: center; }
+          .inter-filter-grid { grid-template-columns: 1fr !important; }
+        }
         @media (max-width: 1100px) {
           .cand-grid { grid-template-columns: 28px 44px 1fr 110px 120px 130px 80px 80px 110px !important; }
         }
@@ -538,10 +563,9 @@ export default function InterviewResults({ onClose }) {
 
                 {/* Scrollable content panel */}
                 <div
+                    className="inter-shell"
                     style={{
                         position: "relative", zIndex: 1,
-                        width: "min(1360px, 96vw)",
-                        maxHeight: "94vh",
                         overflowY: "auto",
                         borderRadius: 22,
                         border: `1px solid ${C.line}`,
@@ -554,38 +578,39 @@ export default function InterviewResults({ onClose }) {
                         padding: "clamp(16px,2.5vw,32px)",
                     }}
                 >
-                <div style={{ maxWidth: 1360, margin: "0 auto", display: "flex", flexDirection: "column", gap: 20 }}>
+                <div className="inter-content">
 
-                    {/* ── Top bar ── */}
-                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
-                        <div>
+                    {/* Hero Header */}
+                    <div className="inter-hero">
+                        <div className="inter-hero-top">
+                            <button onClick={onClose} style={{
+                                height: 40, padding: "0 18px", borderRadius: 11,
+                                border: `1px solid ${C.line}`, background: "rgba(184,149,90,0.07)",
+                                color: C.inkMuted, fontSize: 13, fontWeight: 600, cursor: "pointer",
+                                display: "flex", alignItems: "center", gap: 7, fontFamily: "'Sora', sans-serif",
+                                transition: "all 0.18s",
+                            }}
+                                onMouseEnter={e => { e.currentTarget.style.borderColor = C.lineStrong; e.currentTarget.style.color = C.inkSoft; }}
+                                onMouseLeave={e => { e.currentTarget.style.borderColor = C.line; e.currentTarget.style.color = C.inkMuted; }}
+                            >
+                                <ArrowLeft size={14} /> Back
+                            </button>
+                        </div>
+                        <div style={{ maxWidth: 760 }}>
                             <div style={{ fontSize: 11, color: C.inkFaint, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 6 }}>
-                                <span style={{ color: C.blue, cursor: "pointer" }}>Dashboard</span>
+                                <span style={{ color: C.blue, cursor: "default" }}>Dashboard</span>
                                 <span style={{ margin: "0 6px", color: C.inkFaint }}>/</span>
                                 <span>Interview Details</span>
                             </div>
-                            <h1 style={{ fontFamily: "'DM Serif Display', serif", fontStyle: "italic", fontSize: "clamp(1.8rem,3.5vw,2.6rem)", color: C.inkWhite, margin: "0 0 4px", lineHeight: 1 }}>
+                            <h1 style={{ fontFamily: "'DM Serif Display', serif", fontStyle: "italic", fontSize: "clamp(1.9rem,3.8vw,3rem)", color: C.inkWhite, margin: "0 0 6px", lineHeight: 1 }}>
                                 Interview Results
                             </h1>
-                            <div style={{ fontSize: 13, color: C.inkMuted }}>
+                            <div style={{ fontSize: 14, color: C.inkMuted }}>
                                 Interview Code: <span style={{ fontFamily: "monospace", color: C.inkSoft, fontWeight: 600 }}>{m.code}</span>
                             </div>
                         </div>
-                        <button onClick={onClose} style={{
-                            height: 40, padding: "0 18px", borderRadius: 11,
-                            border: `1px solid ${C.line}`, background: "rgba(184,149,90,0.07)",
-                            color: C.inkMuted, fontSize: 13, fontWeight: 600, cursor: "pointer",
-                            display: "flex", alignItems: "center", gap: 7, fontFamily: "'Sora', sans-serif",
-                            transition: "all 0.18s",
-                        }}
-                            onMouseEnter={e => { e.currentTarget.style.borderColor = C.lineStrong; e.currentTarget.style.color = C.inkSoft; }}
-                            onMouseLeave={e => { e.currentTarget.style.borderColor = C.line; e.currentTarget.style.color = C.inkMuted; }}
-                        >
-                            <ArrowLeft size={14} /> Back
-                        </button>
                     </div>
-
-                    {/* ── Interview Details card ── */}
+                    {/* Interview Details card */}
                     <div style={{
                         background: C.bgPanel, border: `1px solid ${C.line}`,
                         borderRadius: 22, padding: "20px 22px", backdropFilter: "blur(16px)",
@@ -640,7 +665,7 @@ export default function InterviewResults({ onClose }) {
                     </div>
 
                     {/* ── Interview type tabs ── */}
-                    <div style={{ display: "flex", gap: 4, background: C.bgPanel, border: `1px solid ${C.line}`, borderRadius: 14, padding: 5, backdropFilter: "blur(12px)", alignSelf: "flex-start" }}>
+                    <div style={{ display: "flex", gap: 4, background: C.bgPanel, border: `1px solid ${C.line}`, borderRadius: 14, padding: 5, backdropFilter: "blur(12px)", alignSelf: "center" }}>
                         {INTERVIEW_TABS.map((tab, i) => (
                             <button key={tab} onClick={() => setActiveTab(i)} style={{
                                 height: 36, padding: "0 18px", borderRadius: 10,
@@ -658,7 +683,7 @@ export default function InterviewResults({ onClose }) {
                         background: C.bgPanel, border: `1px solid ${C.line}`,
                         borderRadius: 18, padding: "16px 20px", backdropFilter: "blur(12px)",
                     }}>
-                        <div style={{ display: "grid", gridTemplateColumns: "1fr auto auto auto", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+                        <div className="inter-filter-grid" style={{ display: "grid", gridTemplateColumns: "1fr auto auto auto", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
                             <div>
                                 <div style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: C.inkFaint, marginBottom: 6 }}>Search</div>
                                 <Input value={search} onChange={e => { setSearch(e.target.value); setPage(1); }} placeholder="Search by name, email, or phone…" icon={Search} />
@@ -808,3 +833,6 @@ export default function InterviewResults({ onClose }) {
         </>
     );
 }
+
+
+
