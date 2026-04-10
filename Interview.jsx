@@ -45,9 +45,9 @@ const INITIAL_REQUIREMENTS = [
   { id: 3, requirement: "Strong closing and negotiation skills", weight: 25 },
 ];
 const INITIAL_INTAKE = [
-  { id: 1, description: "Expected Salary", idealAnswer: "e.g. 8,000–12,000 SAR", type: "Text", scoring: "Preferred" },
-  { id: 2, description: "Notice Period", idealAnswer: "e.g. Immediate or ≤ 30 days", type: "Text", scoring: "Preferred" },
-  { id: 3, description: "Gender", idealAnswer: "Optional and role dependent", type: "Text", scoring: "Preferred" },
+  { id: 1, description: "Expected Salary", idealAnswer: "e.g. 8,000–12,000 SAR", type: "Text", scoring: "Preferred", options: [] },
+  { id: 2, description: "Notice Period", idealAnswer: "e.g. Immediate or ≤ 30 days", type: "Text", scoring: "Preferred", options: [] },
+  { id: 3, description: "Gender", idealAnswer: "Optional and role dependent", type: "Text", scoring: "Preferred", options: [] },
 ];
 
 // ─── Shared primitives ────────────────────────────────────────────────────────
@@ -68,7 +68,7 @@ const Input = ({ value, onChange, placeholder, type = "text", min, max, style = 
   />
 );
 
-const Select = ({ value, onChange, children, style = {} }) => (
+const Select = ({ value, onChange, children, style = {}, ...rest }) => (
   <select value={value} onChange={onChange} style={{
     width: "100%", height: 40, padding: "0 12px",
     background: C.bgInput, border: `1px solid ${C.line}`,
@@ -78,6 +78,7 @@ const Select = ({ value, onChange, children, style = {} }) => (
   }}
     onFocus={e => e.target.style.borderColor = C.goldBorder}
     onBlur={e => e.target.style.borderColor = C.line}
+    {...rest}
   >{children}</select>
 );
 
@@ -240,19 +241,39 @@ const STEPS = [
   { id: 4, label: "Review & Launch", icon: Link2 },
 ];
 
-const StepProgress = ({ current }) => (
-  <div style={{
-    display: "flex", alignItems: "center", justifyContent: "center",
-    gap: 0, flexWrap: "nowrap", overflowX: "auto",
-    padding: "0 4px",
-  }}>
+const StepProgress = ({ current, onStepSelect, isStepUnlocked, getStepBlockedReason }) => (
+  <div
+    aria-label="Interview setup steps"
+    style={{
+      display: "flex", alignItems: "center", justifyContent: "center",
+      gap: 0, flexWrap: "nowrap", overflowX: "auto",
+      padding: "0 4px",
+    }}
+  >
     {STEPS.map((step, i) => {
       const done = step.id < current;
       const active = step.id === current;
+      const unlocked = isStepUnlocked ? isStepUnlocked(step.id) : true;
+      const disabled = !active && !unlocked;
       const Icon = step.icon;
+      const blockedReason = getStepBlockedReason ? getStepBlockedReason(step.id) : "";
       return (
         <div key={step.id} style={{ display: "flex", alignItems: "center" }}>
-          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6, padding: "0 8px" }}>
+          <button
+            type="button"
+            aria-current={active ? "step" : undefined}
+            aria-disabled={disabled}
+            disabled={disabled}
+            title={disabled && blockedReason ? blockedReason : `Go to ${step.label}`}
+            onClick={() => onStepSelect?.(step.id)}
+            style={{
+              display: "flex", flexDirection: "column", alignItems: "center", gap: 6,
+              padding: "0 8px", border: "none", background: "transparent",
+              fontFamily: "'Sora', sans-serif",
+              cursor: disabled ? "not-allowed" : "pointer",
+              opacity: disabled ? 0.45 : 1,
+            }}
+          >
             <div style={{
               width: 38, height: 38, borderRadius: "50%",
               display: "grid", placeItems: "center",
@@ -270,7 +291,7 @@ const StepProgress = ({ current }) => (
               color: done ? C.green : active ? C.goldBright : C.inkFaint,
               whiteSpace: "nowrap", transition: "all 0.3s",
             }}>{step.label}</span>
-          </div>
+          </button>
           {i < STEPS.length - 1 && (
             <div style={{
               width: "clamp(24px,4vw,48px)", height: 1.5, flexShrink: 0,
@@ -293,6 +314,7 @@ export default function Interview() {
   const [allowEveryone, setAllowEveryone] = useState(true);
   const [requirements, setRequirements] = useState(INITIAL_REQUIREMENTS);
   const [intakeItems, setIntakeItems] = useState(INITIAL_INTAKE);
+  const [intakeOptionDrafts, setIntakeOptionDrafts] = useState({});
   const [specificTags, setSpecificTags] = useState(["Expected salary", "Years of experience"]);
   const [tagInput, setTagInput] = useState("");
   const [mandatoryQ, setMandatoryQ] = useState("");
@@ -335,8 +357,47 @@ export default function Interview() {
   };
 
   const updateIntake = (id, key, val) => setIntakeItems(p => p.map(r => r.id === id ? { ...r, [key]: val } : r));
-  const addIntake = () => setIntakeItems(p => [...p, { id: Date.now(), description: "", idealAnswer: "", type: "Text", scoring: "Preferred" }]);
-  const removeIntake = (id) => setIntakeItems(p => p.filter(r => r.id !== id));
+  const updateIntakeType = (id, nextType) => {
+    setIntakeItems(p => p.map(r => {
+      if (r.id !== id) return r;
+      if (nextType !== "Single Select") return { ...r, type: nextType };
+      const safeOptions = Array.isArray(r.options) && r.options.length ? r.options : ["Option 1", "Option 2"];
+      const safeIdeal = safeOptions.includes(r.idealAnswer) ? r.idealAnswer : safeOptions[0];
+      return { ...r, type: nextType, options: safeOptions, idealAnswer: safeIdeal };
+    }));
+  };
+  const addIntake = () => setIntakeItems(p => [...p, { id: Date.now(), description: "", idealAnswer: "", type: "Text", scoring: "Preferred", options: [] }]);
+  const removeIntake = (id) => {
+    setIntakeItems(p => p.filter(r => r.id !== id));
+    setIntakeOptionDrafts(d => {
+      const next = { ...d };
+      delete next[id];
+      return next;
+    });
+  };
+  const setIntakeOptionDraft = (id, value) => setIntakeOptionDrafts(d => ({ ...d, [id]: value }));
+  const addIntakeOption = (id, rawValue) => {
+    const value = rawValue.trim();
+    if (!value) return;
+    setIntakeItems(p => p.map(r => {
+      if (r.id !== id) return r;
+      const current = Array.isArray(r.options) ? r.options : [];
+      if (current.some(o => o.toLowerCase() === value.toLowerCase())) return r;
+      const nextOptions = [...current, value];
+      const nextIdeal = nextOptions.includes(r.idealAnswer) ? r.idealAnswer : nextOptions[0];
+      return { ...r, options: nextOptions, idealAnswer: nextIdeal };
+    }));
+    setIntakeOptionDraft(id, "");
+  };
+  const removeIntakeOption = (id, value) => {
+    setIntakeItems(p => p.map(r => {
+      if (r.id !== id) return r;
+      const current = Array.isArray(r.options) ? r.options : [];
+      const nextOptions = current.filter(o => o !== value);
+      const nextIdeal = r.idealAnswer === value ? (nextOptions[0] || "") : r.idealAnswer;
+      return { ...r, options: nextOptions, idealAnswer: nextIdeal };
+    }));
+  };
 
   const addTag = () => {
     const clean = tagInput.trim();
@@ -364,6 +425,12 @@ export default function Interview() {
     cvCode: "DEMOT-F9908C",
     intCode: "DEMO-073298",
   };
+  const formatDateLabel = (value) => {
+    if (!value) return "No end date";
+    const parts = String(value).split("-");
+    if (parts.length !== 3) return value;
+    return `${parts[2]}/${parts[1]}/${parts[0]}`;
+  };
 
   const canProceed = {
     1: form.company && form.jobTitle && form.jd && totalWeight === 100,
@@ -375,10 +442,31 @@ export default function Interview() {
     1: totalWeight !== 100 ? `Weights total ${totalWeight}% — must be 100%` : (!form.company || !form.jobTitle || !form.jd) ? "Fill all required fields" : null,
   };
 
+  const isStepUnlocked = (targetStep) => {
+    if (targetStep <= 1) return true;
+    for (let i = 1; i < targetStep; i += 1) {
+      if (canProceed[i] === false) return false;
+    }
+    return true;
+  };
+
+  const getStepBlockedReason = (targetStep) => {
+    if (targetStep <= 1 || isStepUnlocked(targetStep)) return "";
+    for (let i = 1; i < targetStep; i += 1) {
+      if (canProceed[i] === false) return stepErrors[i] || `Complete step ${i} first`;
+    }
+    return "";
+  };
+
   // Always scroll to top when changing steps
   const goToStep = (n) => {
     window.scrollTo({ top: 0, behavior: "instant" });
     setStep(n);
+  };
+
+  const handleStepSelect = (targetStep) => {
+    if (!isStepUnlocked(targetStep)) return;
+    goToStep(targetStep);
   };
 
   return (
@@ -397,10 +485,45 @@ export default function Interview() {
         }
         input::placeholder, textarea::placeholder { color: rgba(245,240,235,0.28); }
         input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(0.5); cursor: pointer; }
+        .iv-date-input::-webkit-calendar-picker-indicator {
+          opacity: 0;
+          width: 38px;
+          cursor: pointer;
+        }
+        .iv-pair-field {
+          display: grid;
+          grid-template-rows: auto minmax(34px, auto) auto;
+          row-gap: 6px;
+          align-content: start;
+        }
+        .iv-pair-title {
+          font-size: 12.5px;
+          font-weight: 600;
+          color: rgba(245,240,235,0.82);
+          display: flex;
+          align-items: center;
+          gap: 5px;
+          line-height: 1.2;
+        }
+        .iv-pair-optional {
+          color: rgba(245,240,235,0.22);
+          font-weight: 400;
+          font-size: 11.5px;
+        }
+        .iv-pair-hint {
+          font-size: 11.5px;
+          color: rgba(245,240,235,0.22);
+          line-height: 1.5;
+          margin: 0;
+        }
+        .iv-step1-field { display: flex; flex-direction: column; }
+        .iv-step1-head { min-height: 56px; }
         input[type="range"] { accent-color: #f0c97a; cursor: pointer; }
         select option { background: #0d1528; color: #f5f0eb; }
         @media (max-width: 720px) {
           .iv-grid-2 { grid-template-columns: 1fr !important; }
+          .iv-pair-field { grid-template-rows: auto auto auto; }
+          .iv-step1-head { min-height: 0; }
           .iv-req-row { grid-template-columns: 1fr 80px 32px !important; }
           .iv-intake-row { grid-template-columns: 1fr !important; }
         }
@@ -461,7 +584,12 @@ export default function Interview() {
             borderRadius: 18, padding: "18px 12px",
             backdropFilter: "blur(12px)",
           }}>
-            <StepProgress current={step} />
+            <StepProgress
+              current={step}
+              onStepSelect={handleStepSelect}
+              isStepUnlocked={isStepUnlocked}
+              getStepBlockedReason={getStepBlockedReason}
+            />
           </div>
 
           {/* ══════════════════════════════════════════════════════════
@@ -505,20 +633,28 @@ export default function Interview() {
               {/* Company & Role card */}
               <SectionCard icon={FileText} iconColor={C.goldBright} title="Company & Role" subtitle="Basic information about the position being hired for.">
                 <div className="iv-grid-2" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
-                  <div>
-                    <FieldLabel required>Company Name</FieldLabel>
+                  <div className="iv-step1-field">
+                    <div className="iv-step1-head">
+                      <FieldLabel required>Company Name</FieldLabel>
+                    </div>
                     <Input value={form.company} onChange={e => setF("company", e.target.value)} placeholder="e.g. Acme Corp" />
                   </div>
-                  <div>
-                    <FieldLabel required>Job Position</FieldLabel>
+                  <div className="iv-step1-field">
+                    <div className="iv-step1-head">
+                      <FieldLabel required>Job Position</FieldLabel>
+                    </div>
                     <Input value={form.jobTitle} onChange={e => setF("jobTitle", e.target.value)} placeholder="e.g. Sales Executive" />
                   </div>
-                  <div>
-                    <FieldLabel optional>Department</FieldLabel>
+                  <div className="iv-step1-field">
+                    <div className="iv-step1-head">
+                      <FieldLabel optional>Department</FieldLabel>
+                    </div>
                     <Input value={form.department} onChange={e => setF("department", e.target.value)} placeholder="e.g. Sales" />
                   </div>
-                  <div>
-                    <FieldLabel hint="Standard: 45-day retention · Premium: 90-day retention">Campaign Plan</FieldLabel>
+                  <div className="iv-step1-field">
+                    <div className="iv-step1-head">
+                      <FieldLabel hint="Standard: 45-day retention | Premium: 90-day retention">Campaign Plan</FieldLabel>
+                    </div>
                     <Select value={form.plan} onChange={e => setF("plan", e.target.value)}>
                       <option>Standard</option>
                       <option>Premium</option>
@@ -656,14 +792,31 @@ export default function Interview() {
               >
                 <div style={{ opacity: enableCV ? 1 : 0.42, transition: "opacity 0.25s", pointerEvents: enableCV ? "auto" : "none" }}>
 
-                  <div className="iv-grid-2" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 20 }}>
-                    <div>
-                      <FieldLabel optional hint="Limits how many CVs can be submitted through the intake link.">Max CVs Allowed</FieldLabel>
+                  <div className="iv-grid-2" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 20, alignItems: "start" }}>
+                    <div className="iv-pair-field">
+                      <div className="iv-pair-title">
+                        Max CVs Allowed
+                        <span className="iv-pair-optional">(optional)</span>
+                      </div>
+                      <p className="iv-pair-hint">Limits how many CVs can be submitted through the intake link.</p>
                       <Input
                         type="number" min="1" value={form.maxCVs}
                         onChange={e => setF("maxCVs", e.target.value)}
                         placeholder="Leave empty for unlimited (e.g. 100)"
                       />
+                    </div>
+                    <div className="iv-pair-field">
+                      <div className="iv-pair-title">CV Submission End Date</div>
+                      <p className="iv-pair-hint">After this date, the CV submission link stops accepting new submissions.</p>
+                      <div style={{ position: "relative" }}>
+                        <Input
+                          className="iv-date-input"
+                          type="date" value={form.cvEndDate}
+                          onChange={e => setF("cvEndDate", e.target.value)}
+                          style={{ paddingRight: 38 }}
+                        />
+                        <Calendar size={15} color={C.inkFaint} style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }} />
+                      </div>
                     </div>
                   </div>
 
@@ -696,18 +849,6 @@ export default function Interview() {
                     </div>
                   </div>
 
-                  {/* CV End Date */}
-                  <div style={{ marginBottom: 20 }}>
-                    <FieldLabel hint="After this date, the CV submission link will stop accepting new submissions.">CV Submission End Date</FieldLabel>
-                    <div style={{ position: "relative", maxWidth: 320 }}>
-                      <Input
-                        type="date" value={form.cvEndDate}
-                        onChange={e => setF("cvEndDate", e.target.value)}
-                        style={{ paddingRight: 38 }}
-                      />
-                      <Calendar size={15} color={C.inkFaint} style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }} />
-                    </div>
-                  </div>
                   <div style={{ marginBottom: 12 }}>
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14, flexWrap: "wrap", gap: 8 }}>
                       <div>
@@ -729,37 +870,132 @@ export default function Interview() {
                         ))}
                       </div>
 
-                      {intakeItems.map((item, i) => (
-                        <div key={item.id} className="iv-intake-row" style={{
-                          display: "grid", gridTemplateColumns: "1.3fr 1.3fr 100px 100px 36px",
-                          padding: "10px 14px", gap: 10, alignItems: "center",
-                          borderBottom: i < intakeItems.length - 1 ? `1px solid ${C.line}` : "none",
-                        }}>
-                          <Input value={item.description} onChange={e => updateIntake(item.id, "description", e.target.value)} placeholder="e.g. Work permit" />
-                          <Input value={item.idealAnswer} onChange={e => updateIntake(item.id, "idealAnswer", e.target.value)} placeholder="e.g. Yes, valid" />
-                          <Select value={item.type} onChange={e => updateIntake(item.id, "type", e.target.value)}>
-                            <option>Text</option>
-                            <option>Single Select</option>
-                          </Select>
-                          <Select
-                            value={item.scoring}
-                            onChange={e => updateIntake(item.id, "scoring", e.target.value)}
-                            style={{ borderColor: item.scoring === "Must" ? C.redBorder : C.line, color: item.scoring === "Must" ? C.red : C.inkSoft }}
-                          >
-                            <option>Preferred</option>
-                            <option>Must</option>
-                          </Select>
-                          <button onClick={() => removeIntake(item.id)} style={{
-                            width: 32, height: 32, borderRadius: 8,
-                            border: `1px solid ${C.line}`, background: "transparent",
-                            color: C.inkFaint, cursor: "pointer", display: "grid", placeItems: "center",
-                            transition: "all 0.18s",
-                          }}
-                            onMouseEnter={e => { e.currentTarget.style.background = C.redDim; e.currentTarget.style.borderColor = C.redBorder; e.currentTarget.style.color = C.red; }}
-                            onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.borderColor = C.line; e.currentTarget.style.color = C.inkFaint; }}
-                          ><Trash2 size={13} /></button>
-                        </div>
-                      ))}
+                      {intakeItems.map((item, i) => {
+                        const options = Array.isArray(item.options) ? item.options : [];
+                        const hasSingleSelect = item.type === "Single Select";
+                        const draft = intakeOptionDrafts[item.id] || "";
+                        return (
+                          <div key={item.id} style={{ borderBottom: i < intakeItems.length - 1 ? `1px solid ${C.line}` : "none" }}>
+                            <div className="iv-intake-row" style={{
+                              display: "grid", gridTemplateColumns: "1.3fr 1.3fr 100px 100px 36px",
+                              padding: "10px 14px", gap: 10, alignItems: "center",
+                            }}>
+                              <Input value={item.description} onChange={e => updateIntake(item.id, "description", e.target.value)} placeholder="e.g. Work permit" />
+                              {hasSingleSelect ? (
+                                <Input value={item.idealAnswer || ""} readOnly placeholder="Configure in options box below" />
+                              ) : (
+                                <Input value={item.idealAnswer} onChange={e => updateIntake(item.id, "idealAnswer", e.target.value)} placeholder="e.g. Yes, valid" />
+                              )}
+                              <Select value={item.type} onChange={e => updateIntakeType(item.id, e.target.value)}>
+                                <option>Text</option>
+                                <option>Single Select</option>
+                              </Select>
+                              <Select
+                                value={item.scoring}
+                                onChange={e => updateIntake(item.id, "scoring", e.target.value)}
+                                style={{ borderColor: item.scoring === "Must" ? C.redBorder : C.line, color: item.scoring === "Must" ? C.red : C.inkSoft }}
+                              >
+                                <option>Preferred</option>
+                                <option>Must</option>
+                              </Select>
+                              <button onClick={() => removeIntake(item.id)} style={{
+                                width: 32, height: 32, borderRadius: 8,
+                                border: `1px solid ${C.line}`, background: "transparent",
+                                color: C.inkFaint, cursor: "pointer", display: "grid", placeItems: "center",
+                                transition: "all 0.18s",
+                              }}
+                                onMouseEnter={e => { e.currentTarget.style.background = C.redDim; e.currentTarget.style.borderColor = C.redBorder; e.currentTarget.style.color = C.red; }}
+                                onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.borderColor = C.line; e.currentTarget.style.color = C.inkFaint; }}
+                              ><Trash2 size={13} /></button>
+                            </div>
+
+                            {hasSingleSelect && (
+                              <div style={{ padding: "0 14px 12px" }}>
+                                <div style={{
+                                  background: "rgba(6,10,20,0.6)",
+                                  border: `1px solid ${C.line}`,
+                                  borderRadius: 10,
+                                  padding: 12,
+                                }}>
+                                  <div style={{ fontSize: 12.5, fontWeight: 700, color: C.inkWhite, marginBottom: 4 }}>
+                                    Single Select Configuration
+                                  </div>
+                                  <div style={{ fontSize: 11.5, color: C.inkFaint, marginBottom: 10 }}>
+                                    Add selectable values, then choose which one counts as the ideal answer.
+                                  </div>
+
+                                  <div style={{ display: "grid", gridTemplateColumns: "1.4fr 1fr auto", gap: 8, alignItems: "center", marginBottom: 10 }}>
+                                    <Input
+                                      value={draft}
+                                      onChange={e => setIntakeOptionDraft(item.id, e.target.value)}
+                                      onKeyDown={e => {
+                                        if (e.key === "Enter" || e.key === ",") {
+                                          e.preventDefault();
+                                          addIntakeOption(item.id, draft);
+                                        }
+                                      }}
+                                      placeholder='Add option and press Enter (e.g. "Male")'
+                                    />
+                                    <Select
+                                      value={item.idealAnswer || ""}
+                                      onChange={e => updateIntake(item.id, "idealAnswer", e.target.value)}
+                                      disabled={options.length === 0}
+                                    >
+                                      {options.length === 0 ? (
+                                        <option value="">No options yet</option>
+                                      ) : (
+                                        options.map(option => <option key={option} value={option}>{option}</option>)
+                                      )}
+                                    </Select>
+                                    <GhostBtn small icon={Plus} onClick={() => addIntakeOption(item.id, draft)} primary>Add</GhostBtn>
+                                  </div>
+
+                                  <div style={{ display: "flex", flexWrap: "wrap", gap: 7 }}>
+                                    {options.length === 0 ? (
+                                      <span style={{ fontSize: 11.5, color: C.inkFaint }}>No values added yet.</span>
+                                    ) : options.map(option => (
+                                      <span key={option} style={{
+                                        display: "inline-flex", alignItems: "center", gap: 6,
+                                        borderRadius: 999, padding: "4px 10px",
+                                        background: option === item.idealAnswer ? C.greenDim : "rgba(255,255,255,0.04)",
+                                        border: `1px solid ${option === item.idealAnswer ? C.greenBorder : C.line}`,
+                                        color: option === item.idealAnswer ? C.green : C.inkSoft,
+                                        fontSize: 11.5, fontWeight: option === item.idealAnswer ? 700 : 500,
+                                        cursor: "pointer",
+                                      }}>
+                                        <button
+                                          type="button"
+                                          onClick={() => updateIntake(item.id, "idealAnswer", option)}
+                                          style={{
+                                            border: "none", background: "none", padding: 0,
+                                            color: "inherit", cursor: "pointer",
+                                            fontSize: "inherit", fontWeight: "inherit",
+                                            fontFamily: "'Sora', sans-serif",
+                                          }}
+                                          aria-label={`Set ${option} as ideal answer`}
+                                        >
+                                          {option}
+                                        </button>
+                                        <button
+                                          type="button"
+                                          onClick={() => removeIntakeOption(item.id, option)}
+                                          style={{
+                                            border: "none", background: "none", padding: 0,
+                                            color: "inherit", cursor: "pointer", display: "grid", placeItems: "center",
+                                          }}
+                                          aria-label={`Remove ${option}`}
+                                        >
+                                          <X size={12} />
+                                        </button>
+                                      </span>
+                                    ))}
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
                     </div>
 
                     <div style={{ marginTop: 12 }}>
@@ -813,26 +1049,33 @@ export default function Interview() {
                 <div style={{ opacity: enableInterview ? 1 : 0.42, transition: "opacity 0.25s", pointerEvents: enableInterview ? "auto" : "none" }}>
 
                   {/* Core settings */}
-                  <div className="iv-grid-2" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 20 }}>
-                    <div>
-                      <FieldLabel>Interview Level</FieldLabel>
+                  <div className="iv-grid-2" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 20, alignItems: "start" }}>
+                    <div className="iv-step1-field">
+                      <div className="iv-step1-head">
+                        <FieldLabel>Interview Level</FieldLabel>
+                      </div>
                       <Select value={form.interviewLevel} onChange={e => setF("interviewLevel", e.target.value)}>
                         <option>Junior Level</option>
                         <option>Mid Level</option>
                         <option>Senior Level</option>
                       </Select>
                     </div>
-                    <div>
-                      <FieldLabel hint="Number of questions the AI will ask each candidate.">Number of Questions</FieldLabel>
+                    <div className="iv-step1-field">
+                      <div className="iv-step1-head">
+                        <FieldLabel hint="Number of questions the AI will ask each candidate.">Number of Questions</FieldLabel>
+                      </div>
                       <Input
                         type="number" min="1" max="30" value={form.questionCount}
                         onChange={e => setF("questionCount", e.target.value)}
                       />
                     </div>
-                    <div>
-                      <FieldLabel hint="After this date, the interview link will stop accepting new entries.">Interview End Date</FieldLabel>
+                    <div className="iv-step1-field">
+                      <div className="iv-step1-head">
+                        <FieldLabel hint="After this date, the interview link will stop accepting new entries.">Interview End Date</FieldLabel>
+                      </div>
                       <div style={{ position: "relative" }}>
                         <Input
+                          className="iv-date-input"
                           type="date" value={form.interviewEndDate}
                           onChange={e => setF("interviewEndDate", e.target.value)}
                           style={{ paddingRight: 38 }}
@@ -840,8 +1083,10 @@ export default function Interview() {
                         <Calendar size={15} color={C.inkFaint} style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }} />
                       </div>
                     </div>
-                    <div>
-                      <FieldLabel>Interview Language</FieldLabel>
+                    <div className="iv-step1-field">
+                      <div className="iv-step1-head">
+                        <FieldLabel>Interview Language</FieldLabel>
+                      </div>
                       <Select value={form.language} onChange={e => setF("language", e.target.value)}>
                         <option>English</option>
                         <option>Arabic</option>
@@ -1211,3 +1456,6 @@ export default function Interview() {
     </>
   );
 }
+
+
+

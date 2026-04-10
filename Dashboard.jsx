@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef, useEffect } from "react";
+﻿import { useState, useMemo, useRef, useEffect } from "react";
 import {
   Plus, Search, Settings, LogOut, Clock, Copy, ExternalLink,
   BarChart2, Users, CheckCircle2, ArrowRight, MoreHorizontal,
@@ -9,6 +9,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import CVResults from "./resume";
 import InterviewResults from "./Inter";
+import { getPaginationWindow, MIN_TABLE_ROWS, paginateItems } from "./tablePagination";
 
 // ─── Design Tokens ────────────────────────────────────────────────────────────
 const C = {
@@ -65,15 +66,88 @@ const TAG_COLORS = {
   "Language": { bg: C.yellowDim, border: "rgba(227,196,102,0.3)", text: C.yellow },
 };
 
-const CAMPAIGNS = [{
-  id: "demo", code: "DEMO-073298",
-  title: "B2B Sales Representative", company: "Demo Company",
-  created: "Mar 30, 2026", status: "active",
-  applicants: 108, interviewed: 28, shortlisted: 12,
-  intakeCode: "DEMOT-F9908C",
-  cvEnd: "No end date", interviewEnd: "No end date",
-  accessType: "Open access", language: "EN",
-}];
+const CAMPAIGNS = [
+  {
+    id: "demo",
+    code: "DEMO-073298",
+    title: "B2B Sales Representative",
+    company: "Demo Company",
+    created: "Mar 30, 2026",
+    status: "active",
+    applicants: 108,
+    interviewed: 28,
+    shortlisted: 12,
+    intakeCode: "DEMOT-F9908C",
+    cvEnd: "No end date",
+    interviewEnd: "No end date",
+    accessType: "Open access",
+    language: "EN",
+  },
+  {
+    id: "finops-0412",
+    code: "FIN-041231",
+    title: "Finance Operations Analyst",
+    company: "Northstar Holdings",
+    created: "Apr 02, 2026",
+    status: "active",
+    applicants: 94,
+    interviewed: 24,
+    shortlisted: 10,
+    intakeCode: "FINTK-0412A",
+    cvEnd: "Apr 28, 2026",
+    interviewEnd: "May 05, 2026",
+    accessType: "Open access",
+    language: "EN",
+  },
+  {
+    id: "csm-emea",
+    code: "CSM-114920",
+    title: "Customer Success Manager",
+    company: "Orbit SaaS",
+    created: "Apr 01, 2026",
+    status: "active",
+    applicants: 76,
+    interviewed: 18,
+    shortlisted: 7,
+    intakeCode: "CSMTK-1149",
+    cvEnd: "Apr 24, 2026",
+    interviewEnd: "Apr 30, 2026",
+    accessType: "Invite only",
+    language: "EN",
+  },
+  {
+    id: "pmm-ksa",
+    code: "PMM-552018",
+    title: "Product Marketing Specialist",
+    company: "Sahara Cloud",
+    created: "Mar 28, 2026",
+    status: "paused",
+    applicants: 63,
+    interviewed: 15,
+    shortlisted: 6,
+    intakeCode: "PMMTK-5520",
+    cvEnd: "Paused",
+    interviewEnd: "Paused",
+    accessType: "Open access",
+    language: "AR",
+  },
+  {
+    id: "hrbp-gcc",
+    code: "HRB-843512",
+    title: "HR Business Partner",
+    company: "Apex Industrial",
+    created: "Mar 27, 2026",
+    status: "active",
+    applicants: 88,
+    interviewed: 21,
+    shortlisted: 8,
+    intakeCode: "HRBTK-8435",
+    cvEnd: "Apr 26, 2026",
+    interviewEnd: "May 03, 2026",
+    accessType: "Open access",
+    language: "EN",
+  },
+];
 
 const FUNNEL = [
   { label: "Invited", value: 108, pct: 100, color: C.blue },
@@ -93,6 +167,10 @@ const CV_RESULTS = [
   { name: "Khalid Ibrahim", score: 44, status: "unsuitable", gender: "M", exp: "1 yr", match: "Low" },
   { name: "Fatima Zahra", score: 38, status: "unsuitable", gender: "F", exp: "0 yrs", match: "Low" },
   { name: "Yousef Al-Mutairi", score: 31, status: "unsuitable", gender: "M", exp: "2 yrs", match: "Low" },
+  { name: "Mariam Haddad", score: 86, status: "suitable", gender: "F", exp: "7 yrs", match: "High" },
+  { name: "Rashed Al-Harbi", score: 74, status: "suitable", gender: "M", exp: "4 yrs", match: "High" },
+  { name: "Dana Qassem", score: 55, status: "suitable", gender: "F", exp: "2 yrs", match: "Med" },
+  { name: "Sultan Aziz", score: 46, status: "unsuitable", gender: "M", exp: "3 yrs", match: "Low" },
 ];
 
 const CV_STATS = {
@@ -127,7 +205,7 @@ const StatusDot = ({ status }) => {
       {status === "active" ? "Active" : "Paused"}
     </span>
   );
-};
+}; 
 
 const Divider = () => (
   <div style={{ width: "100%", height: 1, background: C.line, flexShrink: 0 }} />
@@ -459,6 +537,78 @@ const IconBtn = ({ children, onClick, title, active }) => (
   >{children}</button>
 );
 
+const DashboardTablePagination = ({ page, totalPages, startIndex, endIndex, totalItems, itemLabel, onPageChange }) => {
+  const pageNumbers = getPaginationWindow(page, totalPages);
+  const summary = totalItems
+    ? `Showing ${startIndex}-${endIndex} of ${totalItems} ${itemLabel}`
+    : `No ${itemLabel} available`;
+
+  return (
+    <div style={{
+      padding: "14px 18px",
+      borderTop: `1px solid ${C.line}`,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "space-between",
+      gap: 12,
+      flexWrap: "wrap",
+      background: "rgba(255,255,255,0.01)",
+    }}>
+      <div style={{ fontSize: 12.5, color: C.inkMuted }}>{summary}</div>
+      <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+        {[
+          { key: "prev", label: "Prev", disabled: page === 1, targetPage: page - 1 },
+          ...pageNumbers.map((pageNumber) => ({
+            key: `page-${pageNumber}`,
+            label: String(pageNumber),
+            disabled: false,
+            targetPage: pageNumber,
+            active: pageNumber === page,
+          })),
+          { key: "next", label: "Next", disabled: page === totalPages, targetPage: page + 1 },
+        ].map(({ key, label, disabled, targetPage, active }) => (
+          <button
+            key={key}
+            type="button"
+            disabled={disabled}
+            aria-label={active ? `Current page, page ${label}` : `Go to page ${label}`}
+            onClick={() => onPageChange(targetPage)}
+            style={{
+              minWidth: 36,
+              height: 34,
+              padding: "0 12px",
+              borderRadius: 9,
+              border: `1px solid ${active ? C.goldBorder : C.line}`,
+              background: active ? C.goldDim : "transparent",
+              color: active ? C.goldBright : disabled ? C.inkFaint : C.inkMuted,
+              cursor: disabled ? "not-allowed" : "pointer",
+              fontSize: 12.5,
+              fontWeight: 600,
+              fontFamily: "'Sora', sans-serif",
+              opacity: disabled ? 0.45 : 1,
+              transition: "all 0.18s ease",
+            }}
+            onMouseEnter={(e) => {
+              if (disabled || active) return;
+              e.currentTarget.style.borderColor = C.goldBorder;
+              e.currentTarget.style.color = C.inkSoft;
+              e.currentTarget.style.background = C.goldDim;
+            }}
+            onMouseLeave={(e) => {
+              if (disabled || active) return;
+              e.currentTarget.style.borderColor = C.line;
+              e.currentTarget.style.color = C.inkMuted;
+              e.currentTarget.style.background = "transparent";
+            }}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+};
+
 // ─── Navbar ───────────────────────────────────────────────────────────────────
 const Navbar = () => (
   <nav style={{
@@ -475,8 +625,25 @@ const Navbar = () => (
 // ─── CV Results Panel ─────────────────────────────────────────────────────────
 const CVResultsPanel = ({ campaign }) => {
   const [view, setView] = useState("overview"); // overview | candidates
+  const [candidatePage, setCandidatePage] = useState(1);
 
   const maxBarCount = Math.max(...CV_STATS.scoreRanges.map(r => r.count));
+  const candidatePagination = useMemo(
+    () => paginateItems(CV_RESULTS, candidatePage, MIN_TABLE_ROWS),
+    [candidatePage]
+  );
+
+  useEffect(() => {
+    if (candidatePage !== candidatePagination.currentPage) {
+      setCandidatePage(candidatePagination.currentPage);
+    }
+  }, [candidatePage, candidatePagination.currentPage]);
+
+  useEffect(() => {
+    if (view === "candidates") {
+      setCandidatePage(1);
+    }
+  }, [view]);
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
@@ -609,11 +776,11 @@ const CVResultsPanel = ({ campaign }) => {
             ))}
           </div>
 
-          {CV_RESULTS.map((r, i) => (
+          {candidatePagination.pageItems.map((r, i) => (
             <div key={i} style={{
               display: "grid", gridTemplateColumns: "1fr 52px 50px 50px",
               padding: "11px 14px",
-              borderBottom: i < CV_RESULTS.length - 1 ? `1px solid ${C.line}` : "none",
+              borderBottom: i < candidatePagination.pageItems.length - 1 ? `1px solid ${C.line}` : "none",
               background: r.status === "suitable" ? "rgba(57,201,143,0.03)" : "transparent",
               alignItems: "center",
             }}>
@@ -641,7 +808,17 @@ const CVResultsPanel = ({ campaign }) => {
             </div>
           ))}
 
-          <div style={{ padding: "10px 14px", borderTop: `1px solid ${C.line}`, background: "rgba(255,255,255,0.01)" }}>
+          <DashboardTablePagination
+            page={candidatePagination.currentPage}
+            totalPages={candidatePagination.totalPages}
+            startIndex={candidatePagination.startIndex}
+            endIndex={candidatePagination.endIndex}
+            totalItems={candidatePagination.totalItems}
+            itemLabel="candidates"
+            onPageChange={setCandidatePage}
+          />
+
+          <div style={{ display: "none" }}>
             <span style={{ fontSize: 11.5, color: C.inkFaint }}>Showing 8 of {CV_STATS.total} candidates · </span>
             <span style={{ fontSize: 11.5, color: C.goldBright, cursor: "pointer", fontWeight: 600 }}>View all →</span>
           </div>
@@ -1321,10 +1498,21 @@ const CreateModal = ({ onClose }) => {
 // ─── Campaign Table ───────────────────────────────────────────────────────────
 const CampaignTable = ({ onSelect, selected, onInterviewResults }) => {
   const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
   const filtered = useMemo(() => CAMPAIGNS.filter(c =>
     c.title.toLowerCase().includes(search.toLowerCase()) ||
     c.company.toLowerCase().includes(search.toLowerCase())
   ), [search]);
+  const pagination = useMemo(
+    () => paginateItems(filtered, page, MIN_TABLE_ROWS),
+    [filtered, page]
+  );
+
+  useEffect(() => {
+    if (page !== pagination.currentPage) {
+      setPage(pagination.currentPage);
+    }
+  }, [page, pagination.currentPage]);
 
   return (
     <div style={{ background: C.bgPanel, border: `1px solid ${C.line}`, borderRadius: 22, overflow: "hidden", backdropFilter: "blur(12px)" }}>
@@ -1335,7 +1523,7 @@ const CampaignTable = ({ onSelect, selected, onInterviewResults }) => {
         </div>
         <div style={{ position: "relative", flexShrink: 0 }}>
           <Search size={14} color={C.inkFaint} style={{ position: "absolute", left: 11, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }} />
-          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search campaigns…" style={{
+          <input value={search} onChange={e => { setSearch(e.target.value); setPage(1); }} placeholder="Search campaigns..." style={{
             height: 36, width: 220, paddingLeft: 32, paddingRight: 12,
             background: C.bgInput, border: `1px solid ${C.line}`, borderRadius: 10,
             color: C.inkSoft, fontSize: 13, outline: "none", fontFamily: "'Sora', sans-serif", transition: "border-color 0.18s",
@@ -1345,46 +1533,75 @@ const CampaignTable = ({ onSelect, selected, onInterviewResults }) => {
           />
         </div>
       </div>
-      <div style={{ display: "grid", gridTemplateColumns: "2.2fr 0.9fr 0.9fr 0.9fr 0.9fr 90px", padding: "10px 22px", borderBottom: `1px solid ${C.line}`, background: "rgba(255,255,255,0.015)" }}>
-        {["Campaign", "Status", "Applicants", "Interviewed", "Shortlisted", "Actions"].map(h => (
-          <div key={h} style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: C.inkFaint }}>{h}</div>
-        ))}
-      </div>
-      {filtered.map(c => {
-        const isSel = selected === c.id;
-        return (
-          <div key={c.id} onClick={() => onSelect(c.id)} style={{
-            display: "grid", gridTemplateColumns: "2.2fr 0.9fr 0.9fr 0.9fr 0.9fr 90px",
-            padding: "16px 22px", borderBottom: `1px solid ${C.line}`, cursor: "pointer",
-            background: isSel ? "rgba(95,158,255,0.05)" : "transparent",
-            borderLeft: `2px solid ${isSel ? C.blue : "transparent"}`, transition: "all 0.18s ease",
-            alignItems: "center",
-          }}
-            onMouseEnter={e => { if (!isSel) e.currentTarget.style.background = "rgba(184,149,90,0.04)"; }}
-            onMouseLeave={e => { if (!isSel) e.currentTarget.style.background = "transparent"; }}
-          >
-            <div>
-              <div style={{ fontSize: 14, fontWeight: 600, color: C.inkWhite, marginBottom: 3 }}>{c.title}</div>
-              <div style={{ fontSize: 12, color: C.inkMuted }}>{c.company} · <span style={{ fontFamily: "monospace" }}>{c.code}</span></div>
-              <div style={{ fontSize: 11, color: C.inkFaint, marginTop: 2, display: "flex", alignItems: "center", gap: 4 }}>
-                <Clock size={9} /> Created {c.created}
-              </div>
-            </div>
-            <div><StatusDot status={c.status} /></div>
-            {[c.applicants, c.interviewed, c.shortlisted].map((val, i) => (
-              <div key={i}>
-                <span style={{ fontSize: 16, fontWeight: 600, color: C.inkSoft, fontFamily: "'DM Serif Display', serif" }}>{val}</span>
-              </div>
+      <div style={{ overflowX: "auto" }}>
+        <div style={{ minWidth: 940 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "2.2fr 0.9fr 0.9fr 0.9fr 0.9fr 90px", padding: "10px 22px", borderBottom: `1px solid ${C.line}`, background: "rgba(255,255,255,0.015)" }}>
+            {["Campaign", "Status", "Applicants", "Interviewed", "Shortlisted", "Actions"].map(h => (
+              <div key={h} style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: C.inkFaint }}>{h}</div>
             ))}
-            <div style={{ display: "flex", gap: 6 }} onClick={e => e.stopPropagation()}>
-              <IconBtn title="Interview Results" onClick={() => onInterviewResults && onInterviewResults(c.id)}><BarChart2 size={14} /></IconBtn>
-              <IconBtn title="More" onClick={() => onSelect(c.id)}><MoreHorizontal size={14} /></IconBtn>
-            </div>
           </div>
-        );
-      })}
+
+          {pagination.pageItems.map(c => {
+            const isSel = selected === c.id;
+            return (
+              <div
+                key={c.id}
+                role="button"
+                tabIndex={0}
+                onClick={() => onSelect(c.id)}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter" || event.key === " ") {
+                    event.preventDefault();
+                    onSelect(c.id);
+                  }
+                }}
+                style={{
+                  display: "grid", gridTemplateColumns: "2.2fr 0.9fr 0.9fr 0.9fr 0.9fr 90px",
+                  padding: "16px 22px", borderBottom: `1px solid ${C.line}`, cursor: "pointer",
+                  background: isSel ? "rgba(95,158,255,0.05)" : "transparent",
+                  borderLeft: `2px solid ${isSel ? C.blue : "transparent"}`, transition: "all 0.18s ease",
+                  alignItems: "center",
+                  outline: "none",
+                }}
+                onMouseEnter={e => { if (!isSel) e.currentTarget.style.background = "rgba(184,149,90,0.04)"; }}
+                onMouseLeave={e => { if (!isSel) e.currentTarget.style.background = "transparent"; }}
+              >
+                <div>
+                  <div style={{ fontSize: 14, fontWeight: 600, color: C.inkWhite, marginBottom: 3 }}>{c.title}</div>
+                  <div style={{ fontSize: 12, color: C.inkMuted }}>{c.company} · <span style={{ fontFamily: "monospace" }}>{c.code}</span></div>
+                  <div style={{ fontSize: 11, color: C.inkFaint, marginTop: 2, display: "flex", alignItems: "center", gap: 4 }}>
+                    <Clock size={9} /> Created {c.created}
+                  </div>
+                </div>
+                <div><StatusDot status={c.status} /></div>
+                {[c.applicants, c.interviewed, c.shortlisted].map((val, i) => (
+                  <div key={i}>
+                    <span style={{ fontSize: 16, fontWeight: 600, color: C.inkSoft, fontFamily: "'DM Serif Display', serif" }}>{val}</span>
+                  </div>
+                ))}
+                <div style={{ display: "flex", gap: 6 }} onClick={e => e.stopPropagation()}>
+                  <IconBtn title="Interview Results" onClick={() => onInterviewResults && onInterviewResults(c.id)}><BarChart2 size={14} /></IconBtn>
+                  <IconBtn title="More" onClick={() => onSelect(c.id)}><MoreHorizontal size={14} /></IconBtn>
+                </div>
+              </div>
+            );
+          })}
+
+        </div>
+      </div>
       {filtered.length === 0 && (
         <div style={{ padding: "40px 22px", textAlign: "center", color: C.inkMuted, fontSize: 14 }}>No campaigns match your search.</div>
+      )}
+      {filtered.length > 0 && (
+        <DashboardTablePagination
+          page={pagination.currentPage}
+          totalPages={pagination.totalPages}
+          startIndex={pagination.startIndex}
+          endIndex={pagination.endIndex}
+          totalItems={pagination.totalItems}
+          itemLabel="campaigns"
+          onPageChange={setPage}
+        />
       )}
     </div>
   );
@@ -1396,6 +1613,25 @@ export default function Dashboard() {
   const [selectedId, setSelectedId] = useState(null);
   const [showInterModal, setShowInterModal] = useState(false);
   const selectedCampaign = CAMPAIGNS.find(c => c.id === selectedId);
+  const dashboardTotals = useMemo(() => CAMPAIGNS.reduce((summary, campaign) => ({
+    campaigns: summary.campaigns + 1,
+    activeCampaigns: summary.activeCampaigns + (campaign.status === "active" ? 1 : 0),
+    applicants: summary.applicants + campaign.applicants,
+    interviewed: summary.interviewed + campaign.interviewed,
+    shortlisted: summary.shortlisted + campaign.shortlisted,
+  }), {
+    campaigns: 0,
+    activeCampaigns: 0,
+    applicants: 0,
+    interviewed: 0,
+    shortlisted: 0,
+  }), []);
+  const interviewRate = dashboardTotals.applicants
+    ? Math.round((dashboardTotals.interviewed / dashboardTotals.applicants) * 100)
+    : 0;
+  const shortlistRate = dashboardTotals.applicants
+    ? Math.round((dashboardTotals.shortlisted / dashboardTotals.applicants) * 100)
+    : 0;
 
   return (
     <>
@@ -1470,10 +1706,10 @@ export default function Dashboard() {
         {/* Stats */}
         <div className="stats-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 12 }}>
           {[
-            { label: "Total Campaigns", value: "1", sub: "1 active", icon: FileText, color: C.blue },
-            { label: "Total Applicants", value: "108", sub: "This month", icon: Users, color: C.goldBright },
-            { label: "Interviewed", value: "28", sub: "26% of total", icon: MessageSquare, color: C.green },
-            { label: "Shortlisted", value: "12", sub: "11% of total", icon: TrendingUp, color: C.yellow },
+            { label: "Total Campaigns", value: String(dashboardTotals.campaigns), sub: `${dashboardTotals.activeCampaigns} active`, icon: FileText, color: C.blue },
+            { label: "Total Applicants", value: String(dashboardTotals.applicants), sub: "Across all campaigns", icon: Users, color: C.goldBright },
+            { label: "Interviewed", value: String(dashboardTotals.interviewed), sub: `${interviewRate}% of total`, icon: MessageSquare, color: C.green },
+            { label: "Shortlisted", value: String(dashboardTotals.shortlisted), sub: `${shortlistRate}% of total`, icon: TrendingUp, color: C.yellow },
           ].map(({ label, value, sub, icon: Icon, color }) => (
             <div key={label} style={{
               background: C.bgPanel, border: `1px solid ${C.line}`,
@@ -1515,7 +1751,7 @@ export default function Dashboard() {
 
         {/* Circular Dashboard Insights */}
         {!selectedCampaign && (
-          <DashboardCircularInsights campaign={CAMPAIGNS[0]} onCreateCampaign={() => setShowModal(true)} />
+          <DashboardCircularInsights campaign={selectedCampaign || CAMPAIGNS[0]} onCreateCampaign={() => setShowModal(true)} />
         )}
       </main>
 

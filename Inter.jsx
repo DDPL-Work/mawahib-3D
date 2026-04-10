@@ -5,6 +5,7 @@ import {
     BarChart2, CheckCircle2, XCircle, Clock, Filter,
     ChevronDown, Sparkles, Globe, MoreHorizontal,
 } from "lucide-react";
+import { getPaginationWindow, paginateItems } from "./tablePagination";
 
 // ─── Design Tokens ────────────────────────────────────────────────────────────
 const C = {
@@ -91,6 +92,14 @@ const CANDIDATES = [
     { id: 2, num: 2, initials: "YK", name: "Yousef Khalid", email: "yousef.demo@example.com", phone: "0500000003", session: "DEMO-SESSION-003", started: "Apr 07, 2026, 07:10 AM", status: "Completed", score: 62, rank: null, verdict: "pass" },
     { id: 3, num: 3, initials: "MS", name: "Mona Saleh", email: "mona.demo@example.com", phone: "0500000002", session: "DEMO-SESSION-002", started: "Apr 07, 2026, 06:10 AM", status: "Completed", score: 74, rank: null, verdict: "pass" },
     { id: 4, num: 4, initials: "AA", name: "Ahmad Alotaibi", email: "ahmad.demo@example.com", phone: "0500000001", session: "DEMO-SESSION-001", started: "Apr 07, 2026, 05:10 AM", status: "Completed", score: 88, rank: null, verdict: "pass" },
+    { id: 5, num: 5, initials: "LH", name: "Layan Hasan", email: "layan.demo@example.com", phone: "0500000005", session: "DEMO-SESSION-005", started: "Apr 07, 2026, 09:15 AM", status: "Completed", score: 68, rank: null, verdict: "review" },
+    { id: 6, num: 6, initials: "RK", name: "Rashed Kareem", email: "rashed.demo@example.com", phone: "0500000006", session: "DEMO-SESSION-006", started: "Apr 07, 2026, 09:45 AM", status: "Completed", score: 83, rank: null, verdict: "pass" },
+    { id: 7, num: 7, initials: "NF", name: "Noura Faris", email: "noura.demo@example.com", phone: "0500000007", session: "DEMO-SESSION-007", started: "Apr 07, 2026, 10:05 AM", status: "Completed", score: 77, rank: null, verdict: "pass" },
+    { id: 8, num: 8, initials: "OB", name: "Omar Bashir", email: "omar.demo@example.com", phone: "0500000008", session: "DEMO-SESSION-008", started: "Apr 07, 2026, 10:25 AM", status: "Completed", score: 39, rank: null, verdict: "fail" },
+    { id: 9, num: 9, initials: "DM", name: "Dana Mahmoud", email: "dana.demo@example.com", phone: "0500000009", session: "DEMO-SESSION-009", started: "Apr 07, 2026, 10:55 AM", status: "Completed", score: 72, rank: null, verdict: "pass" },
+    { id: 10, num: 10, initials: "FA", name: "Faisal Amer", email: "faisal.demo@example.com", phone: "0500000010", session: "DEMO-SESSION-010", started: "Apr 07, 2026, 11:20 AM", status: "Completed", score: 81, rank: null, verdict: "pass" },
+    { id: 11, num: 11, initials: "HM", name: "Huda Mansour", email: "huda.demo@example.com", phone: "0500000011", session: "DEMO-SESSION-011", started: "Apr 07, 2026, 11:40 AM", status: "Completed", score: 66, rank: null, verdict: "review" },
+    { id: 12, num: 12, initials: "TA", name: "Tariq Adel", email: "tariq.demo@example.com", phone: "0500000012", session: "DEMO-SESSION-012", started: "Apr 07, 2026, 12:00 PM", status: "Completed", score: 87, rank: null, verdict: "pass" },
 ];
 
 const INTERVIEW_TABS = ["First Interview", "Second Interview (0)"];
@@ -463,7 +472,25 @@ export default function InterviewResults({ onClose }) {
     const [lang, setLang] = useState("EN");
     const [page, setPage] = useState(1);
 
-    const m = INTERVIEW_META;
+    const m = useMemo(() => {
+        const totalCandidates = CANDIDATES.length;
+        const avgScore = totalCandidates
+            ? Math.round(CANDIDATES.reduce((total, candidate) => total + candidate.score, 0) / totalCandidates)
+            : 0;
+        const passCount = CANDIDATES.filter((candidate) => candidate.verdict === "pass").length;
+        const needsReview = CANDIDATES.filter((candidate) => candidate.verdict === "review").length;
+        const failed = CANDIDATES.filter((candidate) => candidate.verdict === "fail").length;
+
+        return {
+            ...INTERVIEW_META,
+            totalCandidates,
+            avgScore,
+            passCount,
+            passed: passCount,
+            needsReview,
+            failed,
+        };
+    }, []);
 
     const filtered = useMemo(() => {
         let list = [...CANDIDATES];
@@ -483,9 +510,18 @@ export default function InterviewResults({ onClose }) {
         return list;
     }, [search, statusFilter, completedOnly, sortBy]);
 
-    const ps = parseInt(pageSize) || 10;
-    const totalPages = Math.max(1, Math.ceil(filtered.length / ps));
-    const paginated = filtered.slice((page - 1) * ps, page * ps);
+    const pagination = useMemo(
+        () => paginateItems(filtered, page, pageSize),
+        [filtered, page, pageSize]
+    );
+    const totalPages = pagination.totalPages;
+    const paginated = pagination.pageItems;
+
+    useEffect(() => {
+        if (page !== pagination.currentPage) {
+            setPage(pagination.currentPage);
+        }
+    }, [page, pagination.currentPage]);
 
     const allChecked = paginated.length > 0 && paginated.every(c => checkedIds.has(c.id));
     const toggleAll = () => {
@@ -699,7 +735,7 @@ export default function InterviewResults({ onClose }) {
                             </div>
                             <div style={{ minWidth: 160 }}>
                                 <div style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: C.inkFaint, marginBottom: 6 }}>Sort</div>
-                                <SelectField value={sortBy} onChange={e => setSortBy(e.target.value)}>
+                                <SelectField value={sortBy} onChange={e => { setSortBy(e.target.value); setPage(1); }}>
                                     <option>Newest</option>
                                     <option>Highest Score</option>
                                     <option>Lowest Score</option>
@@ -800,27 +836,46 @@ export default function InterviewResults({ onClose }) {
                             display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 10,
                         }}>
                             <div style={{ fontSize: 13, color: C.inkMuted }}>
-                                Showing <strong style={{ color: C.inkSoft }}>{(page - 1) * ps + 1}</strong> to{" "}
-                                <strong style={{ color: C.inkSoft }}>{Math.min(page * ps, filtered.length)}</strong> of{" "}
-                                <strong style={{ color: C.inkSoft }}>{filtered.length}</strong>
+                                Showing <strong style={{ color: C.inkSoft }}>{pagination.startIndex}</strong> to{" "}
+                                <strong style={{ color: C.inkSoft }}>{pagination.endIndex}</strong> of{" "}
+                                <strong style={{ color: C.inkSoft }}>{pagination.totalItems}</strong>
                             </div>
                             <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                                 {[
                                     { label: "First", action: () => setPage(1), disabled: page === 1 },
                                     { label: "Prev", action: () => setPage(p => p - 1), disabled: page === 1 },
+                                    ...getPaginationWindow(pagination.currentPage, totalPages).map((pageNumber) => ({
+                                        label: String(pageNumber),
+                                        action: () => setPage(pageNumber),
+                                        disabled: false,
+                                        active: pageNumber === pagination.currentPage,
+                                    })),
                                     { label: "Next", action: () => setPage(p => p + 1), disabled: page === totalPages },
                                     { label: "Last", action: () => setPage(totalPages), disabled: page === totalPages },
                                 ].map(({ label, action, disabled }) => (
                                     <button key={label} onClick={action} disabled={disabled} style={{
                                         height: 34, padding: "0 14px", borderRadius: 9,
-                                        border: `1px solid ${C.line}`, background: "transparent",
-                                        color: disabled ? C.inkFaint : C.inkMuted,
+                                        border: `1px solid ${label === String(pagination.currentPage) ? C.goldBorder : C.line}`,
+                                        background: label === String(pagination.currentPage) ? C.goldDim : "transparent",
+                                        color: label === String(pagination.currentPage) ? C.goldBright : disabled ? C.inkFaint : C.inkMuted,
                                         fontSize: 12.5, fontWeight: 600, cursor: disabled ? "not-allowed" : "pointer",
                                         fontFamily: "'Sora', sans-serif", transition: "all 0.18s",
                                         opacity: disabled ? 0.45 : 1,
                                     }}
-                                        onMouseEnter={e => { if (!disabled) { e.currentTarget.style.borderColor = C.goldBorder; e.currentTarget.style.color = C.inkSoft; } }}
-                                        onMouseLeave={e => { e.currentTarget.style.borderColor = C.line; e.currentTarget.style.color = disabled ? C.inkFaint : C.inkMuted; }}
+                                        onMouseEnter={e => {
+                                            if (!disabled && label !== String(pagination.currentPage)) {
+                                                e.currentTarget.style.borderColor = C.goldBorder;
+                                                e.currentTarget.style.color = C.inkSoft;
+                                                e.currentTarget.style.background = C.goldDim;
+                                            }
+                                        }}
+                                        onMouseLeave={e => {
+                                            if (label !== String(pagination.currentPage)) {
+                                                e.currentTarget.style.borderColor = C.line;
+                                                e.currentTarget.style.color = disabled ? C.inkFaint : C.inkMuted;
+                                                e.currentTarget.style.background = "transparent";
+                                            }
+                                        }}
                                     >{label}</button>
                                 ))}
                             </div>

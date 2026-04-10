@@ -22,7 +22,7 @@ import CVResults from "./resume";
 import Interview from "./Interview";
 import HowItWorks from "./HowItWorks";
 import CompanyTrustSection from "./Companytrustsection";
-import { Bell, LogOut, Menu, X } from "lucide-react";
+import { Settings, LogOut, Menu, X } from "lucide-react";
 import { DASHBOARD_AUTH_KEY } from "./authConfig";
 
 import * as THREE from "three";
@@ -809,7 +809,7 @@ function Nav() {
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     type="button"
-                    aria-label="Notifications"
+                    aria-label="Settings"
                     style={{
                       width: 42,
                       height: 42,
@@ -823,7 +823,7 @@ function Nav() {
                       justifyContent: "center"
                     }}
                   >
-                    <Bell size={18} />
+                    <Settings size={18} />
                   </motion.button>
                   <motion.button
                     whileHover={{ scale: 1.04 }}
