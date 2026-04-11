@@ -436,6 +436,7 @@ export default function Interview() {
     1: form.company && form.jobTitle && form.jd && totalWeight === 100,
     2: true,
     3: true,
+    4: true,
   };
 
   const stepErrors = {
@@ -1271,12 +1272,14 @@ export default function Interview() {
 
               {/* Tip */}
               {enableInterview && !allowEveryone && (
-                <InfoBox color={C.yellow} dimColor={C.yellowDim} borderColor="rgba(227,196,102,0.3)">
-                  <strong style={{ color: C.yellow }}>Tip:</strong> Since "Allow everyone" is disabled, make sure invited emails are loaded from the intake form or Excel upload before sharing the interview link.
-                </InfoBox>
+                <div style={{ marginTop: 12 }}>
+                  <InfoBox color={C.yellow} dimColor={C.yellowDim} borderColor="rgba(227,196,102,0.3)">
+                    <strong style={{ color: C.yellow }}>Tip:</strong> Since "Allow everyone" is disabled, make sure invited emails are loaded from the intake form or Excel upload before sharing the interview link.
+                  </InfoBox>
+                </div>
               )}
 
-              <div style={{ display: "flex", justifyContent: "space-between", gap: 10 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", gap: 10, marginTop: 24 }}>
                 <GhostBtn icon={ArrowLeft} onClick={() => goToStep(2)}>Back</GhostBtn>
                 <button onClick={() => goToStep(4)} style={{
                   height: 44, padding: "0 28px", borderRadius: 12, border: "none",
@@ -1285,8 +1288,8 @@ export default function Interview() {
                   fontFamily: "'Sora', sans-serif", boxShadow: `0 4px 20px rgba(184,149,90,0.3)`,
                   transition: "all 0.2s", display: "flex", alignItems: "center", gap: 8,
                 }}
-                  onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-1px)"; }}
-                  onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; }}
+                  onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-1px)"; e.currentTarget.style.boxShadow = `0 8px 28px rgba(184,149,90,0.4)`; }}
+                  onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = `0 4px 20px rgba(184,149,90,0.3)`; }}
                 >
                   Review & Launch <ChevronDown size={15} style={{ transform: "rotate(-90deg)" }} />
                 </button>
@@ -1299,49 +1302,161 @@ export default function Interview() {
           ══════════════════════════════════════════════════════════ */}
           {step === 4 && (
             <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+              
+              <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", color: C.inkFaint, marginLeft: 8 }}>Campaign Summary</div>
 
-              {/* Summary */}
-              <div style={{
-                background: C.bgPanel, border: `1px solid ${C.line}`,
-                borderRadius: 22, padding: "20px 22px", backdropFilter: "blur(12px)",
-              }}>
-                <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", color: C.inkFaint, marginBottom: 14 }}>Campaign Summary</div>
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(160px,1fr))", gap: 14 }}>
-                  {[
-                    { label: "Job Title", value: form.jobTitle, icon: FileText },
-                    { label: "Company", value: form.company, icon: Users },
-                    { label: "Plan", value: form.plan, icon: Settings2 },
-                    { label: "Language", value: form.language, icon: Globe },
-                    { label: "Questions", value: form.questionCount, icon: BarChart3 },
-                    { label: "Level", value: form.interviewLevel, icon: BarChart3 },
-                  ].map(({ label, value, icon: Icon }) => (
-                    <div key={label} style={{
-                      background: "rgba(6,10,20,0.5)", border: `1px solid ${C.line}`,
-                      borderRadius: 12, padding: "12px 14px",
-                    }}>
-                      <div style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: C.inkFaint, marginBottom: 5 }}>{label}</div>
-                      <div style={{ fontSize: 14, fontWeight: 600, color: C.inkSoft }}>{value || "—"}</div>
+              {/* Detailed Summary Cards */}
+              <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+                {/* 1. Company & Role Summary */}
+                <SectionCard 
+                  icon={FileText} 
+                  iconColor={C.goldBright} 
+                  title="Company & Role Review" 
+                  subtitle="Verify basic information and JD requirements."
+                  badge={{ label: form.plan, bg: C.goldDim, border: C.goldBorder, color: C.goldBright }}
+                >
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 16 }}>
+                    <div>
+                      <div style={{ fontSize: 11, fontWeight: 700, color: C.inkFaint, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 4 }}>Company</div>
+                      <div style={{ fontSize: 14, fontWeight: 600, color: C.inkSoft }}>{form.company}</div>
                     </div>
-                  ))}
-                </div>
+                    <div>
+                      <div style={{ fontSize: 11, fontWeight: 700, color: C.inkFaint, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 4 }}>Job Position</div>
+                      <div style={{ fontSize: 14, fontWeight: 600, color: C.inkSoft }}>{form.jobTitle}</div>
+                    </div>
+                    <div>
+                      <div style={{ fontSize: 11, fontWeight: 700, color: C.inkFaint, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 4 }}>Department</div>
+                      <div style={{ fontSize: 14, fontWeight: 600, color: form.department ? C.inkSoft : C.inkMuted }}>{form.department || "Not specified"}</div>
+                    </div>
+                  </div>
+                  
+                  <div style={{ marginTop: 20, padding: "14px", background: "rgba(255,255,255,0.02)", border: `1px solid ${C.line}`, borderRadius: 12 }}>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: C.inkWhite, marginBottom: 8 }}>Scoring Requirements</div>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                      {requirements.map(r => (
+                        <div key={r.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", fontSize: 13 }}>
+                          <span style={{ color: C.inkSoft }}>{r.requirement}</span>
+                          <span style={{ fontWeight: 700, color: C.goldBright }}>{r.weight}%</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </SectionCard>
 
-                {/* Stages enabled */}
-                <div style={{ display: "flex", gap: 10, marginTop: 14, flexWrap: "wrap" }}>
-                  {[
-                    { label: "CV Submission", enabled: enableCV, color: C.green },
-                    { label: "AI Interview", enabled: enableInterview, color: C.blue },
-                  ].map(({ label, enabled, color }) => (
-                    <span key={label} style={{
-                      display: "inline-flex", alignItems: "center", gap: 6, padding: "5px 12px",
-                      borderRadius: 999, fontSize: 12, fontWeight: 600,
-                      background: enabled ? `${color}18` : "rgba(255,255,255,0.04)",
-                      border: `1px solid ${enabled ? `${color}35` : C.line}`,
-                      color: enabled ? color : C.inkFaint,
-                    }}>
-                      {enabled ? <Check size={12} /> : <X size={12} />} {label}
-                    </span>
-                  ))}
-                </div>
+                {/* 2. CV Submission Summary */}
+                <SectionCard 
+                  icon={Upload} 
+                  iconColor={C.green} 
+                  title="CV Submission Setup" 
+                  subtitle="Intake questions and submission constraints."
+                  badge={enableCV ? { label: "Enabled", bg: C.greenDim, border: C.greenBorder, color: C.green } : { label: "Disabled", bg: "rgba(255,255,255,0.05)", border: C.line, color: C.inkFaint }}
+                >
+                  {enableCV ? (
+                    <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+                      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 16 }}>
+                        <div>
+                          <div style={{ fontSize: 11, fontWeight: 700, color: C.inkFaint, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 4 }}>Max CVs</div>
+                          <div style={{ fontSize: 14, fontWeight: 600, color: C.inkSoft }}>{form.maxCVs || "Unlimited"}</div>
+                        </div>
+                        <div>
+                          <div style={{ fontSize: 11, fontWeight: 700, color: C.inkFaint, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 4 }}>End Date</div>
+                          <div style={{ fontSize: 14, fontWeight: 600, color: C.inkSoft }}>{formatDateLabel(form.cvEndDate)}</div>
+                        </div>
+                        <div>
+                          <div style={{ fontSize: 11, fontWeight: 700, color: C.inkFaint, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 4 }}>Require Portfolio</div>
+                          <div style={{ fontSize: 14, fontWeight: 600, color: form.requireSample ? C.goldBright : C.inkMuted }}>{form.requireSample ? "Yes" : "No"}</div>
+                        </div>
+                      </div>
+
+                      {intakeItems.length > 0 && (
+                        <div style={{ marginTop: 10 }}>
+                          <div style={{ fontSize: 12, fontWeight: 700, color:C.inkWhite, marginBottom: 8 }}>Intake Questions ({intakeItems.length})</div>
+                          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                            {intakeItems.map(item => (
+                              <div key={item.id} style={{ padding: "8px 12px", background: "rgba(255,255,255,0.02)", border: `1px solid ${C.line}`, borderRadius: 8, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                                <span style={{ fontSize: 13, color: C.inkSoft }}>{item.description}</span>
+                                <div style={{ display: "flex", gap: 8 }}>
+                                  <span style={{ fontSize: 11, padding: "2px 6px", borderRadius: 4, background: "rgba(255,255,255,0.05)", color: C.inkMuted }}>{item.type}</span>
+                                  <span style={{ fontSize: 11, padding: "2px 6px", borderRadius: 4, background: item.scoring === "Must" ? C.redDim : C.blueDim, color: item.scoring === "Must" ? C.red : C.blue, border: `1px solid ${item.scoring === "Must" ? C.redBorder : C.blueBorder}` }}>{item.scoring}</span>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div style={{ fontSize: 13, color: C.inkMuted, fontStyle: "italic" }}>CV submission stage is disabled. Candidates will proceed directly to the interview.</div>
+                  )}
+                </SectionCard>
+
+                {/* 3. AI Interview Summary */}
+                <SectionCard 
+                  icon={Video} 
+                  iconColor={C.blue} 
+                  title="AI Interview Configuration" 
+                  subtitle="Interview flow, access control, and probe topics."
+                  badge={enableInterview ? { label: "Enabled", bg: C.blueDim, border: C.blueBorder, color: C.blue } : { label: "Disabled", bg: "rgba(255,255,255,0.05)", border: C.line, color: C.inkFaint }}
+                >
+                  {enableInterview ? (
+                    <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+                      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 16 }}>
+                        <div>
+                          <div style={{ fontSize: 11, fontWeight: 700, color: C.inkFaint, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 4 }}>Language</div>
+                          <div style={{ fontSize: 14, fontWeight: 600, color: C.inkSoft }}>{form.language}</div>
+                        </div>
+                        <div>
+                          <div style={{ fontSize: 11, fontWeight: 700, color: C.inkFaint, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 4 }}>Level</div>
+                          <div style={{ fontSize: 14, fontWeight: 600, color: C.inkSoft }}>{form.interviewLevel}</div>
+                        </div>
+                        <div>
+                          <div style={{ fontSize: 11, fontWeight: 700, color: C.inkFaint, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 4 }}>Total Questions</div>
+                          <div style={{ fontSize: 14, fontWeight: 600, color: C.inkSoft }}>{form.questionCount} Questions</div>
+                        </div>
+                        <div>
+                          <div style={{ fontSize: 11, fontWeight: 700, color: C.inkFaint, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 4 }}>End Date</div>
+                          <div style={{ fontSize: 14, fontWeight: 600, color: C.inkSoft }}>{formatDateLabel(form.interviewEndDate)}</div>
+                        </div>
+                      </div>
+
+                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1.4fr", gap: 16, marginTop: 4 }}>
+                        <div style={{ padding: "14px", background: "rgba(255,255,255,0.02)", border: `1px solid ${C.line}`, borderRadius: 12 }}>
+                          <div style={{ fontSize: 12, fontWeight: 700, color: C.inkWhite, marginBottom: 10 }}>Access Control</div>
+                          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                            <div style={{ width: 8, height: 8, borderRadius: "50%", background: allowEveryone ? C.green : C.yellow }}></div>
+                            <span style={{ fontSize: 13, color: C.inkSoft }}>{allowEveryone ? "Public (Everyone allowed)" : "Restricted (Invited only)"}</span>
+                          </div>
+                        </div>
+                        {specificTags.length > 0 && (
+                          <div style={{ padding: "14px", background: "rgba(255,255,255,0.02)", border: `1px solid ${C.line}`, borderRadius: 12 }}>
+                            <div style={{ fontSize: 12, fontWeight: 700, color: C.inkWhite, marginBottom: 10 }}>AI Probe Topics</div>
+                            <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                              {specificTags.map(tag => (
+                                <span key={tag} style={{ fontSize: 11, padding: "3px 10px", borderRadius: 999, background: C.blueDim, border: `1px solid ${C.blueBorder}`, color: C.blue }}>{tag}</span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      {mandatoryQList.length > 0 && (
+                        <div style={{ marginTop: 4 }}>
+                          <div style={{ fontSize: 12, fontWeight: 700, color: C.inkWhite, marginBottom: 8 }}>Mandatory Questions ({mandatoryQList.length})</div>
+                          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                            {mandatoryQList.map((q, i) => (
+                              <div key={i} style={{ padding: "10px 14px", background: "rgba(255,255,255,0.02)", border: `1px solid ${C.line}`, borderRadius: 9, fontSize: 13, color: C.inkSoft, display: "flex", gap: 10 }}>
+                                <span style={{ color: C.inkFaint, fontWeight: 700 }}>{i + 1}.</span>
+                                {q}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div style={{ fontSize: 13, color: C.inkMuted, fontStyle: "italic" }}>AI Interview stage is disabled. Only CV submission results will be collected.</div>
+                  )}
+                </SectionCard>
               </div>
 
               {/* Generate links CTA */}
@@ -1349,7 +1464,7 @@ export default function Interview() {
                 <button
                   onClick={() => setShowLinks(true)}
                   style={{
-                    width: "100%", height: 56, borderRadius: 14, border: "none",
+                    width: "100%", height: 56, borderRadius: 14, border: "none", marginTop: 8,
                     background: `linear-gradient(135deg,${C.blue},#4f87ff)`,
                     color: "#fff", fontSize: 18,
                     fontFamily: "'DM Serif Display', serif",
@@ -1364,7 +1479,7 @@ export default function Interview() {
               ) : (
                 <div style={{
                   background: C.bgPanel, border: `1px solid ${C.greenBorder}`,
-                  borderRadius: 22, padding: "22px", backdropFilter: "blur(12px)",
+                  borderRadius: 22, padding: "22px", backdropFilter: "blur(12px)", marginTop: 8,
                   boxShadow: `0 8px 32px rgba(57,201,143,0.1)`,
                 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 18 }}>
@@ -1442,7 +1557,7 @@ export default function Interview() {
                 </div>
               )}
 
-              <div style={{ display: "flex", justifyContent: "space-between", gap: 10 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", gap: 10, marginTop: 16 }}>
                 <GhostBtn icon={ArrowLeft} onClick={() => goToStep(3)}>Back</GhostBtn>
                 {showLinks && (
                   <GhostBtn icon={Check} primary onClick={() => navigate("/dashboard")}>Go to Dashboard</GhostBtn>
@@ -1456,6 +1571,3 @@ export default function Interview() {
     </>
   );
 }
-
-
-

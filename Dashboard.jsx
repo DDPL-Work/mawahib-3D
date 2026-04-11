@@ -1,4 +1,4 @@
-﻿import { useState, useMemo, useRef, useEffect } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import {
   Plus, Search, Settings, LogOut, Clock, Copy, ExternalLink,
   BarChart2, Users, CheckCircle2, ArrowRight, MoreHorizontal,
@@ -205,7 +205,7 @@ const StatusDot = ({ status }) => {
       {status === "active" ? "Active" : "Paused"}
     </span>
   );
-}; 
+};
 
 const Divider = () => (
   <div style={{ width: "100%", height: 1, background: C.line, flexShrink: 0 }} />

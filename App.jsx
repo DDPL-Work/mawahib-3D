@@ -19,6 +19,7 @@ import Login from "./Login";
 import Signup from "./Signup";
 import Dashboard from "./Dashboard";
 import CVResults from "./resume";
+import SettingsModal from "./SettingsModal";
 import Interview from "./Interview";
 import HowItWorks from "./HowItWorks";
 import CompanyTrustSection from "./Companytrustsection";
@@ -713,6 +714,7 @@ function Nav() {
   const [scrolled, setScrolled] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
   const { pathname } = useLocation();
   const isLoggedIn = sessionStorage.getItem(DASHBOARD_AUTH_KEY) === "true";
 
@@ -805,7 +807,37 @@ function Nav() {
                 </>
               ) : (
                 <>
+                  <div style={{
+                    background: `linear-gradient(135deg, ${C.gold}, ${C.goldBright})`,
+                    border: "1px solid rgba(0,0,0,0.1)",
+                    borderRadius: 14,
+                    padding: "6px 16px",
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "center",
+                    boxShadow: "0 4px 18px rgba(184,149,90,0.3)",
+                    minWidth: 120
+                  }}>
+                    <div style={{ 
+                      fontSize: 10, 
+                      fontWeight: 800, 
+                      color: "rgba(10,15,30,0.65)", 
+                      letterSpacing: "0.05em",
+                      marginBottom: -2
+                    }}>
+                      BALANCE ($)
+                    </div>
+                    <div style={{ 
+                      fontSize: 19, 
+                      fontWeight: 800, 
+                      color: "#0a0f1e",
+                      fontFamily: "'Sora', sans-serif"
+                    }}>
+                      $5000.00
+                    </div>
+                  </div>
                   <motion.button
+                    onClick={() => setShowSettings(true)}
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     type="button"
@@ -824,30 +856,6 @@ function Nav() {
                     }}
                   >
                     <Settings size={18} />
-                  </motion.button>
-                  <motion.button
-                    whileHover={{ scale: 1.04 }}
-                    whileTap={{ scale: 0.96 }}
-                    type="button"
-                    onClick={handleLogout}
-                    style={{
-                      background: "rgba(255,255,255,.05)",
-                      border: "1px solid rgba(255,255,255,.18)",
-                      borderRadius: 10,
-                      padding: "9px 16px",
-                      fontSize: 13,
-                      fontWeight: 700,
-                      color: "rgba(255,255,255,.86)",
-                      lineHeight: 1,
-                      whiteSpace: "nowrap",
-                      display: "inline-flex",
-                      alignItems: "center",
-                      gap: 7,
-                      cursor: "pointer"
-                    }}
-                  >
-                    <LogOut size={14} />
-                    Log Out
                   </motion.button>
                 </>
               )}
@@ -944,30 +952,31 @@ function Nav() {
                     }}>Log In</Link>
                   </>
                 ) : (
-                  <button
-                    type="button"
-                    onClick={handleLogout}
-                    style={{
-                      background: "rgba(255,255,255,.04)",
-                      border: "1px solid rgba(255,255,255,.12)",
-                      borderRadius: 12,
-                      padding: "12px 18px",
-                      fontSize: 14,
-                      fontWeight: 700,
-                      color: "rgba(255,255,255,.9)",
-                      width: "100%",
-                      textAlign: "center",
-                      cursor: "pointer"
-                    }}
-                  >
-                    Log Out
-                  </button>
+                  <div style={{
+                    background: `linear-gradient(135deg, ${C.gold}, ${C.goldBright})`,
+                    border: "1px solid rgba(0,0,0,0.1)",
+                    borderRadius: 14,
+                    padding: "12px 18px",
+                    width: "100%",
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    gap: 1
+                  }}>
+                    <div style={{ fontSize: 11, fontWeight: 800, color: "rgba(10,15,30,0.6)", letterSpacing: "0.08em" }}>
+                      BALANCE ($)
+                    </div>
+                    <div style={{ fontSize: 24, fontWeight: 800, color: "#0a0f1e", fontFamily: "'Sora', sans-serif" }}>
+                      $5000.00
+                    </div>
+                  </div>
                 )}
               </div>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
+      {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
     </>
   );
 }
