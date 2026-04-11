@@ -1302,16 +1302,16 @@ export default function Interview() {
           ══════════════════════════════════════════════════════════ */}
           {step === 4 && (
             <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-              
+
               <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", color: C.inkFaint, marginLeft: 8 }}>Campaign Summary</div>
 
               {/* Detailed Summary Cards */}
               <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
                 {/* 1. Company & Role Summary */}
-                <SectionCard 
-                  icon={FileText} 
-                  iconColor={C.goldBright} 
-                  title="Company & Role Review" 
+                <SectionCard
+                  icon={FileText}
+                  iconColor={C.goldBright}
+                  title="Company & Role Review"
                   subtitle="Verify basic information and JD requirements."
                   badge={{ label: form.plan, bg: C.goldDim, border: C.goldBorder, color: C.goldBright }}
                 >
@@ -1329,7 +1329,7 @@ export default function Interview() {
                       <div style={{ fontSize: 14, fontWeight: 600, color: form.department ? C.inkSoft : C.inkMuted }}>{form.department || "Not specified"}</div>
                     </div>
                   </div>
-                  
+
                   <div style={{ marginTop: 20, padding: "14px", background: "rgba(255,255,255,0.02)", border: `1px solid ${C.line}`, borderRadius: 12 }}>
                     <div style={{ fontSize: 12, fontWeight: 700, color: C.inkWhite, marginBottom: 8 }}>Scoring Requirements</div>
                     <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
@@ -1344,10 +1344,10 @@ export default function Interview() {
                 </SectionCard>
 
                 {/* 2. CV Submission Summary */}
-                <SectionCard 
-                  icon={Upload} 
-                  iconColor={C.green} 
-                  title="CV Submission Setup" 
+                <SectionCard
+                  icon={Upload}
+                  iconColor={C.green}
+                  title="CV Submission Setup"
                   subtitle="Intake questions and submission constraints."
                   badge={enableCV ? { label: "Enabled", bg: C.greenDim, border: C.greenBorder, color: C.green } : { label: "Disabled", bg: "rgba(255,255,255,0.05)", border: C.line, color: C.inkFaint }}
                 >
@@ -1370,7 +1370,7 @@ export default function Interview() {
 
                       {intakeItems.length > 0 && (
                         <div style={{ marginTop: 10 }}>
-                          <div style={{ fontSize: 12, fontWeight: 700, color:C.inkWhite, marginBottom: 8 }}>Intake Questions ({intakeItems.length})</div>
+                          <div style={{ fontSize: 12, fontWeight: 700, color: C.inkWhite, marginBottom: 8 }}>Intake Questions ({intakeItems.length})</div>
                           <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                             {intakeItems.map(item => (
                               <div key={item.id} style={{ padding: "8px 12px", background: "rgba(255,255,255,0.02)", border: `1px solid ${C.line}`, borderRadius: 8, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -1391,10 +1391,10 @@ export default function Interview() {
                 </SectionCard>
 
                 {/* 3. AI Interview Summary */}
-                <SectionCard 
-                  icon={Video} 
-                  iconColor={C.blue} 
-                  title="AI Interview Configuration" 
+                <SectionCard
+                  icon={Video}
+                  iconColor={C.blue}
+                  title="AI Interview Configuration"
                   subtitle="Interview flow, access control, and probe topics."
                   badge={enableInterview ? { label: "Enabled", bg: C.blueDim, border: C.blueBorder, color: C.blue } : { label: "Disabled", bg: "rgba(255,255,255,0.05)", border: C.line, color: C.inkFaint }}
                 >
