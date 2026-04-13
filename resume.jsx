@@ -795,13 +795,15 @@ function scoreClass(s) {
 
 function statusClass(s) {
   if (s === "Shortlisted") return "cv-status-shortlisted";
-  if (s === "Reviewed") return "cv-status-reviewed";
+  if (s === "Invited") return "cv-status-reviewed";
+  if (s === "Rejected") return "cv-status-rejected";
   return "cv-status-pending";
 }
 
 function statusDotColor(s) {
   if (s === "Shortlisted") return C.green;
-  if (s === "Reviewed") return C.blue;
+  if (s === "Invited") return C.blue;
+  if (s === "Rejected") return C.red;
   return C.yellow;
 }
 
@@ -1465,7 +1467,8 @@ export default function CVResults({ embedded = false }) {
             >
               <option value="All">All Status</option>
               <option>Pending</option>
-              <option>Reviewed</option>
+              <option>Invited</option>
+              <option>Rejected</option>
               <option>Shortlisted</option>
             </select>
             <select

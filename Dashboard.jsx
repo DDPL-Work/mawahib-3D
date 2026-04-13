@@ -149,12 +149,11 @@ const CAMPAIGNS = [
   },
 ];
 
-const FUNNEL = [
-  { label: "Invited", value: 108, pct: 100, color: C.blue },
-  { label: "CV Submitted", value: 62, pct: 57, color: C.goldBright },
+const INITIAL_FUNNEL_DATA = [
+  { label: "CV Submitted", value: 108, pct: 100, color: C.blue },
+  { label: "Invited", value: 62, pct: 57, color: C.goldBright },
   { label: "Interviewed", value: 28, pct: 26, color: C.yellow },
   { label: "Shortlisted", value: 12, pct: 11, color: C.green },
-  { label: "Hired", value: 5, pct: 5, color: "#28a66f" },
 ];
 
 // Mock CV results data
@@ -829,39 +828,44 @@ const CVResultsPanel = ({ campaign }) => {
 };
 
 // ─── Interview Results Panel ──────────────────────────────────────────────────
-const InterviewResultsPanel = ({ campaign }) => (
-  <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
-    {/* Funnel */}
-    <div>
-      <SectionLabel>Recruitment Funnel (X/Y Axis)</SectionLabel>
-      <AxisBarChart data={FUNNEL} />
-    </div>
+const InterviewResultsPanel = ({ campaign }) => {
+  // TODO: Replace with dynamic backend-driven values based on campaign ID
+  const [funnelData, setFunnelData] = useState(INITIAL_FUNNEL_DATA);
 
-    <Divider />
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
+      {/* Funnel */}
+      <div>
+        <SectionLabel>Recruitment Funnel (X/Y Axis)</SectionLabel>
+        <AxisBarChart data={funnelData} />
+      </div>
 
-    {/* Interview stage stats */}
-    <div>
-      <SectionLabel>Stage Breakdown</SectionLabel>
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-        {[
-          { label: "Avg Score", value: "74", sub: "Interview score", color: C.goldBright },
-          { label: "Completion Rate", value: "91%", sub: "Started → Finished", color: C.green },
-          { label: "Top Scorers", value: "9", sub: "Score ≥ 80", color: C.blue },
-          { label: "Red Flags", value: "4", sub: "Flagged for review", color: C.red },
-        ].map(({ label, value, sub, color }) => (
-          <div key={label} style={{
-            background: "rgba(6,10,20,0.65)", border: `1px solid ${C.line}`,
-            borderRadius: 14, padding: "13px 14px",
-          }}>
-            <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: C.inkFaint, marginBottom: 5 }}>{label}</div>
-            <div style={{ fontFamily: "'DM Serif Display', serif", fontSize: "1.8rem", color, lineHeight: 1, marginBottom: 3 }}>{value}</div>
-            <div style={{ fontSize: 11.5, color: C.inkMuted }}>{sub}</div>
-          </div>
-        ))}
+      <Divider />
+
+      {/* Interview stage stats */}
+      <div>
+        <SectionLabel>Stage Breakdown</SectionLabel>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+          {[
+            { label: "Avg Score", value: "74", sub: "Interview score", color: C.goldBright },
+            { label: "Completion Rate", value: "91%", sub: "Started → Finished", color: C.green },
+            { label: "Top Scorers", value: "9", sub: "Score ≥ 80", color: C.blue },
+            { label: "Red Flags", value: "4", sub: "Flagged for review", color: C.red },
+          ].map(({ label, value, sub, color }) => (
+            <div key={label} style={{
+              background: "rgba(6,10,20,0.65)", border: `1px solid ${C.line}`,
+              borderRadius: 14, padding: "13px 14px",
+            }}>
+              <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: C.inkFaint, marginBottom: 5 }}>{label}</div>
+              <div style={{ fontFamily: "'DM Serif Display', serif", fontSize: "1.8rem", color, lineHeight: 1, marginBottom: 3 }}>{value}</div>
+              <div style={{ fontSize: 11.5, color: C.inkMuted }}>{sub}</div>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
-  </div>
-);
+  );
+};
 
 // ─── Campaign Detail Panel ────────────────────────────────────────────────────
 const CampaignDetail = ({ campaign, onClose }) => {

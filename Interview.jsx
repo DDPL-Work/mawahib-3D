@@ -451,6 +451,7 @@ export default function Interview() {
     return true;
   };
 
+
   const getStepBlockedReason = (targetStep) => {
     if (targetStep <= 1 || isStepUnlocked(targetStep)) return "";
     for (let i = 1; i < targetStep; i += 1) {

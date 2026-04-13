@@ -217,15 +217,17 @@ const ScoreBar = ({ score }) => (
 );
 
 // ─── Evaluation Card Carousel ─────────────────────────────────────────────────
-const EvalCarousel = ({ candidateId, lang, setLang }) => {
+const EvalCarousel = ({ candidateId, lang, setLang, hideBorder }) => {
     const [idx, setIdx] = useState(0);
     const cards = EVAL_CARDS[candidateId] || [];
     const card = cards[idx];
 
     return (
         <div style={{
-            background: "rgba(4,8,20,0.6)", borderTop: `1px solid ${C.line}`,
-            borderLeft: `3px solid ${C.green}`,
+            background: hideBorder ? "transparent" : "rgba(4,8,20,0.6)", 
+            borderTop: hideBorder ? "none" : `1px solid ${C.line}`,
+            borderLeft: hideBorder ? "none" : `3px solid ${C.green}`,
+            display: "flex", flexDirection: "column", height: "100%"
         }}>
             {/* Eval header */}
             <div style={{
@@ -455,7 +457,49 @@ const CandidateRow = ({ c, expanded, onToggle, checked, onCheck, lang, setLang }
             </div>
 
             {/* Evaluation panel */}
-            {expanded && <EvalCarousel candidateId={c.id} lang={lang} setLang={setLang} />}
+            {expanded && (
+                <div className="inter-expanded-grid" style={{ 
+                    background: "rgba(4,8,20,0.6)", 
+                    borderTop: `1px solid ${C.line}`,
+                    borderLeft: `3px solid ${vs.color}`,
+                }}>
+                    {/* Video Player Area */}
+                    <div className="inter-video-border" style={{ 
+                        padding: "16px 20px", 
+                        borderRight: `1px solid ${C.line}`,
+                        display: "flex", flexDirection: "column"
+                    }}>
+                        <div style={{ 
+                            fontSize: 10.5, fontWeight: 700, letterSpacing: "0.16em", 
+                            textTransform: "uppercase", color: C.inkFaint, marginBottom: 12,
+                            display: "flex", alignItems: "center", gap: 8
+                        }}>
+                            <span style={{ width: 6, height: 6, borderRadius: "50%", background: C.red, boxShadow: `0 0 6px ${C.red}` }}></span>
+                            Interview Recording
+                        </div>
+                        <div style={{
+                            width: "100%", flex: 1, minHeight: 580, borderRadius: 12, overflow: "hidden",
+                            border: `1px solid ${C.line}`, background: "#000",
+                            position: "relative"
+                        }}>
+                            {/* YT Video */}
+                            <iframe
+                                src="https://www.youtube.com/embed/n-cH2WyYJiA?rel=0&modestbranding=1&playsinline=1"
+                                title="Candidate Interview Recording"
+                                frameBorder="0"
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                                allowFullScreen
+                                style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%" }}
+                            />
+                        </div>
+                    </div>
+
+                    {/* AI Evaluation */}
+                    <div style={{ minWidth: 0 }}>
+                        <EvalCarousel candidateId={c.id} lang={lang} setLang={setLang} hideBorder={true} />
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
@@ -563,6 +607,10 @@ export default function InterviewResults({ onClose }) {
         .inter-modal select option { background: #0d1528; color: #f5f0eb; }
         @media (max-width: 980px) {
           .inter-filter-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+        }
+        @media (max-width: 900px) {
+          .inter-expanded-grid { grid-template-columns: 1fr !important; }
+          .inter-video-border { border-right: none !important; border-bottom: 1px solid rgba(184,149,90,0.16) !important; }
         }
         @media (max-width: 720px) {
           .inter-shell { width: 96vw; max-height: 96vh; }
