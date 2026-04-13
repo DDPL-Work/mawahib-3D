@@ -552,7 +552,7 @@ export default function Interview() {
             </button>
             <div style={{ flex: 1 }}>
               <div style={{ fontSize: 11, color: C.inkFaint, letterSpacing: "0.1em", textTransform: "uppercase" }}>
-                <span style={{ color: C.blue }}>Dashboard</span> / Create Interview
+                <span style={{ color: C.blue, cursor: "pointer" }} onClick={() => navigate("/dashboard")}>Dashboard</span> / Create Interview
               </div>
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
