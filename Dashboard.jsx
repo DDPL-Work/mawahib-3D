@@ -407,6 +407,42 @@ const SectionLabel = ({ children }) => (
   </div>
 );
 
+const getViewportState = () => {
+  if (typeof window === "undefined") {
+    return { width: 1440, isMobile: false, isTablet: false };
+  }
+
+  const width = window.innerWidth;
+  return {
+    width,
+    isMobile: width < 768,
+    isTablet: width < 1180,
+  };
+};
+
+const useViewportState = () => {
+  const [viewport, setViewport] = useState(getViewportState);
+
+  useEffect(() => {
+    let frameId = null;
+
+    const handleResize = () => {
+      if (frameId) cancelAnimationFrame(frameId);
+      frameId = requestAnimationFrame(() => {
+        setViewport(getViewportState());
+      });
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => {
+      if (frameId) cancelAnimationFrame(frameId);
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
+
+  return viewport;
+};
+
 const useModalLifecycle = ({ onClose, initialFocusRef }) => {
   useEffect(() => {
     const previousOverflow = document.body.style.overflow;
@@ -426,7 +462,7 @@ const useModalLifecycle = ({ onClose, initialFocusRef }) => {
   }, [onClose, initialFocusRef]);
 };
 
-const ModalBackdrop = ({ children, onClose, zIndex = 1100, ariaLabel = "Modal" }) => (
+const ModalBackdrop = ({ children, onClose, zIndex = 1100, ariaLabel = "Modal", padding = 24 }) => (
   <div
     role="dialog"
     aria-modal="true"
@@ -442,7 +478,7 @@ const ModalBackdrop = ({ children, onClose, zIndex = 1100, ariaLabel = "Modal" }
       backdropFilter: "blur(10px)",
       display: "grid",
       placeItems: "center",
-      padding: 24,
+      padding,
       overflowY: "auto",
     }}
   >
@@ -501,7 +537,7 @@ const CircularKpi = ({ label, value, color, description }) => {
   );
 };
 
-const DashboardCircularInsights = ({ campaign, onCreateCampaign }) => {
+const DashboardCircularInsights = ({ campaign, onCreateCampaign, isMobile = false, isTablet = false }) => {
   const totalApplicants = Math.max(campaign.applicants || 0, 1);
   const interviewRate = Math.round(((campaign.interviewed || 0) / totalApplicants) * 100);
   const shortlistRate = Math.round(((campaign.shortlisted || 0) / totalApplicants) * 100);
@@ -514,7 +550,7 @@ const DashboardCircularInsights = ({ campaign, onCreateCampaign }) => {
       background: "rgba(255, 250, 242, 0.80)",
       border: `1px solid ${C.line}`,
       borderRadius: 22,
-      padding: "24px 24px 20px",
+      padding: isMobile ? "18px 16px 16px" : "24px 24px 20px",
       backdropFilter: "blur(12px)",
       display: "flex",
       flexDirection: "column",
@@ -557,13 +593,13 @@ const DashboardCircularInsights = ({ campaign, onCreateCampaign }) => {
         </button>
       </div>
 
-      <div className="circular-kpi-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(210px, 1fr))", gap: 12 }}>
+      <div className="circular-kpi-grid" style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : isTablet ? "repeat(2, minmax(220px, 1fr))" : "repeat(3, minmax(210px, 1fr))", gap: 12 }}>
         <CircularKpi label="Interview Reach" value={interviewRate} color={C.blue} description="Share of total applicants who progressed into the interview stage." />
         <CircularKpi label="Shortlist Yield" value={shortlistRate} color={C.green} description="Total pipeline conversion from applicants into shortlist-ready candidates." />
         <CircularKpi label="Quality Pass Rate" value={shortlistFromInterviewRate} color={C.gold} description="Percent of interviewed candidates who met quality criteria for shortlist." />
       </div>
 
-      <div className="insight-copy-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(180px, 1fr))", gap: 10 }}>
+      <div className="insight-copy-grid" style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : isTablet ? "repeat(2, minmax(180px, 1fr))" : "repeat(3, minmax(180px, 1fr))", gap: 10 }}>
         {[
           { title: "Executive Summary", body: `${campaign.shortlisted} shortlisted from ${campaign.applicants} total applicants indicates a focused, quality-first screening flow.` },
           { title: "Operational Insight", body: `${campaign.interviewed} candidates interviewed so far. Continue cadence to preserve decision velocity and avoid bottlenecks.` },
@@ -923,10 +959,13 @@ const LegacyCVResultsPanel = ({ campaign }) => {
   );
 };
 
-const CampaignTable = ({ onSelect, selected, onInterviewResults }) => {
+const CampaignTable = ({ onSelect, selected, onInterviewResults, isMobile = false, isTablet = false }) => {
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [campaignPage, setCampaignPage] = useState(1);
+  const tableColumns = isTablet
+    ? "minmax(220px, 2fr) minmax(120px, 0.8fr) minmax(110px, 0.8fr) minmax(130px, 0.9fr) minmax(150px, 0.9fr) minmax(180px, 1fr)"
+    : "minmax(220px, 2.1fr) minmax(120px, 0.8fr) minmax(130px, 0.9fr) minmax(140px, 0.9fr) minmax(170px, 1fr) minmax(200px, 1.1fr)";
 
   const filteredCampaigns = useMemo(() => {
     const search = query.trim().toLowerCase();
@@ -991,7 +1030,8 @@ const CampaignTable = ({ onSelect, selected, onInterviewResults }) => {
             display: "flex",
             alignItems: "center",
             gap: 8,
-            minWidth: 250,
+            minWidth: isMobile ? "100%" : 250,
+            width: isMobile ? "100%" : undefined,
             height: 40,
             padding: "0 12px",
             borderRadius: 12,
@@ -1048,22 +1088,27 @@ const CampaignTable = ({ onSelect, selected, onInterviewResults }) => {
         </div>
       </div>
 
-      <div style={{
-        display: "grid",
-        gridTemplateColumns: "minmax(220px, 2.1fr) minmax(120px, 0.8fr) minmax(130px, 0.9fr) minmax(140px, 0.9fr) minmax(170px, 1fr) minmax(200px, 1.1fr)",
-        padding: "12px 18px",
-        gap: 12,
-        borderBottom: `1px solid ${C.line}`,
-        background: "rgba(184,145,90,0.05)",
-      }}>
-        {["Campaign", "Status", "Applicants", "Shortlisted", "Language", "Actions"].map((heading) => (
-          <div key={heading} style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: "0.13em", textTransform: "uppercase", color: C.inkFaint }}>
-            {heading}
+      {!isMobile && (
+        <div style={{ overflowX: "auto" }}>
+          <div style={{
+            display: "grid",
+            gridTemplateColumns: tableColumns,
+            minWidth: isTablet ? 980 : undefined,
+            padding: "12px 18px",
+            gap: 12,
+            borderBottom: `1px solid ${C.line}`,
+            background: "rgba(184,145,90,0.05)",
+          }}>
+            {["Campaign", "Status", "Applicants", "Shortlisted", "Language", "Actions"].map((heading) => (
+              <div key={heading} style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: "0.13em", textTransform: "uppercase", color: C.inkFaint }}>
+                {heading}
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
+        </div>
+      )}
 
-      <div style={{ display: "flex", flexDirection: "column" }}>
+      <div style={{ display: "flex", flexDirection: "column", overflowX: isMobile ? "visible" : "auto" }}>
         {campaignPagination.pageItems.map((campaign, index) => {
           const isSelected = selected === campaign.id;
 
@@ -1080,10 +1125,11 @@ const CampaignTable = ({ onSelect, selected, onInterviewResults }) => {
               role="button"
               tabIndex={0}
               style={{
-                display: "grid",
-                gridTemplateColumns: "minmax(220px, 2.1fr) minmax(120px, 0.8fr) minmax(130px, 0.9fr) minmax(140px, 0.9fr) minmax(140px, 0.9fr) minmax(200px, 1.1fr)",
-                gap: 12,
-                alignItems: "center",
+                display: isMobile ? "flex" : "grid",
+                gridTemplateColumns: isMobile ? undefined : tableColumns,
+                flexDirection: isMobile ? "column" : undefined,
+                gap: isMobile ? 14 : 12,
+                alignItems: isMobile ? "stretch" : "center",
                 padding: "16px 18px",
                 borderBottom: index < campaignPagination.pageItems.length - 1 ? `1px solid ${C.line}` : "none",
                 background: isSelected ? "rgba(184,145,90,0.10)" : "transparent",
@@ -1091,6 +1137,7 @@ const CampaignTable = ({ onSelect, selected, onInterviewResults }) => {
                 cursor: "pointer",
                 fontFamily: "'Sora', sans-serif",
                 transition: "background 0.18s ease",
+                minWidth: isMobile ? undefined : (isTablet ? 980 : undefined),
               }}
               onMouseEnter={(e) => {
                 if (!isSelected) e.currentTarget.style.background = "rgba(184,145,90,0.05)";
@@ -1112,27 +1159,52 @@ const CampaignTable = ({ onSelect, selected, onInterviewResults }) => {
                 </div>
               </div>
 
-              <StatusDot status={campaign.status} />
+              {isMobile ? (
+                <>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
+                    <StatusDot status={campaign.status} />
+                    <div style={{ fontSize: 12.5, color: C.inkMuted }}>
+                      {campaign.language} · {campaign.accessType}
+                    </div>
+                  </div>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 10 }}>
+                    {[
+                      { label: "Applicants", value: campaign.applicants, tone: C.inkWhite, sub: "total applicants" },
+                      { label: "Shortlisted", value: campaign.shortlisted, tone: C.green, sub: `${campaign.interviewed} interviewed` },
+                    ].map((item) => (
+                      <div key={item.label} style={{ background: "rgba(255,250,242,0.72)", border: `1px solid ${C.line}`, borderRadius: 14, padding: "12px 13px" }}>
+                        <div style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: "0.11em", textTransform: "uppercase", color: C.inkFaint }}>{item.label}</div>
+                        <div style={{ fontSize: 22, fontWeight: 700, color: item.tone, fontFamily: "'DM Serif Display', serif", marginTop: 6 }}>{item.value}</div>
+                        <div style={{ fontSize: 11.5, color: C.inkFaint, marginTop: 4 }}>{item.sub}</div>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              ) : (
+                <>
+                  <StatusDot status={campaign.status} />
 
-              <div>
-                <div style={{ fontSize: 18, fontWeight: 700, color: C.inkWhite, fontFamily: "'DM Serif Display', serif" }}>
-                  {campaign.applicants}
-                </div>
-                <div style={{ fontSize: 11.5, color: C.inkFaint }}>total applicants</div>
-              </div>
+                  <div>
+                    <div style={{ fontSize: 18, fontWeight: 700, color: C.inkWhite, fontFamily: "'DM Serif Display', serif" }}>
+                      {campaign.applicants}
+                    </div>
+                    <div style={{ fontSize: 11.5, color: C.inkFaint }}>total applicants</div>
+                  </div>
 
-              <div>
-                <div style={{ fontSize: 18, fontWeight: 700, color: C.green, fontFamily: "'DM Serif Display', serif" }}>
-                  {campaign.shortlisted}
-                </div>
-                <div style={{ fontSize: 11.5, color: C.inkFaint }}>
-                  {campaign.interviewed} interviewed
-                </div>
-              </div>
+                  <div>
+                    <div style={{ fontSize: 18, fontWeight: 700, color: C.green, fontFamily: "'DM Serif Display', serif" }}>
+                      {campaign.shortlisted}
+                    </div>
+                    <div style={{ fontSize: 11.5, color: C.inkFaint }}>
+                      {campaign.interviewed} interviewed
+                    </div>
+                  </div>
 
-              <div style={{ fontSize: 12.5, color: C.inkMuted }}>
-                {campaign.language} · {campaign.accessType}
-              </div>
+                  <div style={{ fontSize: 12.5, color: C.inkMuted }}>
+                    {campaign.language} · {campaign.accessType}
+                  </div>
+                </>
+              )}
 
               <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
                 <IconBtn
@@ -1198,7 +1270,7 @@ const CampaignTable = ({ onSelect, selected, onInterviewResults }) => {
   );
 };
 
-const CampaignDetail = ({ campaign, onClose, modal = false, closeRef }) => {
+const CampaignDetail = ({ campaign, onClose, modal = false, closeRef, isMobile = false, isTablet = false }) => {
   const [tab, setTab] = useState("overview");
 
   useEffect(() => {
@@ -1257,8 +1329,8 @@ const CampaignDetail = ({ campaign, onClose, modal = false, closeRef }) => {
         </div>
       </div>
 
-      <div style={{ padding: 16, display: "flex", flexDirection: "column", gap: 16, maxHeight: "calc(100vh - 130px)", overflow: "auto" }}>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 10 }}>
+      <div style={{ padding: isMobile ? 14 : 16, display: "flex", flexDirection: "column", gap: 16, maxHeight: "calc(100vh - 130px)", overflow: "auto" }}>
+        <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "repeat(2, minmax(0, 1fr))", gap: 10 }}>
           {[
             { label: "Applicants", value: campaign.applicants, color: C.blue },
             { label: "Interviewed", value: campaign.interviewed, color: C.yellow },
@@ -1341,7 +1413,7 @@ const CampaignDetail = ({ campaign, onClose, modal = false, closeRef }) => {
               <AxisBarChart data={funnelData} />
             </div>
 
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 14 }}>
+            <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "repeat(2, minmax(0, 1fr))", gap: 14 }}>
               <div style={{ background: "rgba(255,250,242,0.76)", border: `1px solid ${C.line}`, borderRadius: 18, padding: "18px 20px", display: "flex", flexDirection: "column", gap: 12 }}>
                 <div style={{ display: "flex", justifyContent: "space-between", gap: 10, alignItems: "flex-start" }}>
                   <div>
@@ -1426,13 +1498,13 @@ const CampaignDetail = ({ campaign, onClose, modal = false, closeRef }) => {
   );
 
   return modal ? (
-    <div style={{ width: "100%", maxWidth: 1700, maxHeight: "calc(100vh - 36px)", margin: "0 auto" }}>
+    <div style={{ width: "100%", maxWidth: isMobile ? "100%" : isTablet ? 1200 : 1700, maxHeight: isMobile ? "calc(100vh - 20px)" : "calc(100vh - 36px)", margin: "0 auto" }}>
       {content}
     </div>
   ) : content;
 };
 
-const CampaignDetailModal = ({ campaign, onClose }) => {
+const CampaignDetailModal = ({ campaign, onClose, isMobile = false, isTablet = false }) => {
   const closeRef = useRef(null);
 
   useModalLifecycle({ onClose, initialFocusRef: closeRef });
@@ -1440,23 +1512,23 @@ const CampaignDetailModal = ({ campaign, onClose }) => {
   if (!campaign) return null;
 
   return (
-    <ModalBackdrop onClose={onClose} ariaLabel={`${campaign.title} details`}>
+    <ModalBackdrop onClose={onClose} ariaLabel={`${campaign.title} details`} padding={isMobile ? 10 : isTablet ? 16 : 24}>
       <div style={{
-        width: "min(1700px, calc(100vw - 48px))",
-        maxWidth: 1700,
-        maxHeight: "calc(100vh - 48px)",
+        width: isMobile ? "100%" : isTablet ? "min(1200px, calc(100vw - 32px))" : "min(1700px, calc(100vw - 48px))",
+        maxWidth: isMobile ? "100%" : isTablet ? 1200 : 1700,
+        maxHeight: isMobile ? "calc(100vh - 20px)" : "calc(100vh - 48px)",
         overflow: "auto",
-        borderRadius: 24,
+        borderRadius: isMobile ? 18 : 24,
         boxSizing: "border-box",
         margin: "0 auto",
       }}>
-        <CampaignDetail campaign={campaign} onClose={onClose} modal closeRef={closeRef} />
+        <CampaignDetail campaign={campaign} onClose={onClose} modal closeRef={closeRef} isMobile={isMobile} isTablet={isTablet} />
       </div>
     </ModalBackdrop>
   );
 };
 
-const CreateModal = ({ onClose }) => {
+const CreateModal = ({ onClose, isMobile = false, isTablet = false }) => {
   const [title, setTitle] = useState("");
   const [company, setCompany] = useState("");
   const [language, setLanguage] = useState("EN");
@@ -1469,14 +1541,14 @@ const CreateModal = ({ onClose }) => {
   const selectedType = CAMPAIGN_TYPES.find((type) => type.id === campaignType) || CAMPAIGN_TYPES[0];
 
   return (
-    <ModalBackdrop onClose={onClose} ariaLabel="Create campaign">
+    <ModalBackdrop onClose={onClose} ariaLabel="Create campaign" padding={isMobile ? 10 : isTablet ? 16 : 24}>
       <div style={{
-        width: "min(820px, 100%)",
-        maxHeight: "calc(100vh - 36px)",
+        width: isMobile ? "100%" : "min(820px, 100%)",
+        maxHeight: isMobile ? "calc(100vh - 20px)" : "calc(100vh - 36px)",
         overflow: "auto",
         background: "rgba(249,245,239,0.98)",
         border: `1px solid ${C.lineStrong}`,
-        borderRadius: 24,
+        borderRadius: isMobile ? 18 : 24,
         boxShadow: "0 18px 60px rgba(28,20,9,0.16)",
       }}>
         <div style={{
@@ -1504,9 +1576,9 @@ const CreateModal = ({ onClose }) => {
           </IconBtn>
         </div>
 
-        <div style={{ padding: 22, display: "grid", gridTemplateColumns: "1.3fr 1fr", gap: 18 }}>
+        <div style={{ padding: isMobile ? 16 : 22, display: "grid", gridTemplateColumns: isTablet ? "1fr" : "1.3fr 1fr", gap: 18 }}>
           <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+            <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 12 }}>
               <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                 <label style={{ fontSize: 12, fontWeight: 600, color: C.inkMuted, letterSpacing: "0.04em" }}>Campaign Title</label>
                 <input
@@ -1536,7 +1608,7 @@ const CreateModal = ({ onClose }) => {
               />
             </div>
 
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+            <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 12 }}>
               <SelectField label="Language" value={language} onChange={(e) => setLanguage(e.target.value)}>
                 <option value="EN">English</option>
                 <option value="AR">Arabic</option>
@@ -1550,7 +1622,7 @@ const CreateModal = ({ onClose }) => {
 
             <div>
               <div style={{ fontSize: 12, fontWeight: 600, color: C.inkMuted, letterSpacing: "0.04em", marginBottom: 10 }}>Assessment Focus</div>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 10 }}>
+              <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "repeat(2, minmax(0, 1fr))", gap: 10 }}>
                 {CAMPAIGN_TYPES.map(({ id, icon: Icon, label, desc, tag }) => {
                   const active = campaignType === id;
 
@@ -1700,6 +1772,7 @@ export default function Dashboard() {
   const [selectedId, setSelectedId] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [showInterModal, setShowInterModal] = useState(false);
+  const { isMobile, isTablet } = useViewportState();
 
   const selectedCampaign = CAMPAIGNS.find(c => c.id === selectedId) || null;
 
@@ -1723,7 +1796,7 @@ export default function Dashboard() {
         minHeight: "100vh",
         background: C.bgDark,
         paddingTop: 80,
-        padding: "80px clamp(16px,3vw,40px) 48px",
+        padding: isMobile ? "76px 14px 32px" : "80px clamp(16px,3vw,40px) 48px",
         fontFamily: "'Sora', sans-serif",
         display: "flex",
         flexDirection: "column",
@@ -1754,7 +1827,7 @@ export default function Dashboard() {
         </div>
 
         {/* Stats */}
-        <div className="stats-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 12 }}>
+        <div className="stats-grid" style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : isTablet ? "repeat(2, minmax(0, 1fr))" : "repeat(4,1fr)", gap: 12 }}>
           {[
             { label: "Total Campaigns", value: String(dashboardTotals.campaigns), sub: `${dashboardTotals.activeCampaigns} active`, icon: FileText, color: C.blue },
             { label: "Total Applicants", value: String(dashboardTotals.applicants), sub: "Across all campaigns", icon: Users, color: C.gold },
@@ -1786,15 +1859,15 @@ export default function Dashboard() {
 
         {/* Main layout */}
         <div className="main-layout" style={{ minWidth: 0 }}>
-          <CampaignTable onSelect={setSelectedId} selected={selectedId} onInterviewResults={() => setShowInterModal(true)} />
+          <CampaignTable onSelect={setSelectedId} selected={selectedId} onInterviewResults={() => setShowInterModal(true)} isMobile={isMobile} isTablet={isTablet} />
         </div>
 
         {/* Circular Dashboard Insights */}
-        <DashboardCircularInsights campaign={CAMPAIGNS[0]} onCreateCampaign={() => setShowModal(true)} />
+        <DashboardCircularInsights campaign={CAMPAIGNS[0]} onCreateCampaign={() => setShowModal(true)} isMobile={isMobile} isTablet={isTablet} />
       </main>
 
-      {selectedCampaign && <CampaignDetailModal campaign={selectedCampaign} onClose={() => setSelectedId(null)} />}
-      {showModal && <CreateModal onClose={() => setShowModal(false)} />}
+      {selectedCampaign && <CampaignDetailModal campaign={selectedCampaign} onClose={() => setSelectedId(null)} isMobile={isMobile} isTablet={isTablet} />}
+      {showModal && <CreateModal onClose={() => setShowModal(false)} isMobile={isMobile} isTablet={isTablet} />}
       {showInterModal && <InterviewResults onClose={() => setShowInterModal(false)} />}
     </>
   );
