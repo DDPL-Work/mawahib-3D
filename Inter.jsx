@@ -9,35 +9,35 @@ import { getPaginationWindow, paginateItems } from "./tablePagination";
 
 // ─── Design Tokens ────────────────────────────────────────────────────────────
 const C = {
-    bgDark: "#080d1c",
-    bgPanel: "rgba(11,17,34,0.90)",
-    bgCard: "rgba(8,12,24,0.85)",
-    bgInput: "rgba(6,10,20,0.75)",
-    gold: "#b8955a",
-    goldBright: "#f0c97a",
-    goldDim: "rgba(240,201,122,0.14)",
+    bgDark: "#fbf5eb",
+    bgPanel: "rgba(255,250,242,0.85)",
+    bgCard: "rgba(255,250,242,0.92)",
+    bgInput: "rgba(255,255,255,0.95)",
+    gold: "#b8915a",
+    goldBright: "#f2d27a",
+    goldDim: "rgba(184,149,90,0.14)",
     goldBorder: "rgba(184,149,90,0.28)",
-    inkWhite: "#ffffff",
-    inkSoft: "rgba(245,240,235,0.82)",
-    inkMuted: "rgba(245,240,235,0.48)",
-    inkFaint: "rgba(245,240,235,0.20)",
-    line: "rgba(184,149,90,0.16)",
+    inkWhite: "#1c1409",
+    inkSoft: "rgba(44, 30, 10, 0.88)",
+    inkMuted: "rgba(44, 30, 10, 0.64)",
+    inkFaint: "rgba(44, 30, 10, 0.36)",
+    line: "rgba(184,149,90,0.18)",
     lineStrong: "rgba(184,149,90,0.32)",
-    blue: "#5f9eff",
-    blueDim: "rgba(95,158,255,0.12)",
-    blueBorder: "rgba(95,158,255,0.28)",
-    green: "#39c98f",
-    greenDim: "rgba(57,201,143,0.10)",
-    greenBorder: "rgba(57,201,143,0.28)",
-    yellow: "#e3c466",
-    yellowDim: "rgba(227,196,102,0.10)",
-    yellowBorder: "rgba(227,196,102,0.28)",
-    red: "#ff6b6b",
-    redDim: "rgba(255,107,107,0.10)",
-    redBorder: "rgba(255,107,107,0.28)",
-    purple: "#a78bfa",
-    purpleDim: "rgba(167,139,250,0.12)",
-    purpleBorder: "rgba(167,139,250,0.28)",
+    blue: "#3a7bd5",
+    blueDim: "rgba(58,123,213,0.10)",
+    blueBorder: "rgba(58,123,213,0.28)",
+    green: "#2d9e75",
+    greenDim: "rgba(45,158,117,0.10)",
+    greenBorder: "rgba(45,158,117,0.28)",
+    yellow: "#c48a00",
+    yellowDim: "rgba(196,138,0,0.10)",
+    yellowBorder: "rgba(196,138,0,0.28)",
+    red: "#d54f4f",
+    redDim: "rgba(213,79,79,0.10)",
+    redBorder: "rgba(213,79,79,0.28)",
+    purple: "#8c6dff",
+    purpleDim: "rgba(140,109,255,0.12)",
+    purpleBorder: "rgba(140,109,255,0.28)",
 };
 
 // ─── Mock Data ─────────────────────────────────────────────────────────────────
@@ -158,7 +158,7 @@ const CopyBtn = ({ value, small }) => {
             style={{
                 height: small ? 22 : 26, padding: "0 8px", borderRadius: 6,
                 border: `1px solid ${copied ? C.greenBorder : C.line}`,
-                background: copied ? C.greenDim : "rgba(255,255,255,0.03)",
+                background: copied ? C.greenDim : "rgba(255,255,255,0.55)",
                 color: copied ? C.green : C.inkFaint,
                 fontSize: 10.5, fontWeight: 600, cursor: "pointer",
                 display: "inline-flex", alignItems: "center", gap: 4,
@@ -238,7 +238,7 @@ const EvalCarousel = ({ candidateId, lang, setLang, hideBorder }) => {
                     Evaluation
                 </div>
                 {/* Lang toggle */}
-                <div style={{ display: "flex", gap: 4, background: "rgba(6,10,20,0.8)", border: `1px solid ${C.line}`, borderRadius: 9, padding: 3 }}>
+                <div style={{ display: "flex", gap: 4, background: "rgba(255,250,242,0.80)", border: `1px solid rgba(184,149,90,0.18)`, borderRadius: 9, padding: 3 }}>
                     {["EN", "AR"].map(l => (
                         <button key={l} onClick={() => setLang(l)} style={{
                             height: 26, padding: "0 12px", borderRadius: 7,
@@ -256,7 +256,7 @@ const EvalCarousel = ({ candidateId, lang, setLang, hideBorder }) => {
                 {/* Prev arrow */}
                 <button onClick={() => setIdx(i => Math.max(0, i - 1))} disabled={idx === 0} style={{
                     width: 36, height: 36, borderRadius: "50%", flexShrink: 0, alignSelf: "center",
-                    border: `1px solid ${C.line}`, background: "rgba(8,12,24,0.9)",
+                    border: `1px solid rgba(184,149,90,0.18)`, background: "rgba(255,250,242,0.90)",
                     color: idx === 0 ? C.inkFaint : C.inkSoft, cursor: idx === 0 ? "not-allowed" : "pointer",
                     display: "grid", placeItems: "center", marginRight: 12, transition: "all 0.18s",
                 }}
@@ -268,7 +268,7 @@ const EvalCarousel = ({ candidateId, lang, setLang, hideBorder }) => {
                 <div style={{ flex: 1, minWidth: 0 }}>
                     {card && (
                         <div style={{
-                            background: "rgba(8,12,28,0.85)", border: `1px solid ${C.line}`,
+                            background: "rgba(255,255,255,0.98)", border: `1px solid rgba(184,149,90,0.18)`,
                             borderRadius: 16, overflow: "hidden",
                         }}>
                             {/* Card header */}
@@ -278,7 +278,7 @@ const EvalCarousel = ({ candidateId, lang, setLang, hideBorder }) => {
                                 background: `${card.color}08`,
                             }}>
                                 {card.dot && <span style={{ width: 9, height: 9, borderRadius: "50%", background: card.color, boxShadow: `0 0 6px ${card.color}`, flexShrink: 0 }} />}
-                                <span style={{ fontSize: 13.5, fontWeight: 700, color: C.inkWhite }}>{card.label}</span>
+                                <span style={{ fontSize: 13.5, fontWeight: 700, color: C.inkSoft }}>{card.label}</span>
                             </div>
 
                             {/* Card body */}
@@ -334,7 +334,7 @@ const EvalCarousel = ({ candidateId, lang, setLang, hideBorder }) => {
                 {/* Next arrow */}
                 <button onClick={() => setIdx(i => Math.min(cards.length - 1, i + 1))} disabled={idx === cards.length - 1} style={{
                     width: 36, height: 36, borderRadius: "50%", flexShrink: 0, alignSelf: "center",
-                    border: `1px solid ${C.line}`, background: "rgba(8,12,24,0.9)",
+                    border: `1px solid rgba(184,149,90,0.18)`, background: "rgba(255,250,242,0.90)",
                     color: idx === cards.length - 1 ? C.inkFaint : C.inkSoft,
                     cursor: idx === cards.length - 1 ? "not-allowed" : "pointer",
                     display: "grid", placeItems: "center", marginLeft: 12, transition: "all 0.18s",
@@ -352,11 +352,11 @@ const CandidateRow = ({ c, expanded, onToggle, checked, onCheck, lang, setLang }
     const vs = verdictStyle(c.verdict);
     return (
         <div style={{
-            border: `1px solid ${expanded ? C.lineStrong : C.line}`,
+            border: `1px solid rgba(184,149,90,0.18)`,
             borderRadius: 16, overflow: "hidden",
-            background: expanded ? "rgba(10,16,34,0.95)" : C.bgCard,
+            background: expanded ? "rgba(255,250,242,0.98)" : "rgba(255,250,242,0.92)",
             transition: "all 0.2s ease",
-            boxShadow: expanded ? `0 4px 24px rgba(0,0,0,0.3), inset 0 0 0 1px ${C.lineStrong}` : "none",
+            boxShadow: expanded ? `0 6px 24px rgba(184,149,90,0.18)` : "none",
         }}>
             {/* Main row */}
             <div style={{
@@ -378,7 +378,7 @@ const CandidateRow = ({ c, expanded, onToggle, checked, onCheck, lang, setLang }
                 <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
                     <Avatar initials={c.initials} name={c.name} size={36} />
                     <div style={{ minWidth: 0 }}>
-                        <div style={{ fontSize: 13.5, fontWeight: 700, color: C.inkWhite, marginBottom: 1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{c.name}</div>
+                        <div style={{ fontSize: 13.5, fontWeight: 700, color: C.inkSoft, marginBottom: 1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{c.name}</div>
                         <div style={{ fontSize: 11.5, color: C.inkFaint, marginBottom: 2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{c.email}</div>
                         <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                             <span style={{ fontSize: 11, color: C.inkFaint, fontFamily: "monospace" }}>Session: {c.session}</span>
@@ -459,14 +459,14 @@ const CandidateRow = ({ c, expanded, onToggle, checked, onCheck, lang, setLang }
             {/* Evaluation panel */}
             {expanded && (
                 <div className="inter-expanded-grid" style={{ 
-                    background: "rgba(4,8,20,0.6)", 
-                    borderTop: `1px solid ${C.line}`,
+                    background: "rgba(255,250,242,0.94)", 
+                    borderTop: `1px solid rgba(184,149,90,0.18)`,
                     borderLeft: `3px solid ${vs.color}`,
                 }}>
                     {/* Video Player Area */}
                     <div className="inter-video-border" style={{ 
                         padding: "16px 20px", 
-                        borderRight: `1px solid ${C.line}`,
+                        borderRight: `1px solid rgba(184,149,90,0.18)`,
                         display: "flex", flexDirection: "column"
                     }}>
                         <div style={{ 
@@ -479,7 +479,7 @@ const CandidateRow = ({ c, expanded, onToggle, checked, onCheck, lang, setLang }
                         </div>
                         <div style={{
                             width: "100%", flex: 1, minHeight: 580, borderRadius: 12, overflow: "hidden",
-                            border: `1px solid ${C.line}`, background: "#000",
+                            border: `1px solid rgba(184,149,90,0.18)`, background: C.bgInput,
                             position: "relative"
                         }}>
                             {/* YT Video */}
@@ -504,7 +504,7 @@ const CandidateRow = ({ c, expanded, onToggle, checked, onCheck, lang, setLang }
     );
 };
 
-export default function InterviewResults({ onClose }) {
+export default function InterviewResults({ onClose, inline = false }) {
     const [activeTab, setActiveTab] = useState(0);
     const [search, setSearch] = useState("");
     const [statusFilter, setStatusFilter] = useState("All");
@@ -515,6 +515,49 @@ export default function InterviewResults({ onClose }) {
     const [checkedIds, setCheckedIds] = useState(new Set());
     const [lang, setLang] = useState("EN");
     const [page, setPage] = useState(1);
+    const isInline = inline;
+    const interRootStyle = isInline
+      ? {
+          position: "relative",
+          inset: "auto",
+          zIndex: "auto",
+          display: "block",
+          alignItems: "stretch",
+          justifyContent: "stretch",
+          fontFamily: "'Sora', sans-serif",
+          color: C.inkSoft,
+          animation: "none",
+          padding: 0,
+          background: "transparent",
+        }
+      : {
+          position: "fixed",
+          inset: 0,
+          zIndex: 9999,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          fontFamily: "'Sora', sans-serif",
+          color: C.inkSoft,
+          animation: "interFadeIn 0.25s ease forwards",
+          padding: "clamp(10px,2vw,20px)",
+        };
+    const shellStyle = {
+      position: "relative",
+      zIndex: 1,
+      overflowY: "auto",
+      borderRadius: 22,
+      border: isInline ? "none" : `1px solid ${C.line}`,
+      background: isInline ? "transparent" : "radial-gradient(ellipse 80vw 55vh at 100% -5%, rgba(184,149,90,0.12) 0%, transparent 55%), " +
+          "radial-gradient(ellipse 60vw 45vh at -5% 95%, rgba(95,158,255,0.08) 0%, transparent 50%), " +
+          "#fbf5ef",
+      animation: isInline ? "none" : "interSlideUp 0.35s cubic-bezier(0.22,1,0.36,1) forwards",
+      boxShadow: isInline ? "none" : "inset 0 1px 0 rgba(184,149,90,0.18)",
+      padding: isInline ? 0 : "clamp(16px,2.5vw,32px)",
+      width: "100%",
+      maxWidth: "100%",
+      maxHeight: isInline ? "none" : "94vh",
+    };
 
     const m = useMemo(() => {
         const totalCandidates = CANDIDATES.length;
@@ -580,17 +623,20 @@ export default function InterviewResults({ onClose }) {
         { label: "Needs Review / Fail", value: `${m.needsReview} / ${m.failed}`, sub: `${m.reviewRange} / < ${m.failThreshold}`, color: C.yellow, icon: AlertCircle },
     ];
     useEffect(() => {
-        const onKeyDown = (event) => {
-            if (event.key === "Escape") onClose?.();
-        };
-        const previousOverflow = document.body.style.overflow;
-        document.body.style.overflow = "hidden";
-        document.addEventListener("keydown", onKeyDown);
-        return () => {
-            document.removeEventListener("keydown", onKeyDown);
-            document.body.style.overflow = previousOverflow;
-        };
-    }, [onClose]);
+        if (!isInline) {
+            const onKeyDown = (event) => {
+                if (event.key === "Escape") onClose?.();
+            };
+            const previousOverflow = document.body.style.overflow;
+            document.body.style.overflow = "hidden";
+            document.addEventListener("keydown", onKeyDown);
+            return () => {
+                document.removeEventListener("keydown", onKeyDown);
+                document.body.style.overflow = previousOverflow;
+            };
+        }
+        return undefined;
+    }, [onClose, isInline]);
 
     return (
         <>
@@ -598,13 +644,15 @@ export default function InterviewResults({ onClose }) {
         @import url('https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=DM+Serif+Display:ital@0;1&display=swap');
         .inter-modal * { box-sizing: border-box; }
         .inter-modal { scrollbar-width: thin; scrollbar-color: rgba(184,149,90,0.2) transparent; }
-        .inter-shell { width: min(1240px, 96vw); max-height: 94vh; }
-        .inter-content { width: 100%; max-width: 1120px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
+        .inter-shell { width: 100%; max-width: 100%; max-height: none; }
+        .inter-content { width: 100%; max-width: 100%; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
         .inter-hero { display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center; }
+        .inter-expanded-grid { background: rgba(255,250,242,0.92); border-top: 1px solid rgba(184,149,90,0.18); }
+        .inter-video-border { background: rgba(255,255,255,0.98); border-right: 1px solid rgba(184,149,90,0.18); }
         .inter-hero-top { width: 100%; display: flex; justify-content: flex-end; }
-        .inter-modal input::placeholder { color: rgba(245,240,235,0.28); }
+        .inter-modal input::placeholder { color: rgba(44, 30, 10, 0.28); }
         .inter-modal input[type="checkbox"] { accent-color: #f0c97a; }
-        .inter-modal select option { background: #0d1528; color: #f5f0eb; }
+        .inter-modal select option { background: #fbf1df; color: #1c1409; }
         @media (max-width: 980px) {
           .inter-filter-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
         }
@@ -631,70 +679,25 @@ export default function InterviewResults({ onClose }) {
 
             <div
                 className="inter-modal"
-                style={{
-                    position: "fixed", inset: 0, zIndex: 9999,
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                    fontFamily: "'Sora', sans-serif", color: "#f5f0eb",
-                    animation: "interFadeIn 0.25s ease forwards",
-                    padding: "clamp(10px,2vw,20px)",
-                }}
+                style={interRootStyle}
             >
                 {/* Backdrop — click to close */}
-                <div
+                {!isInline && (
+                  <div
                     onClick={onClose}
                     style={{ position: "absolute", inset: 0, background: "rgba(3,5,14,0.78)" }}
-                />
+                  />
+                )}
 
                 {/* Scrollable content panel */}
                 <div
                     className="inter-shell"
-                    style={{
-                        position: "relative", zIndex: 1,
-                        overflowY: "auto",
-                        borderRadius: 22,
-                        border: `1px solid ${C.line}`,
-                        background:
-                            "radial-gradient(ellipse 80vw 55vh at 100% -5%, rgba(184,149,90,0.12) 0%, transparent 55%), " +
-                            "radial-gradient(ellipse 60vw 45vh at -5% 95%, rgba(95,158,255,0.08) 0%, transparent 50%), " +
-                            "#080d1c",
-                        animation: "interSlideUp 0.35s cubic-bezier(0.22,1,0.36,1) forwards",
-                        boxShadow: "inset 0 1px 0 rgba(184,149,90,0.18)",
-                        padding: "clamp(16px,2.5vw,32px)",
-                    }}
+                    style={shellStyle}
                 >
                 <div className="inter-content">
 
                     {/* Hero Header */}
-                    <div className="inter-hero">
-                        <div className="inter-hero-top">
-                            <button onClick={onClose} style={{
-                                height: 40, padding: "0 18px", borderRadius: 11,
-                                border: `1px solid ${C.line}`, background: "rgba(184,149,90,0.07)",
-                                color: C.inkMuted, fontSize: 13, fontWeight: 600, cursor: "pointer",
-                                display: "flex", alignItems: "center", gap: 7, fontFamily: "'Sora', sans-serif",
-                                transition: "all 0.18s",
-                            }}
-                                onMouseEnter={e => { e.currentTarget.style.borderColor = C.lineStrong; e.currentTarget.style.color = C.inkSoft; }}
-                                onMouseLeave={e => { e.currentTarget.style.borderColor = C.line; e.currentTarget.style.color = C.inkMuted; }}
-                            >
-                                <ArrowLeft size={14} /> Back
-                            </button>
-                        </div>
-                        <div style={{ maxWidth: 760 }}>
-                            <div style={{ fontSize: 11, color: C.inkFaint, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 6 }}>
-                                <span style={{ color: C.blue, cursor: "default" }}>Dashboard</span>
-                                <span style={{ margin: "0 6px", color: C.inkFaint }}>/</span>
-                                <span>Interview Details</span>
-                            </div>
-                            <h1 style={{ fontFamily: "'DM Serif Display', serif", fontStyle: "italic", fontSize: "clamp(1.9rem,3.8vw,3rem)", color: C.inkWhite, margin: "0 0 6px", lineHeight: 1 }}>
-                                Interview Results
-                            </h1>
-                            <div style={{ fontSize: 14, color: C.inkMuted }}>
-                                Interview Code: <span style={{ fontFamily: "monospace", color: C.inkSoft, fontWeight: 600 }}>{m.code}</span>
-                            </div>
-                        </div>
-                    </div>
-                    {/* Interview Details card */}
+                        {/* Interview Details card */}
                     <div style={{
                         background: C.bgPanel, border: `1px solid ${C.line}`,
                         borderRadius: 22, padding: "20px 22px", backdropFilter: "blur(16px)",
@@ -703,7 +706,7 @@ export default function InterviewResults({ onClose }) {
                         <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12, marginBottom: 14 }}>
                             <div>
                                 <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", color: C.inkFaint, marginBottom: 6 }}>Interview Details</div>
-                                <h2 style={{ fontFamily: "'DM Serif Display', serif", fontSize: "1.5rem", fontWeight: 400, color: C.inkWhite, margin: "0 0 3px" }}>{m.title}</h2>
+                                <h2 style={{ fontFamily: "'DM Serif Display', serif", fontSize: "1.5rem", fontWeight: 400, color: C.inkSoft, margin: "0 0 3px" }}>{m.title}</h2>
                                 <div style={{ fontSize: 13, color: C.inkMuted }}>{m.company}</div>
                             </div>
                             <IconBtn title="More options"><MoreHorizontal size={15} /></IconBtn>
@@ -712,9 +715,9 @@ export default function InterviewResults({ onClose }) {
                         {/* Meta chips */}
                         <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 14 }}>
                             {[
-                                { label: `Code: ${m.code}`, color: C.inkMuted, bg: "rgba(255,255,255,0.03)", border: C.line },
-                                { label: `Created: ${m.created}`, color: C.inkMuted, bg: "rgba(255,255,255,0.03)", border: C.line },
-                                { label: `Started: ${m.started}`, color: C.inkMuted, bg: "rgba(255,255,255,0.03)", border: C.line },
+                                { label: `Code: ${m.code}`, color: C.inkMuted, bg: "rgba(255,255,255,0.55)", border: C.line },
+                                { label: `Created: ${m.created}`, color: C.inkMuted, bg: "rgba(255,255,255,0.55)", border: C.line },
+                                { label: `Started: ${m.started}`, color: C.inkMuted, bg: "rgba(255,255,255,0.55)", border: C.line },
                             ].map(({ label, color, bg, border }) => (
                                 <span key={label} style={{
                                     fontSize: 12, color, background: bg, border: `1px solid ${border}`,
@@ -734,7 +737,7 @@ export default function InterviewResults({ onClose }) {
                         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(180px,1fr))", gap: 12 }}>
                             {statCards.map(({ label, value, sub, color, icon: Icon }) => (
                                 <div key={label} style={{
-                                    background: "rgba(6,10,20,0.6)", border: `1px solid ${C.line}`,
+                                    background: "rgba(255,250,242,0.92)", border: `1px solid rgba(184,149,90,0.18)`,
                                     borderRadius: 14, padding: "14px 16px",
                                 }}>
                                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
@@ -749,13 +752,13 @@ export default function InterviewResults({ onClose }) {
                     </div>
 
                     {/* ── Interview type tabs ── */}
-                    <div style={{ display: "flex", gap: 4, background: C.bgPanel, border: `1px solid ${C.line}`, borderRadius: 14, padding: 5, backdropFilter: "blur(12px)", alignSelf: "center" }}>
+                    <div style={{ display: "flex", gap: 4, background: C.bgPanel, border: `1px solid rgba(184,149,90,0.18)`, borderRadius: 14, padding: 5, backdropFilter: "blur(12px)", alignSelf: "center" }}>
                         {INTERVIEW_TABS.map((tab, i) => (
                             <button key={tab} onClick={() => setActiveTab(i)} style={{
                                 height: 36, padding: "0 18px", borderRadius: 10,
                                 border: `1px solid ${activeTab === i ? C.goldBorder : "transparent"}`,
-                                background: activeTab === i ? `linear-gradient(135deg,rgba(184,149,90,0.25),rgba(240,201,122,0.14))` : "transparent",
-                                color: activeTab === i ? C.inkWhite : C.inkMuted,
+                                background: activeTab === i ? "rgba(184,149,90,0.18)" : "transparent",
+                                color: activeTab === i ? C.inkSoft : C.inkMuted,
                                 fontSize: 13, fontWeight: 600, cursor: "pointer",
                                 fontFamily: "'Sora', sans-serif", transition: "all 0.18s", whiteSpace: "nowrap",
                             }}>{tab}</button>
@@ -806,7 +809,7 @@ export default function InterviewResults({ onClose }) {
                             </label>
                             <div style={{
                                 fontSize: 12.5, color: C.inkMuted, fontWeight: 600,
-                                background: "rgba(255,255,255,0.03)", border: `1px solid ${C.line}`,
+                                background: "rgba(255,255,255,0.55)", border: `1px solid ${C.line}`,
                                 borderRadius: 8, padding: "5px 12px",
                             }}>
                                 Showing {filtered.length} result{filtered.length !== 1 ? "s" : ""}
@@ -825,7 +828,7 @@ export default function InterviewResults({ onClose }) {
                             display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 10,
                         }}>
                             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                                <h2 style={{ fontFamily: "'DM Serif Display', serif", fontSize: "1.35rem", fontWeight: 400, color: C.inkWhite, margin: 0 }}>
+                                <h2 style={{ fontFamily: "'DM Serif Display', serif", fontSize: "1.35rem", fontWeight: 400, color: C.inkSoft, margin: 0 }}>
                                     Candidates Results
                                 </h2>
                                 <span style={{

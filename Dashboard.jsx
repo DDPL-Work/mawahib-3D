@@ -1,43 +1,45 @@
-import { useState, useMemo, useRef, useEffect } from "react";
+﻿import { useState, useMemo, useRef, useEffect } from "react";
 import {
   Plus, Search, Settings, LogOut, Clock, Copy, ExternalLink,
   BarChart2, Users, CheckCircle2, ArrowRight, MoreHorizontal,
   Sparkles, TrendingUp, FileText, MessageSquare, Brain, Gavel,
   Globe, Layers, X, Calendar, Link2, Eye,
   UserCheck, UserX, AlertCircle, Award, BarChart, PieChart,
+  ChevronDown, Mail, RotateCcw,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import CVResults from "./resume";
 import InterviewResults from "./Inter";
 import { getPaginationWindow, MIN_TABLE_ROWS, paginateItems } from "./tablePagination";
+import DashboardCVResultsPanel from "./CVResultsPanel";
 
-// ─── Design Tokens ────────────────────────────────────────────────────────────
+// ─── Design Tokens — Light Golden Theme ───────────────────────────────────────
 const C = {
-  bgDark: "#080d1c",
-  bgPanel: "rgba(11,17,34,0.90)",
-  bgCard: "rgba(8,12,24,0.85)",
-  bgCardHover: "rgba(12,18,36,0.95)",
-  bgInput: "rgba(6,10,20,0.75)",
-  gold: "#b8955a",
-  goldBright: "#f0c97a",
-  goldDim: "rgba(240,201,122,0.14)",
-  goldBorder: "rgba(184,149,90,0.28)",
-  goldBorderHot: "rgba(240,201,122,0.55)",
-  inkWhite: "#ffffff",
-  inkSoft: "rgba(245,240,235,0.82)",
-  inkMuted: "rgba(245,240,235,0.48)",
-  inkFaint: "rgba(245,240,235,0.22)",
-  line: "rgba(184,149,90,0.16)",
-  lineStrong: "rgba(184,149,90,0.32)",
-  blue: "#5f9eff",
-  blueDim: "rgba(95,158,255,0.12)",
-  green: "#39c98f",
-  greenDim: "rgba(57,201,143,0.12)",
-  greenBright: "rgba(57,201,143,0.9)",
-  yellow: "#e3c466",
-  yellowDim: "rgba(227,196,102,0.12)",
-  red: "#ff6b6b",
-  redDim: "rgba(255,107,107,0.12)",
+  bgDark: "#f9f5ef",               // warm off-white page background
+  bgPanel: "rgba(197, 164, 126, 0.10)",  // soft golden panel
+  bgCard: "rgba(197, 164, 126, 0.06)",
+  bgCardHover: "rgba(197, 164, 126, 0.16)",
+  bgInput: "rgba(255, 250, 242, 0.85)",
+  gold: "#b8915a",
+  goldBright: "#9b6f36",
+  goldDim: "rgba(184, 145, 90, 0.14)",
+  goldBorder: "rgba(184, 145, 90, 0.35)",
+  goldBorderHot: "rgba(184, 145, 90, 0.55)",
+  inkWhite: "#1c1409",             // near-black for headings on light bg
+  inkSoft: "rgba(44, 30, 10, 0.90)",
+  inkMuted: "rgba(80, 58, 28, 0.65)",
+  inkFaint: "rgba(120, 96, 55, 0.50)",
+  line: "rgba(184, 145, 90, 0.18)",
+  lineStrong: "rgba(184, 145, 90, 0.32)",
+  blue: "#3a7bd5",
+  blueDim: "rgba(58, 123, 213, 0.10)",
+  green: "#2d9e75",
+  greenDim: "rgba(45, 158, 117, 0.10)",
+  greenBright: "rgba(45, 158, 117, 0.85)",
+  yellow: "#c48a00",
+  yellowDim: "rgba(196, 138, 0, 0.10)",
+  red: "#d94f6b",
+  redDim: "rgba(217, 79, 107, 0.10)",
 };
 
 // ─── Fonts ────────────────────────────────────────────────────────────────────
@@ -60,10 +62,10 @@ const CAMPAIGN_TYPES = [
 ];
 
 const TAG_COLORS = {
-  "General": { bg: C.blueDim, border: "rgba(95,158,255,0.3)", text: C.blue },
-  "Stage 2": { bg: C.goldDim, border: C.goldBorder, text: C.goldBright },
-  "Assessment": { bg: C.greenDim, border: "rgba(57,201,143,0.3)", text: C.green },
-  "Language": { bg: C.yellowDim, border: "rgba(227,196,102,0.3)", text: C.yellow },
+  "General": { bg: "rgba(58,123,213,0.10)", border: "rgba(58,123,213,0.28)", text: C.blue },
+  "Stage 2": { bg: "rgba(184,145,90,0.12)", border: "rgba(184,145,90,0.30)", text: C.gold },
+  "Assessment": { bg: "rgba(45,158,117,0.10)", border: "rgba(45,158,117,0.28)", text: C.green },
+  "Language": { bg: "rgba(196,138,0,0.10)", border: "rgba(196,138,0,0.28)", text: C.yellow },
 };
 
 const CAMPAIGNS = [
@@ -151,25 +153,133 @@ const CAMPAIGNS = [
 
 const INITIAL_FUNNEL_DATA = [
   { label: "CV Submitted", value: 108, pct: 100, color: C.blue },
-  { label: "Invited", value: 62, pct: 57, color: C.goldBright },
+  { label: "Invited", value: 62, pct: 57, color: C.gold },
   { label: "Interviewed", value: 28, pct: 26, color: C.yellow },
   { label: "Shortlisted", value: 12, pct: 11, color: C.green },
 ];
 
 // Mock CV results data
 const CV_RESULTS = [
-  { name: "Sarah Al-Farsi", score: 84, status: "suitable", gender: "F", exp: "5 yrs", match: "High" },
-  { name: "Omar Khalid", score: 77, status: "suitable", gender: "M", exp: "3 yrs", match: "High" },
-  { name: "Lina Mansoor", score: 71, status: "suitable", gender: "F", exp: "4 yrs", match: "Med" },
-  { name: "Tariq Hassan", score: 68, status: "suitable", gender: "M", exp: "6 yrs", match: "Med" },
-  { name: "Noor Al-Rashid", score: 62, status: "suitable", gender: "F", exp: "2 yrs", match: "Med" },
-  { name: "Khalid Ibrahim", score: 44, status: "unsuitable", gender: "M", exp: "1 yr", match: "Low" },
-  { name: "Fatima Zahra", score: 38, status: "unsuitable", gender: "F", exp: "0 yrs", match: "Low" },
-  { name: "Yousef Al-Mutairi", score: 31, status: "unsuitable", gender: "M", exp: "2 yrs", match: "Low" },
-  { name: "Mariam Haddad", score: 86, status: "suitable", gender: "F", exp: "7 yrs", match: "High" },
-  { name: "Rashed Al-Harbi", score: 74, status: "suitable", gender: "M", exp: "4 yrs", match: "High" },
-  { name: "Dana Qassem", score: 55, status: "suitable", gender: "F", exp: "2 yrs", match: "Med" },
-  { name: "Sultan Aziz", score: 46, status: "unsuitable", gender: "M", exp: "3 yrs", match: "Low" },
+  {
+    id: "cv-ahmad-al-saleh",
+    name: "Ahmad Al-Saleh",
+    email: "ahmad.saleh@example.com",
+    submittedAt: "2026-04-16",
+    submittedAtLabel: "16/04/26",
+    detailsLabel: "View details",
+    cvFile: "Ahmad_AlSaleh_CV.pdf",
+    reviewStatus: "Pending",
+    gender: "Male",
+    country: "Saudi Arabia",
+    city: "Riyadh",
+    phone: "+966501234567",
+    jdScore: 84,
+    penalty: 0,
+    overqualificationPenalty: 0,
+    finalScore: 84,
+    disqualified: "NO",
+    suitable: true,
+  },
+  {
+    id: "cv-mona-haddad",
+    name: "Mona Haddad",
+    email: "mona.haddad@example.com",
+    submittedAt: "2026-04-16",
+    submittedAtLabel: "16/04/26",
+    detailsLabel: "View details",
+    cvFile: "Mona_Haddad_CV.pdf",
+    reviewStatus: "Pending",
+    gender: "Female",
+    country: "Jordan",
+    city: "Amman",
+    phone: "+962790001122",
+    jdScore: 73,
+    penalty: 0,
+    overqualificationPenalty: 0,
+    finalScore: 73,
+    disqualified: "NO",
+    suitable: true,
+  },
+  {
+    id: "cv-yousef-nasser",
+    name: "Yousef Nasser",
+    email: "y.nasser@example.com",
+    submittedAt: "2026-04-15",
+    submittedAtLabel: "15/04/26",
+    detailsLabel: "View details",
+    cvFile: "Yousef_Nasser_CV.pdf",
+    reviewStatus: "Pending",
+    gender: "Male",
+    country: "UAE",
+    city: "Dubai",
+    phone: "+971551112233",
+    jdScore: 66,
+    penalty: 0,
+    overqualificationPenalty: 0,
+    finalScore: 66,
+    disqualified: "NO",
+    suitable: true,
+  },
+  {
+    id: "cv-layla-rahman",
+    name: "Layla Rahman",
+    email: "layla.rahman@example.com",
+    submittedAt: "2026-04-14",
+    submittedAtLabel: "14/04/26",
+    detailsLabel: "View details",
+    cvFile: "Layla_Rahman_CV.pdf",
+    reviewStatus: "Reviewed",
+    gender: "Female",
+    country: "Qatar",
+    city: "Doha",
+    phone: "+97433123456",
+    jdScore: 58,
+    penalty: 2,
+    overqualificationPenalty: 0,
+    finalScore: 56,
+    disqualified: "NO",
+    suitable: true,
+  },
+  {
+    id: "cv-khaled-ibrahim",
+    name: "Khaled Ibrahim",
+    email: "khaled.ibrahim@example.com",
+    submittedAt: "2026-04-13",
+    submittedAtLabel: "13/04/26",
+    detailsLabel: "View details",
+    cvFile: "Khaled_Ibrahim_CV.pdf",
+    reviewStatus: "Contacted",
+    gender: "Male",
+    country: "Bahrain",
+    city: "Manama",
+    phone: "+97336667788",
+    jdScore: 51,
+    penalty: 4,
+    overqualificationPenalty: 0,
+    finalScore: 47,
+    disqualified: "NO",
+    suitable: false,
+  },
+  {
+    id: "cv-noor-abbas",
+    name: "Noor Abbas",
+    email: "noor.abbas@example.com",
+    submittedAt: "2026-04-12",
+    submittedAtLabel: "12/04/26",
+    detailsLabel: "View details",
+    cvFile: "Noor_Abbas_CV.pdf",
+    reviewStatus: "Pending",
+    gender: "Female",
+    country: "Kuwait",
+    city: "Kuwait City",
+    phone: "+96594445566",
+    jdScore: 42,
+    penalty: 0,
+    overqualificationPenalty: 3,
+    finalScore: 39,
+    disqualified: "YES",
+    suitable: false,
+  },
 ];
 
 const CV_STATS = {
@@ -177,7 +287,7 @@ const CV_STATS = {
   male: 58, female: 50,
   scoreRanges: [
     { range: "80–100", count: 12, color: C.green },
-    { range: "60–79", count: 28, color: C.goldBright },
+    { range: "60–79", count: 28, color: C.gold },
     { range: "40–59", count: 22, color: C.yellow },
     { range: "0–39", count: 46, color: C.red },
   ],
@@ -197,11 +307,18 @@ const Tag = ({ label }) => {
 };
 
 const StatusDot = ({ status }) => {
-  const color = status === "active" ? C.green : C.yellow;
+  const statusMap = {
+    active: { color: C.green, label: "Active" },
+    paused: { color: C.yellow, label: "Paused" },
+    suitable: { color: C.green, label: "Suitable" },
+    unsuitable: { color: C.red, label: "Unsuitable" },
+  };
+  const { color, label } = statusMap[status] || { color: C.inkFaint, label: status };
+
   return (
     <span style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 12.5, color: C.inkSoft, fontWeight: 500 }}>
       <span style={{ width: 7, height: 7, borderRadius: "50%", background: color, boxShadow: `0 0 6px ${color}`, flexShrink: 0 }} />
-      {status === "active" ? "Active" : "Paused"}
+      {label}
     </span>
   );
 };
@@ -227,7 +344,7 @@ const AxisBarChart = ({ data }) => {
   const yForValue = (value) => margin.top + plotHeight - (value / yMax) * plotHeight;
 
   return (
-    <div style={{ border: `1px solid ${C.line}`, borderRadius: 14, background: "rgba(6,10,20,0.65)", padding: "12px 12px 8px" }}>
+    <div style={{ border: `1px solid ${C.line}`, borderRadius: 14, background: "rgba(197, 164, 126, 0.06)", padding: "12px 12px 8px" }}>
       <svg viewBox={`0 0 ${svgWidth} ${svgHeight}`} role="img" aria-label="Recruitment funnel chart" style={{ width: "100%", height: "auto", display: "block" }}>
         {[...Array(tickCount + 1)].map((_, i) => {
           const tickValue = (yMax / tickCount) * i;
@@ -252,7 +369,7 @@ const AxisBarChart = ({ data }) => {
           const xCenter = x + barWidth / 2;
           return (
             <g key={point.label}>
-              <rect x={x} y={y} width={barWidth} height={Math.max(4, barHeight)} rx={6} fill={point.color} opacity={0.9} />
+              <rect x={x} y={y} width={barWidth} height={Math.max(4, barHeight)} rx={6} fill={point.color} opacity={0.85} />
               <text x={xCenter} y={y - 8} textAnchor="middle" fontSize="11" fontWeight="600" fill={C.inkSoft}>
                 {point.value}
               </text>
@@ -283,8 +400,52 @@ const AxisBarChart = ({ data }) => {
     </div>
   );
 };
+
 const SectionLabel = ({ children }) => (
   <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.17em", textTransform: "uppercase", color: C.inkFaint, marginBottom: 10 }}>
+    {children}
+  </div>
+);
+
+const useModalLifecycle = ({ onClose, initialFocusRef }) => {
+  useEffect(() => {
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    const handleEscape = (event) => {
+      if (event.key === "Escape") onClose?.();
+    };
+
+    window.addEventListener("keydown", handleEscape);
+    requestAnimationFrame(() => initialFocusRef?.current?.focus?.());
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", handleEscape);
+    };
+  }, [onClose, initialFocusRef]);
+};
+
+const ModalBackdrop = ({ children, onClose, zIndex = 1100, ariaLabel = "Modal" }) => (
+  <div
+    role="dialog"
+    aria-modal="true"
+    aria-label={ariaLabel}
+    onClick={(e) => {
+      if (e.target === e.currentTarget) onClose?.();
+    }}
+    style={{
+      position: "fixed",
+      inset: 0,
+      zIndex,
+      background: "rgba(28,20,9,0.28)",
+      backdropFilter: "blur(10px)",
+      display: "grid",
+      placeItems: "center",
+      padding: 24,
+      overflowY: "auto",
+    }}
+  >
     {children}
   </div>
 );
@@ -300,7 +461,7 @@ const CircularKpi = ({ label, value, color, description }) => {
 
   return (
     <div style={{
-      background: "rgba(6,10,20,0.62)",
+      background: "rgba(255, 250, 242, 0.75)",
       border: `1px solid ${C.line}`,
       borderRadius: 16,
       padding: "16px 14px",
@@ -309,34 +470,19 @@ const CircularKpi = ({ label, value, color, description }) => {
       alignItems: "center",
       gap: 10,
       minHeight: 252,
+      boxShadow: "0 2px 12px rgba(184,145,90,0.08)",
     }}>
       <svg viewBox={`0 0 ${size} ${size}`} style={{ width: 148, height: 148, overflow: "visible" }} role="img" aria-label={`${label} ${safeValue}%`}>
+        <circle cx={size / 2} cy={size / 2} r={radius} fill="none" stroke={C.line} strokeWidth={stroke} />
         <circle
-          cx={size / 2}
-          cy={size / 2}
-          r={radius}
-          fill="none"
-          stroke={C.line}
-          strokeWidth={stroke}
-        />
-        <circle
-          cx={size / 2}
-          cy={size / 2}
-          r={radius}
-          fill="none"
-          stroke={color}
-          strokeWidth={stroke}
-          strokeLinecap="round"
-          strokeDasharray={circumference}
-          strokeDashoffset={dashOffset}
+          cx={size / 2} cy={size / 2} r={radius} fill="none"
+          stroke={color} strokeWidth={stroke} strokeLinecap="round"
+          strokeDasharray={circumference} strokeDashoffset={dashOffset}
           transform={`rotate(-90 ${size / 2} ${size / 2})`}
           style={{ transition: "stroke-dashoffset 0.45s ease" }}
         />
         <text
-          x="50%"
-          y="50%"
-          dominantBaseline="middle"
-          textAnchor="middle"
+          x="50%" y="50%" dominantBaseline="middle" textAnchor="middle"
           fill={C.inkWhite}
           style={{ fontFamily: "'DM Serif Display', serif", fontSize: 32 }}
         >
@@ -365,7 +511,7 @@ const DashboardCircularInsights = ({ campaign, onCreateCampaign }) => {
 
   return (
     <section style={{
-      background: C.bgPanel,
+      background: "rgba(255, 250, 242, 0.80)",
       border: `1px solid ${C.line}`,
       borderRadius: 22,
       padding: "24px 24px 20px",
@@ -373,6 +519,7 @@ const DashboardCircularInsights = ({ campaign, onCreateCampaign }) => {
       display: "flex",
       flexDirection: "column",
       gap: 18,
+      boxShadow: "0 4px 24px rgba(184,145,90,0.08)",
     }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 16, flexWrap: "wrap" }}>
         <div>
@@ -389,28 +536,21 @@ const DashboardCircularInsights = ({ campaign, onCreateCampaign }) => {
         <button
           onClick={onCreateCampaign}
           style={{
-            height: 40,
-            padding: "0 16px",
-            borderRadius: 11,
+            height: 40, padding: "0 16px", borderRadius: 11,
             border: `1px solid ${C.goldBorder}`,
             background: C.goldDim,
-            color: C.goldBright,
-            fontSize: 12.5,
-            fontWeight: 700,
-            fontFamily: "'Sora', sans-serif",
-            cursor: "pointer",
-            display: "inline-flex",
-            alignItems: "center",
-            gap: 7,
+            color: C.gold,
+            fontSize: 12.5, fontWeight: 700, fontFamily: "'Sora', sans-serif",
+            cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 7,
             transition: "all 0.18s",
           }}
           onMouseEnter={(e) => {
             e.currentTarget.style.background = `linear-gradient(135deg,${C.gold},${C.goldBright})`;
-            e.currentTarget.style.color = "#1a1006";
+            e.currentTarget.style.color = "#fff";
           }}
           onMouseLeave={(e) => {
             e.currentTarget.style.background = C.goldDim;
-            e.currentTarget.style.color = C.goldBright;
+            e.currentTarget.style.color = C.gold;
           }}
         >
           <Plus size={14} /> Create Campaign
@@ -418,51 +558,24 @@ const DashboardCircularInsights = ({ campaign, onCreateCampaign }) => {
       </div>
 
       <div className="circular-kpi-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(210px, 1fr))", gap: 12 }}>
-        <CircularKpi
-          label="Interview Reach"
-          value={interviewRate}
-          color={C.blue}
-          description="Share of total applicants who progressed into the interview stage."
-        />
-        <CircularKpi
-          label="Shortlist Yield"
-          value={shortlistRate}
-          color={C.green}
-          description="Total pipeline conversion from applicants into shortlist-ready candidates."
-        />
-        <CircularKpi
-          label="Quality Pass Rate"
-          value={shortlistFromInterviewRate}
-          color={C.goldBright}
-          description="Percent of interviewed candidates who met quality criteria for shortlist."
-        />
+        <CircularKpi label="Interview Reach" value={interviewRate} color={C.blue} description="Share of total applicants who progressed into the interview stage." />
+        <CircularKpi label="Shortlist Yield" value={shortlistRate} color={C.green} description="Total pipeline conversion from applicants into shortlist-ready candidates." />
+        <CircularKpi label="Quality Pass Rate" value={shortlistFromInterviewRate} color={C.gold} description="Percent of interviewed candidates who met quality criteria for shortlist." />
       </div>
 
       <div className="insight-copy-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(180px, 1fr))", gap: 10 }}>
         {[
-          {
-            title: "Executive Summary",
-            body: `${campaign.shortlisted} shortlisted from ${campaign.applicants} total applicants indicates a focused, quality-first screening flow.`,
-          },
-          {
-            title: "Operational Insight",
-            body: `${campaign.interviewed} candidates interviewed so far. Continue cadence to preserve decision velocity and avoid bottlenecks.`,
-          },
-          {
-            title: "Strategic Recommendation",
-            body: "Use this circular KPI block in weekly hiring reviews to track conversion health and drive evidence-based hiring decisions.",
-          },
+          { title: "Executive Summary", body: `${campaign.shortlisted} shortlisted from ${campaign.applicants} total applicants indicates a focused, quality-first screening flow.` },
+          { title: "Operational Insight", body: `${campaign.interviewed} candidates interviewed so far. Continue cadence to preserve decision velocity and avoid bottlenecks.` },
+          { title: "Strategic Recommendation", body: "Use this circular KPI block in weekly hiring reviews to track conversion health and drive evidence-based hiring decisions." },
         ].map((card) => (
-          <div
-            key={card.title}
-            style={{
-              background: "rgba(255,255,255,0.025)",
-              border: `1px solid ${C.line}`,
-              borderRadius: 12,
-              padding: "12px 13px",
-            }}
-          >
-            <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.11em", textTransform: "uppercase", color: C.goldBright, marginBottom: 6 }}>
+          <div key={card.title} style={{
+            background: "rgba(255, 250, 242, 0.60)",
+            border: `1px solid ${C.line}`,
+            borderRadius: 12,
+            padding: "12px 13px",
+          }}>
+            <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.11em", textTransform: "uppercase", color: C.gold, marginBottom: 6 }}>
               {card.title}
             </div>
             <div style={{ fontSize: 12.5, color: C.inkSoft, lineHeight: 1.65 }}>
@@ -512,26 +625,23 @@ const SelectField = ({ label, value, onChange, children }) => (
   </div>
 );
 
-const IconBtn = ({ children, onClick, title, active }) => (
+const IconBtn = ({ children, onClick, title, active, buttonRef }) => (
   <button
-    type="button"
-    title={title}
-    onClick={(e) => {
-      e.preventDefault();
-      onClick?.(e);
-    }}
+    ref={buttonRef}
+    type="button" title={title}
+    onClick={(e) => { e.preventDefault(); onClick?.(e); }}
     style={{
       width: 32, height: 32, borderRadius: 8,
       border: `1px solid ${active ? C.goldBorder : C.line}`,
       background: active ? C.goldDim : "transparent",
-      color: active ? C.goldBright : C.inkMuted,
+      color: active ? C.gold : C.inkMuted,
       display: "grid", placeItems: "center", cursor: "pointer", transition: "all 0.18s",
     }}
     onMouseEnter={e => { e.currentTarget.style.background = C.goldDim; e.currentTarget.style.borderColor = C.goldBorder; e.currentTarget.style.color = C.inkSoft; }}
     onMouseLeave={e => {
       e.currentTarget.style.background = active ? C.goldDim : "transparent";
       e.currentTarget.style.borderColor = active ? C.goldBorder : C.line;
-      e.currentTarget.style.color = active ? C.goldBright : C.inkMuted;
+      e.currentTarget.style.color = active ? C.gold : C.inkMuted;
     }}
   >{children}</button>
 );
@@ -546,12 +656,9 @@ const DashboardTablePagination = ({ page, totalPages, startIndex, endIndex, tota
     <div style={{
       padding: "14px 18px",
       borderTop: `1px solid ${C.line}`,
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "space-between",
-      gap: 12,
-      flexWrap: "wrap",
-      background: "rgba(255,255,255,0.01)",
+      display: "flex", alignItems: "center", justifyContent: "space-between",
+      gap: 12, flexWrap: "wrap",
+      background: "rgba(255,250,242,0.50)",
     }}>
       <div style={{ fontSize: 12.5, color: C.inkMuted }}>{summary}</div>
       <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
@@ -567,25 +674,17 @@ const DashboardTablePagination = ({ page, totalPages, startIndex, endIndex, tota
           { key: "next", label: "Next", disabled: page === totalPages, targetPage: page + 1 },
         ].map(({ key, label, disabled, targetPage, active }) => (
           <button
-            key={key}
-            type="button"
-            disabled={disabled}
+            key={key} type="button" disabled={disabled}
             aria-label={active ? `Current page, page ${label}` : `Go to page ${label}`}
             onClick={() => onPageChange(targetPage)}
             style={{
-              minWidth: 36,
-              height: 34,
-              padding: "0 12px",
-              borderRadius: 9,
+              minWidth: 36, height: 34, padding: "0 12px", borderRadius: 9,
               border: `1px solid ${active ? C.goldBorder : C.line}`,
               background: active ? C.goldDim : "transparent",
-              color: active ? C.goldBright : disabled ? C.inkFaint : C.inkMuted,
+              color: active ? C.gold : disabled ? C.inkFaint : C.inkMuted,
               cursor: disabled ? "not-allowed" : "pointer",
-              fontSize: 12.5,
-              fontWeight: 600,
-              fontFamily: "'Sora', sans-serif",
-              opacity: disabled ? 0.45 : 1,
-              transition: "all 0.18s ease",
+              fontSize: 12.5, fontWeight: 600, fontFamily: "'Sora', sans-serif",
+              opacity: disabled ? 0.45 : 1, transition: "all 0.18s ease",
             }}
             onMouseEnter={(e) => {
               if (disabled || active) return;
@@ -613,17 +712,21 @@ const Navbar = () => (
   <nav style={{
     position: "fixed", top: 0, left: 0, right: 0, zIndex: 100,
     padding: "0 clamp(16px,2.5vw,32px)", height: 64,
-    background: "rgba(8,13,26,0.88)", borderBottom: `1px solid ${C.line}`,
+    background: "rgba(249, 245, 239, 0.92)", borderBottom: `1px solid ${C.line}`,
     backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)",
     display: "flex", alignItems: "center", justifyContent: "space-between",
     fontFamily: "'Sora', sans-serif",
+    boxShadow: "0 1px 12px rgba(184,145,90,0.08)",
   }}>
   </nav>
 );
 
 // ─── CV Results Panel ─────────────────────────────────────────────────────────
-const CVResultsPanel = ({ campaign }) => {
-  const [view, setView] = useState("overview"); // overview | candidates
+// ✅ BUG FIX: Removed stray JSX (h1, p, button) that was accidentally pasted
+//    inside the candidatePagination.pageItems.map() callback, which caused
+//    "Adjacent JSX elements must be wrapped in an enclosing tag" error.
+const LegacyCVResultsPanel = ({ campaign }) => {
+  const [view, setView] = useState("overview");
   const [candidatePage, setCandidatePage] = useState(1);
 
   const maxBarCount = Math.max(...CV_STATS.scoreRanges.map(r => r.count));
@@ -648,15 +751,15 @@ const CVResultsPanel = ({ campaign }) => {
     <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
 
       {/* Sub-tabs */}
-      <div style={{ display: "flex", gap: 4, background: "rgba(6,10,20,0.7)", border: `1px solid ${C.line}`, borderRadius: 12, padding: 4 }}>
+      <div style={{ display: "flex", gap: 4, background: "rgba(255,250,242,0.70)", border: `1px solid ${C.line}`, borderRadius: 12, padding: 4 }}>
         {[
           { id: "overview", label: "Overview", icon: PieChart },
           { id: "candidates", label: "Candidates", icon: Users },
         ].map(({ id, label, icon: Icon }) => (
           <button key={id} onClick={() => setView(id)} style={{
             flex: 1, height: 32, borderRadius: 9,
-            border: `1px solid ${view === id ? "rgba(240,201,122,0.55)" : "transparent"}`,
-            background: view === id ? "linear-gradient(135deg,rgba(184,149,90,0.25),rgba(240,201,122,0.14))" : "transparent",
+            border: `1px solid ${view === id ? C.goldBorder : "transparent"}`,
+            background: view === id ? `linear-gradient(135deg,rgba(184,145,90,0.18),rgba(184,145,90,0.08))` : "transparent",
             color: view === id ? C.inkWhite : C.inkMuted,
             fontSize: 12, fontWeight: 700, cursor: "pointer",
             display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
@@ -672,14 +775,15 @@ const CVResultsPanel = ({ campaign }) => {
           {/* Summary cards */}
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
             {[
-              { label: "Total CVs", value: CV_STATS.total, sub: "Uploaded", color: C.blue, border: "rgba(95,158,255,0.25)" },
-              { label: "Suitable", value: CV_STATS.suitable, sub: `Score ≥ ${CV_STATS.threshold}`, color: C.green, border: "rgba(57,201,143,0.3)" },
-              { label: "Unsuitable", value: CV_STATS.unsuitable, sub: "Below threshold", color: C.red, border: "rgba(255,107,107,0.25)" },
-              { label: "Pass Rate", value: `${Math.round(CV_STATS.suitable / CV_STATS.total * 100)}%`, sub: "Of reviewed", color: C.goldBright, border: C.goldBorder },
+              { label: "Total CVs", value: CV_STATS.total, sub: "Uploaded", color: C.blue, border: "rgba(58,123,213,0.22)" },
+              { label: "Suitable", value: CV_STATS.suitable, sub: `Score ≥ ${CV_STATS.threshold}`, color: C.green, border: "rgba(45,158,117,0.25)" },
+              { label: "Unsuitable", value: CV_STATS.unsuitable, sub: "Below threshold", color: C.red, border: "rgba(217,79,107,0.22)" },
+              { label: "Pass Rate", value: `${Math.round(CV_STATS.suitable / CV_STATS.total * 100)}%`, sub: "Of reviewed", color: C.gold, border: C.goldBorder },
             ].map(({ label, value, sub, color, border }) => (
               <div key={label} style={{
-                background: "rgba(6,10,20,0.65)", border: `1px solid ${border}`,
+                background: "rgba(255, 250, 242, 0.75)", border: `1px solid ${border}`,
                 borderRadius: 14, padding: "14px 16px",
+                boxShadow: "0 2px 8px rgba(184,145,90,0.06)",
               }}>
                 <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.13em", textTransform: "uppercase", color: C.inkFaint, marginBottom: 6 }}>{label}</div>
                 <div style={{ fontFamily: "'DM Serif Display', serif", fontSize: "2rem", color, lineHeight: 1, marginBottom: 4 }}>{value}</div>
@@ -689,7 +793,7 @@ const CVResultsPanel = ({ campaign }) => {
           </div>
 
           {/* Gender breakdown */}
-          <div style={{ background: "rgba(6,10,20,0.65)", border: `1px solid ${C.line}`, borderRadius: 14, padding: "14px 16px" }}>
+          <div style={{ background: "rgba(255, 250, 242, 0.75)", border: `1px solid ${C.line}`, borderRadius: 14, padding: "14px 16px" }}>
             <SectionLabel>Gender Breakdown</SectionLabel>
             <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 10 }}>
               <div style={{ flex: 1 }}>
@@ -707,14 +811,13 @@ const CVResultsPanel = ({ campaign }) => {
                   <span style={{ fontSize: 12, color: C.inkSoft, fontWeight: 600 }}>{CV_STATS.female}</span>
                 </div>
                 <div style={{ height: 6, borderRadius: 99, background: C.line, overflow: "hidden" }}>
-                  <div style={{ height: "100%", width: `${Math.round(CV_STATS.female / CV_STATS.total * 100)}%`, borderRadius: 99, background: "#e06fa5" }} />
+                  <div style={{ height: "100%", width: `${Math.round(CV_STATS.female / CV_STATS.total * 100)}%`, borderRadius: 99, background: "#d4608a" }} />
                 </div>
               </div>
             </div>
-            {/* Visual split bar */}
             <div style={{ height: 8, borderRadius: 99, overflow: "hidden", display: "flex" }}>
               <div style={{ width: `${Math.round(CV_STATS.male / CV_STATS.total * 100)}%`, background: C.blue }} />
-              <div style={{ flex: 1, background: "#e06fa5" }} />
+              <div style={{ flex: 1, background: "#d4608a" }} />
             </div>
             <div style={{ display: "flex", justifyContent: "space-between", marginTop: 6 }}>
               <span style={{ fontSize: 11, color: C.inkFaint }}>♂ {Math.round(CV_STATS.male / CV_STATS.total * 100)}% Male</span>
@@ -723,7 +826,7 @@ const CVResultsPanel = ({ campaign }) => {
           </div>
 
           {/* Score distribution bar chart */}
-          <div style={{ background: "rgba(6,10,20,0.65)", border: `1px solid ${C.line}`, borderRadius: 14, padding: "14px 16px" }}>
+          <div style={{ background: "rgba(255, 250, 242, 0.75)", border: `1px solid ${C.line}`, borderRadius: 14, padding: "14px 16px" }}>
             <SectionLabel>Score Distribution</SectionLabel>
             <div style={{ display: "flex", alignItems: "flex-end", gap: 8, height: 80 }}>
               {CV_STATS.scoreRanges.map(({ range, count, color }) => (
@@ -732,7 +835,7 @@ const CVResultsPanel = ({ campaign }) => {
                   <div style={{
                     width: "100%", borderRadius: "4px 4px 0 0",
                     height: `${Math.round(count / maxBarCount * 64)}px`,
-                    background: color, opacity: 0.85,
+                    background: color, opacity: 0.80,
                     transition: "height 0.4s ease",
                   }} />
                 </div>
@@ -750,11 +853,11 @@ const CVResultsPanel = ({ campaign }) => {
 
           {/* Threshold info */}
           <div style={{
-            background: "linear-gradient(135deg,rgba(184,149,90,0.08),rgba(184,149,90,0.03))",
+            background: "linear-gradient(135deg,rgba(184,145,90,0.08),rgba(184,145,90,0.04))",
             border: `1px solid ${C.goldBorder}`, borderRadius: 12, padding: "12px 14px",
             display: "flex", alignItems: "center", gap: 10,
           }}>
-            <AlertCircle size={16} color={C.goldBright} style={{ flexShrink: 0 }} />
+            <AlertCircle size={16} color={C.gold} style={{ flexShrink: 0 }} />
             <div style={{ fontSize: 12.5, color: C.inkMuted, lineHeight: 1.6 }}>
               <span style={{ color: C.inkSoft, fontWeight: 600 }}>Suitability threshold set to {CV_STATS.threshold}.</span>{" "}
               Candidates scoring above this are marked suitable and eligible for interview.
@@ -762,25 +865,26 @@ const CVResultsPanel = ({ campaign }) => {
           </div>
         </>
       ) : (
-        /* Candidates list */
-        <div style={{ display: "flex", flexDirection: "column", gap: 0, background: "rgba(6,10,20,0.65)", border: `1px solid ${C.line}`, borderRadius: 14, overflow: "hidden" }}>
+        /* ✅ FIXED: Candidates list — stray JSX removed from inside .map() */
+        <div style={{ display: "flex", flexDirection: "column", gap: 0, background: "rgba(255, 250, 242, 0.75)", border: `1px solid ${C.line}`, borderRadius: 14, overflow: "hidden" }}>
           {/* List header */}
           <div style={{
             display: "grid", gridTemplateColumns: "1fr 52px 50px 50px",
             padding: "10px 14px", borderBottom: `1px solid ${C.line}`,
-            background: "rgba(255,255,255,0.015)",
+            background: "rgba(184,145,90,0.05)",
           }}>
             {["Candidate", "Score", "Match", "Status"].map(h => (
               <div key={h} style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: C.inkFaint }}>{h}</div>
             ))}
           </div>
 
+          {/* ✅ FIXED: Only the candidate row JSX is inside this .map() */}
           {candidatePagination.pageItems.map((r, i) => (
             <div key={i} style={{
               display: "grid", gridTemplateColumns: "1fr 52px 50px 50px",
               padding: "11px 14px",
               borderBottom: i < candidatePagination.pageItems.length - 1 ? `1px solid ${C.line}` : "none",
-              background: r.status === "suitable" ? "rgba(57,201,143,0.03)" : "transparent",
+              background: r.status === "suitable" ? "rgba(45,158,117,0.04)" : "transparent",
               alignItems: "center",
             }}>
               <div>
@@ -790,20 +894,17 @@ const CVResultsPanel = ({ campaign }) => {
               {/* Score pill */}
               <div style={{
                 display: "inline-flex", alignItems: "center", justifyContent: "center",
-                height: 26, width: 44, borderRadius: 8,
-                background: r.score >= 80 ? C.greenDim : r.score >= 60 ? C.goldDim : r.score >= 50 ? C.yellowDim : C.redDim,
-                border: `1px solid ${r.score >= 80 ? "rgba(57,201,143,0.3)" : r.score >= 60 ? C.goldBorder : r.score >= 50 ? "rgba(227,196,102,0.3)" : "rgba(255,107,107,0.25)"}`,
+                padding: "3px 8px", borderRadius: 8,
+                background: r.score >= 70 ? "rgba(45,158,117,0.12)" : r.score >= 50 ? "rgba(196,138,0,0.12)" : "rgba(217,79,107,0.12)",
+                color: r.score >= 70 ? C.green : r.score >= 50 ? C.yellow : C.red,
                 fontSize: 12, fontWeight: 700,
-                color: r.score >= 80 ? C.green : r.score >= 60 ? C.goldBright : r.score >= 50 ? C.yellow : C.red,
-              }}>{r.score}</div>
-              {/* Match */}
-              <div style={{ fontSize: 11.5, fontWeight: 600, color: r.match === "High" ? C.green : r.match === "Med" ? C.yellow : C.inkMuted }}>{r.match}</div>
-              {/* Status icon */}
-              <div>
-                {r.status === "suitable"
-                  ? <UserCheck size={14} color={C.green} />
-                  : <UserX size={14} color={C.red} />}
+              }}>
+                {r.score}
               </div>
+              {/* Match badge */}
+              <div style={{ fontSize: 12, color: C.inkMuted, fontWeight: 500 }}>{r.match}</div>
+              {/* Status dot */}
+              <StatusDot status={r.status} />
             </div>
           ))}
 
@@ -812,881 +913,826 @@ const CVResultsPanel = ({ campaign }) => {
             totalPages={candidatePagination.totalPages}
             startIndex={candidatePagination.startIndex}
             endIndex={candidatePagination.endIndex}
-            totalItems={candidatePagination.totalItems}
+            totalItems={CV_RESULTS.length}
             itemLabel="candidates"
             onPageChange={setCandidatePage}
           />
-
-          <div style={{ display: "none" }}>
-            <span style={{ fontSize: 11.5, color: C.inkFaint }}>Showing 8 of {CV_STATS.total} candidates · </span>
-            <span style={{ fontSize: 11.5, color: C.goldBright, cursor: "pointer", fontWeight: 600 }}>View all →</span>
-          </div>
         </div>
       )}
     </div>
   );
 };
 
-// ─── Interview Results Panel ──────────────────────────────────────────────────
-const InterviewResultsPanel = ({ campaign }) => {
-  // TODO: Replace with dynamic backend-driven values based on campaign ID
-  const [funnelData, setFunnelData] = useState(INITIAL_FUNNEL_DATA);
+const CampaignTable = ({ onSelect, selected, onInterviewResults }) => {
+  const [query, setQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [campaignPage, setCampaignPage] = useState(1);
+
+  const filteredCampaigns = useMemo(() => {
+    const search = query.trim().toLowerCase();
+
+    return CAMPAIGNS.filter((campaign) => {
+      const matchesStatus = statusFilter === "all" || campaign.status === statusFilter;
+      const matchesSearch = !search || [
+        campaign.title,
+        campaign.company,
+        campaign.code,
+        campaign.intakeCode,
+      ].some((value) => value.toLowerCase().includes(search));
+
+      return matchesStatus && matchesSearch;
+    });
+  }, [query, statusFilter]);
+
+  const campaignPagination = useMemo(
+    () => paginateItems(filteredCampaigns, campaignPage, MIN_TABLE_ROWS),
+    [filteredCampaigns, campaignPage]
+  );
+
+  useEffect(() => {
+    if (campaignPage !== campaignPagination.currentPage) {
+      setCampaignPage(campaignPagination.currentPage);
+    }
+  }, [campaignPage, campaignPagination.currentPage]);
+
+  useEffect(() => {
+    setCampaignPage(1);
+  }, [query, statusFilter]);
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
-      {/* Funnel */}
-      <div>
-        <SectionLabel>Recruitment Funnel (X/Y Axis)</SectionLabel>
-        <AxisBarChart data={funnelData} />
+    <section style={{
+      background: "rgba(255, 250, 242, 0.82)",
+      border: `1px solid ${C.line}`,
+      borderRadius: 22,
+      overflow: "hidden",
+      boxShadow: "0 6px 24px rgba(184,145,90,0.08)",
+      backdropFilter: "blur(14px)",
+    }}>
+      <div style={{
+        padding: "18px 18px 16px",
+        borderBottom: `1px solid ${C.line}`,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        gap: 14,
+        flexWrap: "wrap",
+      }}>
+        <div>
+          <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: C.inkFaint }}>
+            Campaign Overview
+          </div>
+          <div style={{ fontSize: 22, color: C.inkWhite, fontFamily: "'DM Serif Display', serif", marginTop: 4 }}>
+            Active hiring pipeline
+          </div>
+        </div>
+
+        <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
+          <div style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            minWidth: 250,
+            height: 40,
+            padding: "0 12px",
+            borderRadius: 12,
+            border: `1px solid ${C.line}`,
+            background: C.bgInput,
+          }}>
+            <Search size={15} color={C.inkFaint} />
+            <input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search by title, company, or code"
+              style={{
+                border: "none",
+                outline: "none",
+                background: "transparent",
+                color: C.inkSoft,
+                fontSize: 13,
+                width: "100%",
+                fontFamily: "'Sora', sans-serif",
+              }}
+            />
+          </div>
+
+          <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+            {[
+              { id: "all", label: "All" },
+              { id: "active", label: "Active" },
+              { id: "paused", label: "Paused" },
+            ].map(({ id, label }) => {
+              const active = statusFilter === id;
+              return (
+                <button
+                  key={id}
+                  type="button"
+                  onClick={() => setStatusFilter(id)}
+                  style={{
+                    height: 36,
+                    padding: "0 14px",
+                    borderRadius: 999,
+                    border: `1px solid ${active ? C.goldBorder : C.line}`,
+                    background: active ? C.goldDim : "rgba(255,250,242,0.65)",
+                    color: active ? C.gold : C.inkMuted,
+                    cursor: "pointer",
+                    fontSize: 12.5,
+                    fontWeight: 700,
+                    fontFamily: "'Sora', sans-serif",
+                  }}
+                >
+                  {label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
       </div>
 
-      <Divider />
+      <div style={{
+        display: "grid",
+        gridTemplateColumns: "minmax(220px, 2.1fr) minmax(120px, 0.8fr) minmax(130px, 0.9fr) minmax(140px, 0.9fr) minmax(170px, 1fr) minmax(200px, 1.1fr)",
+        padding: "12px 18px",
+        gap: 12,
+        borderBottom: `1px solid ${C.line}`,
+        background: "rgba(184,145,90,0.05)",
+      }}>
+        {["Campaign", "Status", "Applicants", "Shortlisted", "Language", "Actions"].map((heading) => (
+          <div key={heading} style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: "0.13em", textTransform: "uppercase", color: C.inkFaint }}>
+            {heading}
+          </div>
+        ))}
+      </div>
 
-      {/* Interview stage stats */}
-      <div>
-        <SectionLabel>Stage Breakdown</SectionLabel>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+      <div style={{ display: "flex", flexDirection: "column" }}>
+        {campaignPagination.pageItems.map((campaign, index) => {
+          const isSelected = selected === campaign.id;
+
+          return (
+            <div
+              key={campaign.id}
+              onClick={() => onSelect?.(isSelected ? null : campaign.id)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  onSelect?.(isSelected ? null : campaign.id);
+                }
+              }}
+              role="button"
+              tabIndex={0}
+              style={{
+                display: "grid",
+                gridTemplateColumns: "minmax(220px, 2.1fr) minmax(120px, 0.8fr) minmax(130px, 0.9fr) minmax(140px, 0.9fr) minmax(140px, 0.9fr) minmax(200px, 1.1fr)",
+                gap: 12,
+                alignItems: "center",
+                padding: "16px 18px",
+                borderBottom: index < campaignPagination.pageItems.length - 1 ? `1px solid ${C.line}` : "none",
+                background: isSelected ? "rgba(184,145,90,0.10)" : "transparent",
+                textAlign: "left",
+                cursor: "pointer",
+                fontFamily: "'Sora', sans-serif",
+                transition: "background 0.18s ease",
+              }}
+              onMouseEnter={(e) => {
+                if (!isSelected) e.currentTarget.style.background = "rgba(184,145,90,0.05)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = isSelected ? "rgba(184,145,90,0.10)" : "transparent";
+              }}
+            >
+              <div style={{ minWidth: 0 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: C.inkWhite }}>{campaign.title}</div>
+                  <Tag label={campaign.status === "active" ? "General" : "Stage 2"} />
+                </div>
+                <div style={{ fontSize: 12.5, color: C.inkMuted, marginTop: 4 }}>
+                  {campaign.company} · {campaign.code}
+                </div>
+                <div style={{ fontSize: 11.5, color: C.inkFaint, marginTop: 4 }}>
+                  Created {campaign.created}
+                </div>
+              </div>
+
+              <StatusDot status={campaign.status} />
+
+              <div>
+                <div style={{ fontSize: 18, fontWeight: 700, color: C.inkWhite, fontFamily: "'DM Serif Display', serif" }}>
+                  {campaign.applicants}
+                </div>
+                <div style={{ fontSize: 11.5, color: C.inkFaint }}>total applicants</div>
+              </div>
+
+              <div>
+                <div style={{ fontSize: 18, fontWeight: 700, color: C.green, fontFamily: "'DM Serif Display', serif" }}>
+                  {campaign.shortlisted}
+                </div>
+                <div style={{ fontSize: 11.5, color: C.inkFaint }}>
+                  {campaign.interviewed} interviewed
+                </div>
+              </div>
+
+              <div style={{ fontSize: 12.5, color: C.inkMuted }}>
+                {campaign.language} · {campaign.accessType}
+              </div>
+
+              <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                <IconBtn
+                  title="Copy intake code"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigator?.clipboard?.writeText(campaign.intakeCode);
+                  }}
+                >
+                  <Copy size={14} />
+                </IconBtn>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onInterviewResults?.();
+                  }}
+                  style={{
+                    height: 34,
+                    padding: "0 12px",
+                    borderRadius: 9,
+                    border: `1px solid ${C.goldBorder}`,
+                    background: C.goldDim,
+                    color: C.gold,
+                    cursor: "pointer",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 6,
+                    fontSize: 12,
+                    fontWeight: 700,
+                    fontFamily: "'Sora', sans-serif",
+                  }}
+                >
+                  <Eye size={14} /> Results
+                </button>
+              </div>
+            </div>
+          );
+        })}
+
+        {!campaignPagination.pageItems.length && (
+          <div style={{ padding: "34px 24px", textAlign: "center" }}>
+            <div style={{ fontSize: 18, color: C.inkWhite, fontFamily: "'DM Serif Display', serif" }}>
+              No campaigns found
+            </div>
+            <div style={{ fontSize: 13, color: C.inkMuted, marginTop: 8 }}>
+              Try a different keyword or status filter.
+            </div>
+          </div>
+        )}
+      </div>
+
+      <DashboardTablePagination
+        page={campaignPagination.currentPage}
+        totalPages={campaignPagination.totalPages}
+        startIndex={campaignPagination.startIndex}
+        endIndex={campaignPagination.endIndex}
+        totalItems={filteredCampaigns.length}
+        itemLabel="campaigns"
+        onPageChange={setCampaignPage}
+      />
+    </section>
+  );
+};
+
+const CampaignDetail = ({ campaign, onClose, modal = false, closeRef }) => {
+  const [tab, setTab] = useState("overview");
+
+  useEffect(() => {
+    setTab("overview");
+  }, [campaign?.id]);
+
+  const funnelData = useMemo(() => {
+    const applicants = Math.max(campaign?.applicants || 0, 1);
+    const invited = Math.max(Math.round(applicants * 0.58), campaign?.interviewed || 0);
+    const interviewed = campaign?.interviewed || 0;
+    const shortlisted = campaign?.shortlisted || 0;
+
+    return [
+      { label: "CV Submitted", value: applicants, pct: 100, color: C.blue },
+      { label: "Invited", value: invited, pct: Math.round((invited / applicants) * 100), color: C.gold },
+      { label: "Interviewed", value: interviewed, pct: Math.round((interviewed / applicants) * 100), color: C.yellow },
+      { label: "Shortlisted", value: shortlisted, pct: Math.round((shortlisted / applicants) * 100), color: C.green },
+    ];
+  }, [campaign]);
+
+  if (!campaign) return null;
+
+  const content = (
+    <aside style={{
+      background: "rgba(255, 250, 242, 0.86)",
+      border: `1px solid ${C.line}`,
+      borderRadius: 22,
+      overflow: "hidden",
+      boxShadow: "0 8px 28px rgba(184,145,90,0.10)",
+      backdropFilter: "blur(16px)",
+      position: modal ? "relative" : "sticky",
+      top: modal ? undefined : 88,
+    }}>
+      <div style={{ padding: "18px 18px 16px", borderBottom: `1px solid ${C.line}` }}>
+        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 10 }}>
+          <div>
+            <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: C.inkFaint, marginBottom: 8 }}>
+              Campaign Detail
+            </div>
+            <div style={{ fontSize: 24, color: C.inkWhite, fontFamily: "'DM Serif Display', serif", lineHeight: 1.05 }}>
+              {campaign.title}
+            </div>
+            <div style={{ fontSize: 13, color: C.inkMuted, marginTop: 6 }}>
+              {campaign.company} · {campaign.code}
+            </div>
+          </div>
+          <IconBtn title="Close details" onClick={onClose} buttonRef={modal ? closeRef : undefined}>
+            <X size={15} />
+          </IconBtn>
+        </div>
+
+        <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", marginTop: 14 }}>
+          <StatusDot status={campaign.status} />
+          <Tag label={campaign.accessType === "Invite only" ? "Stage 2" : "General"} />
+          <span style={{ fontSize: 12, color: C.inkFaint }}>Intake code {campaign.intakeCode}</span>
+        </div>
+      </div>
+
+      <div style={{ padding: 16, display: "flex", flexDirection: "column", gap: 16, maxHeight: "calc(100vh - 130px)", overflow: "auto" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 10 }}>
           {[
-            { label: "Avg Score", value: "74", sub: "Interview score", color: C.goldBright },
-            { label: "Completion Rate", value: "91%", sub: "Started → Finished", color: C.green },
-            { label: "Top Scorers", value: "9", sub: "Score ≥ 80", color: C.blue },
-            { label: "Red Flags", value: "4", sub: "Flagged for review", color: C.red },
-          ].map(({ label, value, sub, color }) => (
+            { label: "Applicants", value: campaign.applicants, color: C.blue },
+            { label: "Interviewed", value: campaign.interviewed, color: C.yellow },
+            { label: "Shortlisted", value: campaign.shortlisted, color: C.green },
+            { label: "Language", value: campaign.language, color: C.gold },
+          ].map(({ label, value, color }) => (
             <div key={label} style={{
-              background: "rgba(6,10,20,0.65)", border: `1px solid ${C.line}`,
-              borderRadius: 14, padding: "13px 14px",
+              background: "rgba(255,250,242,0.70)",
+              border: `1px solid ${C.line}`,
+              borderRadius: 14,
+              padding: "12px 13px",
             }}>
-              <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: C.inkFaint, marginBottom: 5 }}>{label}</div>
-              <div style={{ fontFamily: "'DM Serif Display', serif", fontSize: "1.8rem", color, lineHeight: 1, marginBottom: 3 }}>{value}</div>
-              <div style={{ fontSize: 11.5, color: C.inkMuted }}>{sub}</div>
+              <div style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: "0.11em", textTransform: "uppercase", color: C.inkFaint }}>
+                {label}
+              </div>
+              <div style={{ fontSize: 26, color, fontFamily: "'DM Serif Display', serif", lineHeight: 1, marginTop: 8 }}>
+                {value}
+              </div>
             </div>
           ))}
         </div>
-      </div>
-    </div>
-  );
-};
 
-// ─── Campaign Detail Panel ────────────────────────────────────────────────────
-const CampaignDetail = ({ campaign, onClose }) => {
-  const [resultView, setResultView] = useState("interview");
-  const [copied, setCopied] = useState(null);
-  const copyRef = useRef(null);
+        <div style={{ display: "flex", gap: 6, background: "rgba(255,250,242,0.92)", border: `1px solid rgba(184,149,90,0.18)`, borderRadius: 12, padding: 4 }}>
+          {[
+            { id: "overview", label: "Overview" },
+            { id: "cv", label: "CV Results" },
+            { id: "results", label: "Results" },
+          ].map(({ id, label }) => {
+            const active = tab === id;
 
-  const copy = (text, key) => {
-    navigator.clipboard?.writeText(text).catch(() => { });
-    setCopied(key);
-    clearTimeout(copyRef.current);
-    copyRef.current = setTimeout(() => setCopied(null), 1800);
-  };
-
-  const links = [
-    { key: "cv", label: "CV Submission Link", url: `https://mawahib.ai/apply/${campaign.intakeCode}`, hint: "Share with candidates to submit their CV" },
-    { key: "interview", label: "Avatar Interview Link", url: `https://mawahib.ai/interview?code=${campaign.code}`, hint: "Qualified candidates complete interview here" },
-  ];
-
-  useEffect(() => {
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-
-    const onKeyDown = (event) => {
-      if (event.key === "Escape") onClose();
-    };
-
-    window.addEventListener("keydown", onKeyDown);
-
-    return () => {
-      document.body.style.overflow = previousOverflow;
-      window.removeEventListener("keydown", onKeyDown);
-      clearTimeout(copyRef.current);
-    };
-  }, [onClose]);
-
-  const handleCvTabClick = () => setResultView("cv");
-
-  return (
-    <div
-      style={{
-        position: "fixed", inset: 0, zIndex: 190,
-        background: "rgba(4,7,16,0.8)", backdropFilter: "blur(7px)",
-        display: "flex", alignItems: "center", justifyContent: "center", padding: 18,
-      }}
-      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
-    >
-      <div style={{
-        width: "100%", maxWidth: 980, maxHeight: "88vh",
-        background: "rgba(10,15,28,0.98)", border: `1px solid ${C.lineStrong}`,
-        borderRadius: 24, boxShadow: "0 32px 80px rgba(0,0,0,0.65)",
-        backdropFilter: "blur(16px)", display: "flex", flexDirection: "column", overflow: "hidden",
-      }}>
-        {/* Panel header */}
-        <div style={{
-          padding: "18px 20px 16px", borderBottom: `1px solid ${C.line}`,
-          display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12,
-        }}>
-          <div style={{ minWidth: 0 }}>
-            <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", color: C.inkFaint, marginBottom: 6 }}>Campaign Details</div>
-            <h3 style={{ fontFamily: "'DM Serif Display', serif", fontSize: "1.35rem", fontWeight: 400, color: C.inkWhite, margin: "0 0 3px", lineHeight: 1.2 }}>{campaign.title}</h3>
-            <p style={{ fontSize: 12.5, color: C.inkMuted, margin: "0 0 8px" }}>{campaign.company}</p>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-              <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 11.5, color: C.inkMuted, background: "rgba(255,255,255,0.04)", border: `1px solid ${C.line}`, borderRadius: 999, padding: "3px 9px" }}>
-                <Award size={10} /> {campaign.accessType}
-              </span>
-              <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 11.5, color: C.inkMuted, background: "rgba(255,255,255,0.04)", border: `1px solid ${C.line}`, borderRadius: 999, padding: "3px 9px" }}>
-                <Globe size={10} /> {campaign.language}
-              </span>
-              <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 11.5, color: C.inkMuted, background: "rgba(255,255,255,0.04)", border: `1px solid ${C.line}`, borderRadius: 999, padding: "3px 9px" }}>
-                <Calendar size={10} /> No end date
-              </span>
-            </div>
-          </div>
-          <button onClick={onClose} style={{
-            width: 30, height: 30, borderRadius: 8, border: `1px solid ${C.line}`,
-            background: "transparent", color: C.inkMuted, cursor: "pointer", display: "grid", placeItems: "center", flexShrink: 0,
-          }}
-            onMouseEnter={e => { e.currentTarget.style.color = C.inkSoft; e.currentTarget.style.borderColor = C.lineStrong; }}
-            onMouseLeave={e => { e.currentTarget.style.color = C.inkMuted; e.currentTarget.style.borderColor = C.line; }}
-          ><X size={14} /></button>
-        </div>
-
-        {/* Scrollable body */}
-        <div style={{ flex: 1, overflowY: "auto", padding: "18px 20px", display: "flex", flexDirection: "column", gap: 18, scrollbarWidth: "thin", scrollbarColor: `${C.goldBorder} transparent` }}>
-
-          {/* Result view tabs */}
-          <div style={{ display: "flex", gap: 4, background: "rgba(6,10,20,0.7)", border: `1px solid ${C.line}`, borderRadius: 12, padding: 4 }}>
-            <button onClick={() => setResultView("interview")} style={{
-              flex: 1, height: 34, borderRadius: 9,
-              border: `1px solid ${resultView === "interview" ? "rgba(240,201,122,0.55)" : "transparent"}`,
-              background: resultView === "interview" ? "linear-gradient(135deg,rgba(184,149,90,0.28),rgba(240,201,122,0.16))" : "transparent",
-              color: resultView === "interview" ? C.inkWhite : C.inkMuted,
-              fontSize: 12.5, fontWeight: 700, cursor: "pointer",
-              display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
-              fontFamily: "'Sora', sans-serif", transition: "all 0.18s",
-            }}>
-              <BarChart size={13} /> Analytics
-            </button>
-            <button onClick={handleCvTabClick} style={{
-              flex: 1, height: 34, borderRadius: 9,
-              border: `1px solid ${resultView === "cv" ? "rgba(240,201,122,0.55)" : C.line}`,
-              background: resultView === "cv" ? "linear-gradient(135deg,rgba(184,149,90,0.28),rgba(240,201,122,0.16))" : "transparent",
-              color: resultView === "cv" ? C.inkWhite : C.inkMuted,
-              fontSize: 12.5, fontWeight: 700, cursor: "pointer",
-              display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
-              fontFamily: "'Sora', sans-serif", transition: "all 0.18s",
-            }}
-              onMouseEnter={e => { e.currentTarget.style.borderColor = C.goldBorder; e.currentTarget.style.color = C.inkSoft; }}
-              onMouseLeave={e => { e.currentTarget.style.borderColor = C.line; e.currentTarget.style.color = C.inkMuted; }}
-            >
-              <FileText size={13} /> CV Results
-            </button>
-          </div>
-
-          {/* Results content */}
-          {resultView === "interview" ? (
-            <InterviewResultsPanel campaign={campaign} />
-          ) : (
-            <div style={{
-              border: `1px solid ${C.line}`,
-              borderRadius: 14,
-              padding: 12,
-              background: "rgba(6,10,20,0.55)",
-            }}>
-              <CVResults embedded />
-            </div>
-          )}
-
-          <Divider />
-
-          {/* CV & Interview Status cards */}
-          <div>
-            <SectionLabel>Campaign Status</SectionLabel>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-              {[
-                { title: "CV Submission", status: "Enabled", end: campaign.cvEnd, key: "cvSubmission" },
-                { title: "Interview", status: "Enabled", end: campaign.interviewEnd, key: "interview" },
-              ].map(({ title, status, end, key }) => (
-                <div key={key} style={{
-                  background: "rgba(6,10,20,0.65)", border: `1px solid ${C.line}`,
-                  borderRadius: 13, padding: "12px 14px",
-                }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-                    <span style={{ fontSize: 12.5, fontWeight: 700, color: C.inkSoft }}>{title}</span>
-                    <button style={{
-                      height: 24, padding: "0 10px", borderRadius: 7,
-                      border: `1px solid ${C.line}`, background: "rgba(184,149,90,0.07)",
-                      color: C.inkMuted, fontSize: 11, fontWeight: 600, cursor: "pointer",
-                      fontFamily: "'Sora', sans-serif",
-                    }}>Edit</button>
-                  </div>
-                  <div style={{ fontFamily: "'DM Serif Display', serif", fontSize: "1.5rem", color: C.green, lineHeight: 1, marginBottom: 4 }}>{status}</div>
-                  <div style={{ fontSize: 11.5, color: C.inkFaint }}>Ends: {end}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Extend actions */}
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-            {["Edit end date", "Extend 7d", "Extend 30d"].map(label => (
-              <button key={label} style={{
-                height: 36, padding: "0 14px", borderRadius: 10,
-                border: `1px solid ${C.line}`, background: "rgba(255,255,255,0.03)",
-                color: C.inkSoft, fontSize: 12.5, fontWeight: 600, cursor: "pointer",
-                fontFamily: "'Sora', sans-serif", transition: "all 0.18s",
-              }}
-                onMouseEnter={e => { e.currentTarget.style.background = C.goldDim; e.currentTarget.style.borderColor = C.goldBorder; e.currentTarget.style.color = "#fff"; }}
-                onMouseLeave={e => { e.currentTarget.style.background = "rgba(255,255,255,0.03)"; e.currentTarget.style.borderColor = C.line; e.currentTarget.style.color = C.inkSoft; }}
-              >{label}</button>
-            ))}
-          </div>
-
-          <Divider />
-
-          {/* Campaign Links */}
-          <div>
-            <SectionLabel>Campaign Links</SectionLabel>
-            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-              {links.map(({ key, label, url, hint }) => (
-                <div key={key} style={{
-                  background: C.bgInput, border: `1px solid ${C.line}`,
-                  borderRadius: 12, padding: "12px 14px",
-                }}>
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                      <Link2 size={12} color={C.goldBright} />
-                      <span style={{ fontSize: 12, fontWeight: 600, color: C.inkSoft }}>{label}</span>
-                    </div>
-                    <div style={{ display: "flex", gap: 5 }}>
-                      <button onClick={() => copy(url, key)} style={{
-                        height: 26, padding: "0 10px", border: `1px solid ${C.line}`, borderRadius: 7,
-                        background: copied === key ? C.greenDim : "transparent",
-                        color: copied === key ? C.green : C.inkMuted,
-                        fontSize: 11, fontWeight: 600, cursor: "pointer",
-                        display: "flex", alignItems: "center", gap: 5,
-                        fontFamily: "'Sora', sans-serif", transition: "all 0.18s",
-                      }}>
-                        <Copy size={10} /> {copied === key ? "Copied!" : "Copy"}
-                      </button>
-                      <button onClick={() => window.open(url, "_blank", "noopener,noreferrer")} style={{
-                        height: 26, width: 26, border: `1px solid ${C.line}`, borderRadius: 7,
-                        background: "transparent", color: C.inkMuted,
-                        display: "grid", placeItems: "center", cursor: "pointer",
-                      }}
-                        onMouseEnter={e => { e.currentTarget.style.color = C.inkSoft; e.currentTarget.style.borderColor = C.goldBorder; }}
-                        onMouseLeave={e => { e.currentTarget.style.color = C.inkMuted; e.currentTarget.style.borderColor = C.line; }}
-                      ><ExternalLink size={10} /></button>
-                    </div>
-                  </div>
-                  <div style={{ fontSize: 11.5, color: C.blue, fontFamily: "monospace", wordBreak: "break-all", lineHeight: 1.5, marginBottom: 4 }}>{url}</div>
-                  <div style={{ fontSize: 11, color: C.inkFaint }}>{hint}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Codes */}
-          <div style={{ background: "rgba(6,10,20,0.65)", border: `1px solid ${C.line}`, borderRadius: 12, padding: "12px 14px" }}>
-            <SectionLabel>Campaign Codes</SectionLabel>
-            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-              {[
-                { label: "Interview Code", value: campaign.code },
-                { label: "Intake Code", value: campaign.intakeCode },
-              ].map(({ label, value }) => (
-                <div key={label} style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                  <span style={{ fontSize: 12, color: C.inkMuted }}>{label}</span>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                    <span style={{ fontSize: 12, fontFamily: "monospace", color: C.inkSoft }}>{value}</span>
-                    <button onClick={() => copy(value, label)} style={{
-                      height: 22, padding: "0 8px", borderRadius: 6,
-                      border: `1px solid ${C.line}`, background: "transparent",
-                      color: copied === label ? C.green : C.inkFaint,
-                      fontSize: 10, fontWeight: 600, cursor: "pointer",
-                      fontFamily: "'Sora', sans-serif", transition: "all 0.15s",
-                    }}>{copied === label ? "✓" : "Copy"}</button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-        </div>
-      </div>
-    </div>
-  );
-};
-
-// ─── Create Campaign Modal ─────────────────────────────────────────────────────
-const CreateModal = ({ onClose }) => {
-  const [step, setStep] = useState(1); // 1 = pick type, 2 = configure
-  const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState("All");
-  const [selectedType, setSelectedType] = useState(null);
-  const [form, setForm] = useState({
-    jobTitle: "", company: "", language: "English",
-    accessType: "open", cvEndDate: "", interviewEndDate: "",
-    cvEnabled: true, interviewEnabled: true,
-    threshold: "50",
-  });
-  const [created, setCreated] = useState(false);
-  const [generatedLinks, setGeneratedLinks] = useState(null);
-
-  const tabs = ["All", "General", "Stage 2", "Assessment", "Language"];
-  const filtered = activeTab === "All" ? CAMPAIGN_TYPES : CAMPAIGN_TYPES.filter(c => c.tag === activeTab);
-
-  const set = (key, val) => setForm(f => ({ ...f, [key]: val }));
-
-  const handleCreate = () => {
-    const code = `CAMP-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
-    const intake = `INT-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
-    setGeneratedLinks({
-      cvLink: `https://mawahib.ai/apply/${intake}`,
-      interviewLink: `https://mawahib.ai/interview?code=${code}`,
-      code, intake,
-    });
-    setCreated(true);
-  };
-
-  const [copied, setCopied] = useState(null);
-  const copy = (text, key) => {
-    navigator.clipboard?.writeText(text).catch(() => { });
-    setCopied(key);
-    setTimeout(() => setCopied(null), 1800);
-  };
-
-  const handleTypeSelect = ({ id, label, tag, icon }) => {
-    if (id === "first") {
-      onClose();
-      navigate("/interview");
-      return;
-    }
-    setSelectedType({ id, label, tag, icon });
-    setStep(2);
-  };
-
-  return (
-    <div
-      style={{
-        position: "fixed", inset: 0, zIndex: 200,
-        background: "rgba(4,7,16,0.8)", backdropFilter: "blur(6px)",
-        display: "flex", alignItems: "center", justifyContent: "center", padding: 20,
-        fontFamily: "'Sora', sans-serif",
-      }}
-      onClick={e => { if (e.target === e.currentTarget) onClose(); }}
-    >
-      <div style={{
-        width: "100%", maxWidth: created ? 540 : step === 2 ? 620 : 740,
-        background: "rgba(10,15,28,0.98)", border: `1px solid ${C.lineStrong}`,
-        borderRadius: 24, boxShadow: "0 32px 80px rgba(0,0,0,0.65)", overflow: "hidden",
-        transition: "max-width 0.3s ease",
-      }}>
-
-        {/* Modal header */}
-        <div style={{
-          padding: "22px 26px 18px", borderBottom: `1px solid ${C.line}`,
-          display: "flex", alignItems: "flex-start", justifyContent: "space-between",
-        }}>
-          <div>
-            <h2 style={{ fontFamily: "'DM Serif Display', serif", fontSize: "1.65rem", fontWeight: 400, color: C.inkWhite, margin: "0 0 4px" }}>
-              {created ? "Campaign Created!" : step === 1 ? "Create Interview Campaign" : `Configure: ${selectedType?.label}`}
-            </h2>
-            <p style={{ fontSize: 13, color: C.inkMuted, margin: 0 }}>
-              {created ? "Your campaign is live. Share the links below." : step === 1 ? "Select a template to continue." : "Fill in the details for your new campaign."}
-            </p>
-          </div>
-          <button onClick={onClose} style={{
-            width: 34, height: 34, borderRadius: 9, border: `1px solid ${C.line}`,
-            background: "transparent", color: C.inkMuted, cursor: "pointer", display: "grid", placeItems: "center",
-          }}
-            onMouseEnter={e => { e.currentTarget.style.color = C.inkSoft; }}
-            onMouseLeave={e => { e.currentTarget.style.color = C.inkMuted; }}
-          ><X size={15} /></button>
-        </div>
-
-        {/* ── Step 1: Pick type ── */}
-        {!created && step === 1 && (
-          <>
-            <div style={{ padding: "14px 26px 0", display: "flex", gap: 6, flexWrap: "wrap" }}>
-              {tabs.map(t => (
-                <button key={t} onClick={() => setActiveTab(t)} style={{
-                  height: 30, padding: "0 13px",
-                  border: `1px solid ${activeTab === t ? C.goldBorderHot : C.goldBorder}`,
-                  background: activeTab === t ? "linear-gradient(135deg,rgba(184,149,90,0.25),rgba(240,201,122,0.14))" : "transparent",
-                  color: activeTab === t ? C.inkWhite : C.inkMuted,
-                  borderRadius: 999, fontSize: 12, fontWeight: 600, cursor: "pointer",
-                  fontFamily: "'Sora', sans-serif", transition: "all 0.18s",
-                }}>{t}</button>
-              ))}
-            </div>
-            <div style={{
-              padding: "16px 26px 24px",
-              display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 10,
-              maxHeight: "52vh", overflowY: "auto",
-            }}>
-              {filtered.map(({ id, icon: Icon, label, tag, desc }) => (
-                <button key={id} onClick={() => handleTypeSelect({ id, label, tag, icon: Icon })} style={{
-                  background: C.bgCard, border: `1px solid ${C.line}`, borderRadius: 14,
-                  padding: "15px 17px", display: "flex", flexDirection: "column",
-                  alignItems: "flex-start", gap: 10, cursor: "pointer", textAlign: "left",
-                  transition: "all 0.2s ease", fontFamily: "'Sora', sans-serif",
-                }}
-                  onMouseEnter={e => { e.currentTarget.style.borderColor = C.goldBorderHot; e.currentTarget.style.background = C.bgCardHover; e.currentTarget.style.transform = "translateY(-2px)"; }}
-                  onMouseLeave={e => { e.currentTarget.style.borderColor = C.line; e.currentTarget.style.background = C.bgCard; e.currentTarget.style.transform = "translateY(0)"; }}
-                >
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%" }}>
-                    <div style={{ width: 36, height: 36, borderRadius: 9, background: C.goldDim, border: `1px solid ${C.goldBorder}`, display: "grid", placeItems: "center" }}>
-                      <Icon size={17} color={C.goldBright} />
-                    </div>
-                    <Tag label={tag} />
-                  </div>
-                  <div>
-                    <div style={{ fontSize: 13.5, fontWeight: 600, color: C.inkWhite, marginBottom: 4 }}>{label}</div>
-                    <div style={{ fontSize: 12, color: C.inkMuted, lineHeight: 1.6 }}>{desc}</div>
-                  </div>
-                  <div style={{ fontSize: 11.5, color: C.goldBright, fontWeight: 600, display: "flex", alignItems: "center", gap: 5 }}>
-                    Select <ArrowRight size={11} />
-                  </div>
-                </button>
-              ))}
-            </div>
-          </>
-        )}
-
-        {/* ── Step 2: Configure ── */}
-        {!created && step === 2 && (
-          <div style={{ padding: "20px 26px 24px", display: "flex", flexDirection: "column", gap: 18, maxHeight: "70vh", overflowY: "auto" }}>
-
-            {/* Selected type badge */}
-            {selectedType && (
-              <div style={{
-                display: "flex", alignItems: "center", gap: 10, padding: "10px 14px",
-                background: C.goldDim, border: `1px solid ${C.goldBorder}`, borderRadius: 12,
-              }}>
-                <div style={{ width: 32, height: 32, borderRadius: 8, background: "rgba(240,201,122,0.15)", border: `1px solid ${C.goldBorder}`, display: "grid", placeItems: "center" }}>
-                  <selectedType.icon size={15} color={C.goldBright} />
-                </div>
-                <div>
-                  <div style={{ fontSize: 13, fontWeight: 600, color: C.inkWhite }}>{selectedType.label}</div>
-                  <Tag label={selectedType.tag} />
-                </div>
-                <button onClick={() => setStep(1)} style={{
-                  marginLeft: "auto", fontSize: 11.5, color: C.goldBright, fontWeight: 600,
-                  background: "none", border: "none", cursor: "pointer", fontFamily: "'Sora', sans-serif",
-                }}>Change →</button>
-              </div>
-            )}
-
-            {/* Job details */}
-            <div>
-              <SectionLabel>Job Details</SectionLabel>
-              <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                <InputField label="Job Title *" value={form.jobTitle} onChange={e => set("jobTitle", e.target.value)} placeholder="e.g. B2B Sales Representative" />
-                <InputField label="Company Name *" value={form.company} onChange={e => set("company", e.target.value)} placeholder="e.g. Acme Corp" />
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-                  <SelectField label="Interview Language" value={form.language} onChange={e => set("language", e.target.value)}>
-                    <option>English</option>
-                    <option>Arabic</option>
-                    <option>French</option>
-                  </SelectField>
-                  <SelectField label="Access Type" value={form.accessType} onChange={e => set("accessType", e.target.value)}>
-                    <option value="open">Open Access</option>
-                    <option value="invite">Invite Only</option>
-                    <option value="code">Code Required</option>
-                  </SelectField>
-                </div>
-              </div>
-            </div>
-
-            <Divider />
-
-            {/* Stages */}
-            <div>
-              <SectionLabel>Campaign Stages</SectionLabel>
-              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                {[
-                  { key: "cvEnabled", label: "CV Submission", desc: "Candidates upload their CV for AI screening.", dateKey: "cvEndDate" },
-                  { key: "interviewEnabled", label: "AI Interview", desc: "Shortlisted candidates complete an avatar interview.", dateKey: "interviewEndDate" },
-                ].map(({ key, label, desc, dateKey }) => (
-                  <div key={key} style={{
-                    background: form[key] ? "rgba(57,201,143,0.04)" : "rgba(6,10,20,0.5)",
-                    border: `1px solid ${form[key] ? "rgba(57,201,143,0.25)" : C.line}`,
-                    borderRadius: 12, padding: "13px 14px",
-                    transition: "all 0.2s",
-                  }}>
-                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: form[key] ? 10 : 0 }}>
-                      <div>
-                        <div style={{ fontSize: 13, fontWeight: 600, color: form[key] ? C.inkWhite : C.inkMuted, marginBottom: 2 }}>{label}</div>
-                        <div style={{ fontSize: 11.5, color: C.inkFaint }}>{desc}</div>
-                      </div>
-                      {/* Toggle */}
-                      <div
-                        onClick={() => set(key, !form[key])}
-                        style={{
-                          width: 40, height: 22, borderRadius: 11, cursor: "pointer",
-                          background: form[key] ? C.green : "rgba(255,255,255,0.1)",
-                          position: "relative", transition: "background 0.2s", flexShrink: 0,
-                        }}
-                      >
-                        <div style={{
-                          position: "absolute", top: 3,
-                          left: form[key] ? 21 : 3,
-                          width: 16, height: 16, borderRadius: "50%",
-                          background: "#fff", transition: "left 0.2s",
-                        }} />
-                      </div>
-                    </div>
-                    {form[key] && (
-                      <InputField label="End Date (optional)" value={form[dateKey]} onChange={e => set(dateKey, e.target.value)} type="date" placeholder="Leave blank for no end date" />
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <Divider />
-
-            {/* CV Threshold (only if CV enabled) */}
-            {form.cvEnabled && (
-              <div>
-                <SectionLabel>CV Scoring</SectionLabel>
-                <div style={{ background: "rgba(6,10,20,0.6)", border: `1px solid ${C.line}`, borderRadius: 12, padding: "13px 14px" }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
-                    <div>
-                      <div style={{ fontSize: 13, fontWeight: 600, color: C.inkSoft, marginBottom: 2 }}>Suitability Threshold</div>
-                      <div style={{ fontSize: 11.5, color: C.inkFaint }}>Candidates scoring above this are marked suitable.</div>
-                    </div>
-                    <div style={{
-                      fontFamily: "'DM Serif Display', serif", fontSize: "1.6rem",
-                      color: C.goldBright, minWidth: 48, textAlign: "right",
-                    }}>{form.threshold}</div>
-                  </div>
-                  <input type="range" min="0" max="100" step="5" value={form.threshold}
-                    onChange={e => set("threshold", e.target.value)}
-                    style={{ width: "100%", accentColor: C.goldBright, cursor: "pointer", height: 4 }}
-                  />
-                  <div style={{ display: "flex", justifyContent: "space-between", marginTop: 4 }}>
-                    <span style={{ fontSize: 10.5, color: C.inkFaint }}>Lenient (0)</span>
-                    <span style={{ fontSize: 10.5, color: C.inkFaint }}>Strict (100)</span>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Action buttons */}
-            <div style={{ display: "flex", gap: 10, paddingTop: 4 }}>
-              <button onClick={() => setStep(1)} style={{
-                flex: 1, height: 44, borderRadius: 12,
-                border: `1px solid ${C.line}`, background: "transparent",
-                color: C.inkMuted, fontSize: 13, fontWeight: 600, cursor: "pointer",
-                fontFamily: "'Sora', sans-serif", transition: "all 0.18s",
-              }}
-                onMouseEnter={e => { e.currentTarget.style.borderColor = C.lineStrong; e.currentTarget.style.color = C.inkSoft; }}
-                onMouseLeave={e => { e.currentTarget.style.borderColor = C.line; e.currentTarget.style.color = C.inkMuted; }}
-              >← Back</button>
-              <button
-                onClick={handleCreate}
-                disabled={!form.jobTitle || !form.company}
-                style={{
-                  flex: 2, height: 44, borderRadius: 12, border: "none",
-                  background: form.jobTitle && form.company
-                    ? `linear-gradient(135deg,${C.gold},${C.goldBright})`
-                    : "rgba(255,255,255,0.06)",
-                  color: form.jobTitle && form.company ? "#1a1006" : C.inkFaint,
-                  fontSize: 14, fontWeight: 700, cursor: form.jobTitle && form.company ? "pointer" : "not-allowed",
-                  fontFamily: "'Sora', sans-serif",
-                  boxShadow: form.jobTitle && form.company ? `0 4px 20px rgba(184,149,90,0.3)` : "none",
-                  transition: "all 0.2s",
-                }}
-              >
-                <Plus size={15} style={{ display: "inline", marginRight: 7, verticalAlign: "middle" }} />
-                Create Campaign
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* ── Step 3: Created! ── */}
-        {created && generatedLinks && (
-          <div style={{ padding: "24px 26px 28px", display: "flex", flexDirection: "column", gap: 18 }}>
-            {/* Success icon */}
-            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10, paddingBottom: 4 }}>
-              <div style={{
-                width: 56, height: 56, borderRadius: "50%",
-                background: C.greenDim, border: `1px solid rgba(57,201,143,0.35)`,
-                display: "grid", placeItems: "center",
-              }}>
-                <CheckCircle2 size={26} color={C.green} />
-              </div>
-              <div style={{ textAlign: "center" }}>
-                <div style={{ fontSize: 14, fontWeight: 600, color: C.inkSoft, marginBottom: 2 }}>{form.jobTitle}</div>
-                <div style={{ fontSize: 12.5, color: C.inkMuted }}>{form.company} · {selectedType?.label}</div>
-              </div>
-            </div>
-
-            <Divider />
-
-            {/* Generated links */}
-            <div>
-              <SectionLabel>Your Campaign Links</SectionLabel>
-              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                {[
-                  { key: "cv", label: "CV Submission Link", url: generatedLinks.cvLink, hint: "Share this with candidates to collect CVs." },
-                  { key: "interview", label: "Avatar Interview Link", url: generatedLinks.interviewLink, hint: "Send this to shortlisted candidates." },
-                ].map(({ key, label, url, hint }) => (
-                  <div key={key} style={{ background: C.bgInput, border: `1px solid ${C.line}`, borderRadius: 12, padding: "12px 14px" }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                        <Link2 size={12} color={C.goldBright} />
-                        <span style={{ fontSize: 12, fontWeight: 600, color: C.inkSoft }}>{label}</span>
-                      </div>
-                      <div style={{ display: "flex", gap: 5 }}>
-                        <button onClick={() => copy(url, key)} style={{
-                          height: 26, padding: "0 10px", borderRadius: 7,
-                          border: `1px solid ${C.line}`,
-                          background: copied === key ? C.greenDim : "transparent",
-                          color: copied === key ? C.green : C.inkMuted,
-                          fontSize: 11, fontWeight: 600, cursor: "pointer",
-                          display: "flex", alignItems: "center", gap: 5,
-                          fontFamily: "'Sora', sans-serif", transition: "all 0.18s",
-                        }}>
-                          <Copy size={10} /> {copied === key ? "Copied!" : "Copy"}
-                        </button>
-                      </div>
-                    </div>
-                    <div style={{ fontSize: 11.5, color: C.blue, fontFamily: "monospace", wordBreak: "break-all", lineHeight: 1.5, marginBottom: 3 }}>{url}</div>
-                    <div style={{ fontSize: 11, color: C.inkFaint }}>{hint}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Codes */}
-            <div style={{ background: "rgba(6,10,20,0.65)", border: `1px solid ${C.line}`, borderRadius: 12, padding: "12px 14px" }}>
-              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                {[
-                  { label: "Interview Code", value: generatedLinks.code },
-                  { label: "Intake Code", value: generatedLinks.intake },
-                ].map(({ label, value }) => (
-                  <div key={label} style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <span style={{ fontSize: 12, color: C.inkMuted }}>{label}</span>
-                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                      <span style={{ fontSize: 12, fontFamily: "monospace", color: C.inkSoft }}>{value}</span>
-                      <button onClick={() => copy(value, `code-${label}`)} style={{
-                        height: 22, padding: "0 8px", borderRadius: 6,
-                        border: `1px solid ${C.line}`, background: "transparent",
-                        color: copied === `code-${label}` ? C.green : C.inkFaint,
-                        fontSize: 10, fontWeight: 600, cursor: "pointer",
-                        fontFamily: "'Sora', sans-serif",
-                      }}>{copied === `code-${label}` ? "✓" : "Copy"}</button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <button onClick={onClose} style={{
-              height: 44, borderRadius: 12, border: "none",
-              background: `linear-gradient(135deg,${C.gold},${C.goldBright})`,
-              color: "#1a1006", fontSize: 14, fontWeight: 700, cursor: "pointer",
-              fontFamily: "'Sora', sans-serif",
-              boxShadow: `0 4px 20px rgba(184,149,90,0.3)`,
-            }}>
-              Go to Dashboard
-            </button>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-};
-
-// ─── Campaign Table ───────────────────────────────────────────────────────────
-const CampaignTable = ({ onSelect, selected, onInterviewResults }) => {
-  const [search, setSearch] = useState("");
-  const [page, setPage] = useState(1);
-  const filtered = useMemo(() => CAMPAIGNS.filter(c =>
-    c.title.toLowerCase().includes(search.toLowerCase()) ||
-    c.company.toLowerCase().includes(search.toLowerCase())
-  ), [search]);
-  const pagination = useMemo(
-    () => paginateItems(filtered, page, MIN_TABLE_ROWS),
-    [filtered, page]
-  );
-
-  useEffect(() => {
-    if (page !== pagination.currentPage) {
-      setPage(pagination.currentPage);
-    }
-  }, [page, pagination.currentPage]);
-
-  return (
-    <div style={{ background: C.bgPanel, border: `1px solid ${C.line}`, borderRadius: 22, overflow: "hidden", backdropFilter: "blur(12px)" }}>
-      <div style={{ padding: "18px 22px", borderBottom: `1px solid ${C.line}`, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
-        <div>
-          <h2 style={{ fontFamily: "'DM Serif Display', serif", fontSize: "1.4rem", fontWeight: 400, color: C.inkWhite, margin: 0 }}>Active Campaigns</h2>
-          <p style={{ fontSize: 12.5, color: C.inkMuted, margin: "3px 0 0" }}>Click a row to view details and analytics.</p>
-        </div>
-        <div style={{ position: "relative", flexShrink: 0 }}>
-          <Search size={14} color={C.inkFaint} style={{ position: "absolute", left: 11, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }} />
-          <input value={search} onChange={e => { setSearch(e.target.value); setPage(1); }} placeholder="Search campaigns..." style={{
-            height: 36, width: 220, paddingLeft: 32, paddingRight: 12,
-            background: C.bgInput, border: `1px solid ${C.line}`, borderRadius: 10,
-            color: C.inkSoft, fontSize: 13, outline: "none", fontFamily: "'Sora', sans-serif", transition: "border-color 0.18s",
-          }}
-            onFocus={e => e.target.style.borderColor = C.goldBorder}
-            onBlur={e => e.target.style.borderColor = C.line}
-          />
-        </div>
-      </div>
-      <div style={{ overflowX: "auto" }}>
-        <div style={{ minWidth: 940 }}>
-          <div style={{ display: "grid", gridTemplateColumns: "2.2fr 0.9fr 0.9fr 0.9fr 0.9fr 90px", padding: "10px 22px", borderBottom: `1px solid ${C.line}`, background: "rgba(255,255,255,0.015)" }}>
-            {["Campaign", "Status", "Applicants", "Interviewed", "Shortlisted", "Actions"].map(h => (
-              <div key={h} style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: C.inkFaint }}>{h}</div>
-            ))}
-          </div>
-
-          {pagination.pageItems.map(c => {
-            const isSel = selected === c.id;
             return (
-              <div
-                key={c.id}
-                role="button"
-                tabIndex={0}
-                onClick={() => onSelect(c.id)}
-                onKeyDown={(event) => {
-                  if (event.key === "Enter" || event.key === " ") {
-                    event.preventDefault();
-                    onSelect(c.id);
-                  }
-                }}
+              <button
+                key={id}
+                type="button"
+                onClick={() => setTab(id)}
                 style={{
-                  display: "grid", gridTemplateColumns: "2.2fr 0.9fr 0.9fr 0.9fr 0.9fr 90px",
-                  padding: "16px 22px", borderBottom: `1px solid ${C.line}`, cursor: "pointer",
-                  background: isSel ? "rgba(95,158,255,0.05)" : "transparent",
-                  borderLeft: `2px solid ${isSel ? C.blue : "transparent"}`, transition: "all 0.18s ease",
-                  alignItems: "center",
-                  outline: "none",
+                  flex: 1,
+                  height: 34,
+                  borderRadius: 9,
+                  border: `1px solid ${active ? C.goldBorder : "transparent"}`,
+                  background: active ? "rgba(184,149,90,0.18)" : "transparent",
+                  color: active ? C.inkSoft : C.inkMuted,
+                  cursor: "pointer",
+                  fontSize: 12,
+                  fontWeight: 700,
+                  fontFamily: "'Sora', sans-serif",
                 }}
-                onMouseEnter={e => { if (!isSel) e.currentTarget.style.background = "rgba(184,149,90,0.04)"; }}
-                onMouseLeave={e => { if (!isSel) e.currentTarget.style.background = "transparent"; }}
               >
-                <div>
-                  <div style={{ fontSize: 14, fontWeight: 600, color: C.inkWhite, marginBottom: 3 }}>{c.title}</div>
-                  <div style={{ fontSize: 12, color: C.inkMuted }}>{c.company} · <span style={{ fontFamily: "monospace" }}>{c.code}</span></div>
-                  <div style={{ fontSize: 11, color: C.inkFaint, marginTop: 2, display: "flex", alignItems: "center", gap: 4 }}>
-                    <Clock size={9} /> Created {c.created}
-                  </div>
-                </div>
-                <div><StatusDot status={c.status} /></div>
-                {[c.applicants, c.interviewed, c.shortlisted].map((val, i) => (
-                  <div key={i}>
-                    <span style={{ fontSize: 16, fontWeight: 600, color: C.inkSoft, fontFamily: "'DM Serif Display', serif" }}>{val}</span>
-                  </div>
-                ))}
-                <div style={{ display: "flex", gap: 6 }} onClick={e => e.stopPropagation()}>
-                  <IconBtn title="Interview Results" onClick={() => onInterviewResults && onInterviewResults(c.id)}><BarChart2 size={14} /></IconBtn>
-                  <IconBtn title="More" onClick={() => onSelect(c.id)}><MoreHorizontal size={14} /></IconBtn>
-                </div>
-              </div>
+                {label}
+              </button>
             );
           })}
+        </div>
 
+        {tab === "overview" ? (
+          <>
+            <div style={{ background: "rgba(255,250,242,0.70)", border: `1px solid ${C.line}`, borderRadius: 16, padding: 14 }}>
+              <SectionLabel>Timeline</SectionLabel>
+              <div style={{ display: "grid", gridTemplateColumns: "20px 1fr", rowGap: 12, columnGap: 10 }}>
+                {[
+                  { icon: Calendar, label: "Campaign Created", value: campaign.created },
+                  { icon: Clock, label: "CV Intake Ends", value: campaign.cvEnd },
+                  { icon: MessageSquare, label: "Interview Window Ends", value: campaign.interviewEnd },
+                ].map(({ icon: Icon, label, value }) => (
+                  <div key={label} style={{ display: "contents" }}>
+                    <div style={{ width: 20, display: "grid", placeItems: "center" }}>
+                      <Icon size={14} color={C.gold} />
+                    </div>
+                    <div>
+                      <div style={{ fontSize: 12.5, color: C.inkSoft, fontWeight: 600 }}>{label}</div>
+                      <div style={{ fontSize: 12, color: C.inkFaint, marginTop: 2 }}>{value}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div style={{ background: "rgba(255,250,242,0.70)", border: `1px solid ${C.line}`, borderRadius: 16, padding: 14 }}>
+              <SectionLabel>Funnel Performance</SectionLabel>
+              <AxisBarChart data={funnelData} />
+            </div>
+
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 14 }}>
+              <div style={{ background: "rgba(255,250,242,0.76)", border: `1px solid ${C.line}`, borderRadius: 18, padding: "18px 20px", display: "flex", flexDirection: "column", gap: 12 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", gap: 10, alignItems: "flex-start" }}>
+                  <div>
+                    <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.11em", textTransform: "uppercase", color: C.inkFaint }}>CV Submission</div>
+                    <div style={{ fontSize: 22, color: C.blue, fontWeight: 700, marginTop: 6 }}>Enabled</div>
+                  </div>
+                  <button type="button" style={{ border: `1px solid ${C.line}`, borderRadius: 12, background: "rgba(255,250,242,0.98)", color: C.inkMuted, height: 36, padding: "0 14px", fontSize: 12.5, fontWeight: 700, cursor: "pointer" }}>
+                    Edit
+                  </button>
+                </div>
+                <div style={{ fontSize: 12, color: C.inkSoft, lineHeight: 1.6 }}>
+                  Ends: {campaign.cvEnd || "No end date"}
+                </div>
+              </div>
+
+              <div style={{ background: "rgba(255,250,242,0.76)", border: `1px solid ${C.line}`, borderRadius: 18, padding: "18px 20px", display: "flex", flexDirection: "column", gap: 12 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", gap: 10, alignItems: "flex-start" }}>
+                  <div>
+                    <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.11em", textTransform: "uppercase", color: C.inkFaint }}>Interview</div>
+                    <div style={{ fontSize: 22, color: C.yellow, fontWeight: 700, marginTop: 6 }}>Enabled</div>
+                  </div>
+                  <button type="button" style={{ border: `1px solid ${C.line}`, borderRadius: 12, background: "rgba(255,250,242,0.98)", color: C.inkMuted, height: 36, padding: "0 14px", fontSize: 12.5, fontWeight: 700, cursor: "pointer" }}>
+                    Edit
+                  </button>
+                </div>
+                <div style={{ fontSize: 12, color: C.inkSoft, lineHeight: 1.6 }}>
+                  Ends: {campaign.interviewEnd || "No end date"}
+                </div>
+              </div>
+            </div>
+
+            <div style={{ background: "rgba(255,250,242,0.70)", border: `1px solid ${C.line}`, borderRadius: 16, padding: 14, display: "grid", gap: 14 }}>
+              <SectionLabel>Campaign Links</SectionLabel>
+              <div style={{ display: "grid", gap: 12 }}>
+                {[
+                  { label: "CV submission link", value: `https://mawahib.ai/apply/${campaign.intakeCode}` },
+                  { label: "Avatar interview link", value: `https://mawahib.ai/interview?code=${campaign.code}` },
+                ].map((item) => (
+                  <div key={item.label} style={{ display: "grid", gap: 8 }}>
+                    <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.11em", textTransform: "uppercase", color: C.inkFaint }}>{item.label}</div>
+                    <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+                      <input readOnly value={item.value} style={{ flex: 1, minWidth: 0, borderRadius: 12, border: `1px solid ${C.line}`, background: "rgba(255,250,242,0.98)", color: C.inkSoft, padding: "10px 12px", fontSize: 13, fontFamily: "'Sora', sans-serif" }} />
+                      <button type="button" style={{ border: `1px solid ${C.line}`, borderRadius: 12, padding: "0 16px", height: 40, background: "rgba(255,250,242,0.98)", color: C.blue, fontWeight: 700, cursor: "pointer" }}>
+                        Copy
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
+                {[
+                  { label: "Edit end date" },
+                  { label: "Extend 7d" },
+                  { label: "Extend 30d" },
+                ].map((action) => (
+                  <button key={action.label} type="button" style={{ flex: "1 1 auto", minWidth: 120, borderRadius: 12, border: `1px solid ${C.line}`, background: "rgba(255,250,242,0.98)", color: C.inkMuted, height: 40, fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
+                    {action.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div style={{
+              background: "linear-gradient(135deg,rgba(184,145,90,0.10),rgba(184,145,90,0.04))",
+              border: `1px solid ${C.goldBorder}`,
+              borderRadius: 16,
+              padding: "14px 15px",
+            }}>
+              <SectionLabel>Hiring Notes</SectionLabel>
+              <div style={{ fontSize: 12.5, color: C.inkSoft, lineHeight: 1.75 }}>
+                {campaign.shortlisted} candidates are shortlist-ready from {campaign.applicants} applicants. Focus next on interviewer calibration and timely follow-up to preserve momentum through the final decision stage.
+              </div>
+            </div>
+          </>
+        ) : tab === "cv" ? (
+          <DashboardCVResultsPanel campaign={campaign} candidates={CV_RESULTS} theme={C} />
+        ) : (
+          <InterviewResults inline />
+        )}
+      </div>
+    </aside>
+  );
+
+  return modal ? (
+    <div style={{ width: "100%", maxWidth: 1700, maxHeight: "calc(100vh - 36px)", margin: "0 auto" }}>
+      {content}
+    </div>
+  ) : content;
+};
+
+const CampaignDetailModal = ({ campaign, onClose }) => {
+  const closeRef = useRef(null);
+
+  useModalLifecycle({ onClose, initialFocusRef: closeRef });
+
+  if (!campaign) return null;
+
+  return (
+    <ModalBackdrop onClose={onClose} ariaLabel={`${campaign.title} details`}>
+      <div style={{
+        width: "min(1700px, calc(100vw - 48px))",
+        maxWidth: 1700,
+        maxHeight: "calc(100vh - 48px)",
+        overflow: "auto",
+        borderRadius: 24,
+        boxSizing: "border-box",
+        margin: "0 auto",
+      }}>
+        <CampaignDetail campaign={campaign} onClose={onClose} modal closeRef={closeRef} />
+      </div>
+    </ModalBackdrop>
+  );
+};
+
+const CreateModal = ({ onClose }) => {
+  const [title, setTitle] = useState("");
+  const [company, setCompany] = useState("");
+  const [language, setLanguage] = useState("EN");
+  const [accessType, setAccessType] = useState("Open access");
+  const [campaignType, setCampaignType] = useState(CAMPAIGN_TYPES[0].id);
+  const initialFocusRef = useRef(null);
+
+  useModalLifecycle({ onClose, initialFocusRef });
+
+  const selectedType = CAMPAIGN_TYPES.find((type) => type.id === campaignType) || CAMPAIGN_TYPES[0];
+
+  return (
+    <ModalBackdrop onClose={onClose} ariaLabel="Create campaign">
+      <div style={{
+        width: "min(820px, 100%)",
+        maxHeight: "calc(100vh - 36px)",
+        overflow: "auto",
+        background: "rgba(249,245,239,0.98)",
+        border: `1px solid ${C.lineStrong}`,
+        borderRadius: 24,
+        boxShadow: "0 18px 60px rgba(28,20,9,0.16)",
+      }}>
+        <div style={{
+          padding: "20px 22px 16px",
+          borderBottom: `1px solid ${C.line}`,
+          display: "flex",
+          alignItems: "flex-start",
+          justifyContent: "space-between",
+          gap: 12,
+        }}>
+          <div>
+            <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: C.inkFaint, marginBottom: 7 }}>
+              Create Campaign
+            </div>
+            <div style={{ fontSize: 28, color: C.inkWhite, fontFamily: "'DM Serif Display', serif", lineHeight: 1.05 }}>
+              Launch a new hiring workflow
+            </div>
+            <div style={{ fontSize: 13, color: C.inkMuted, marginTop: 8, maxWidth: 620 }}>
+              This modal prepares the campaign structure and interview flow. The current page is a UI shell, so save closes the modal without persisting data yet.
+            </div>
+          </div>
+
+          <IconBtn title="Close modal" onClick={onClose}>
+            <X size={16} />
+          </IconBtn>
+        </div>
+
+        <div style={{ padding: 22, display: "grid", gridTemplateColumns: "1.3fr 1fr", gap: 18 }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                <label style={{ fontSize: 12, fontWeight: 600, color: C.inkMuted, letterSpacing: "0.04em" }}>Campaign Title</label>
+                <input
+                  ref={initialFocusRef}
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  placeholder="Senior Account Executive"
+                  style={{
+                    height: 40,
+                    padding: "0 12px",
+                    background: C.bgInput,
+                    border: `1px solid ${C.line}`,
+                    borderRadius: 10,
+                    color: C.inkSoft,
+                    fontSize: 13,
+                    outline: "none",
+                    fontFamily: "'Sora', sans-serif",
+                  }}
+                />
+              </div>
+
+              <InputField
+                label="Company"
+                value={company}
+                onChange={(e) => setCompany(e.target.value)}
+                placeholder="Northstar Holdings"
+              />
+            </div>
+
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+              <SelectField label="Language" value={language} onChange={(e) => setLanguage(e.target.value)}>
+                <option value="EN">English</option>
+                <option value="AR">Arabic</option>
+              </SelectField>
+
+              <SelectField label="Access Type" value={accessType} onChange={(e) => setAccessType(e.target.value)}>
+                <option value="Open access">Open access</option>
+                <option value="Invite only">Invite only</option>
+              </SelectField>
+            </div>
+
+            <div>
+              <div style={{ fontSize: 12, fontWeight: 600, color: C.inkMuted, letterSpacing: "0.04em", marginBottom: 10 }}>Assessment Focus</div>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 10 }}>
+                {CAMPAIGN_TYPES.map(({ id, icon: Icon, label, desc, tag }) => {
+                  const active = campaignType === id;
+
+                  return (
+                    <button
+                      key={id}
+                      type="button"
+                      onClick={() => setCampaignType(id)}
+                      style={{
+                        padding: "12px 13px",
+                        borderRadius: 14,
+                        border: `1px solid ${active ? C.goldBorder : C.line}`,
+                        background: active ? "rgba(184,145,90,0.12)" : "rgba(255,250,242,0.65)",
+                        textAlign: "left",
+                        cursor: "pointer",
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: 8,
+                      }}
+                    >
+                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
+                        <div style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+                          <span style={{
+                            width: 30,
+                            height: 30,
+                            borderRadius: 10,
+                            display: "grid",
+                            placeItems: "center",
+                            background: active ? C.goldDim : "rgba(184,145,90,0.06)",
+                            color: active ? C.gold : C.inkMuted,
+                          }}>
+                            <Icon size={15} />
+                          </span>
+                          <span style={{ fontSize: 13, fontWeight: 700, color: C.inkWhite }}>{label}</span>
+                        </div>
+                        <Tag label={tag} />
+                      </div>
+                      <div style={{ fontSize: 12, color: C.inkMuted, lineHeight: 1.55 }}>{desc}</div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+
+          <div style={{
+            background: "linear-gradient(180deg, rgba(184,145,90,0.10), rgba(184,145,90,0.04))",
+            border: `1px solid ${C.goldBorder}`,
+            borderRadius: 18,
+            padding: 16,
+            display: "flex",
+            flexDirection: "column",
+            gap: 14,
+          }}>
+            <div>
+              <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: C.gold }}>
+                Preview
+              </div>
+              <div style={{ fontSize: 24, fontFamily: "'DM Serif Display', serif", color: C.inkWhite, marginTop: 6 }}>
+                {title || "Untitled Campaign"}
+              </div>
+              <div style={{ fontSize: 13, color: C.inkMuted, marginTop: 6 }}>
+                {company || "Company name pending"} · {language} · {accessType}
+              </div>
+            </div>
+
+            <Divider />
+
+            <div>
+              <SectionLabel>Selected Flow</SectionLabel>
+              <div style={{ fontSize: 14, fontWeight: 700, color: C.inkWhite }}>{selectedType.label}</div>
+              <div style={{ fontSize: 12.5, color: C.inkMuted, marginTop: 6, lineHeight: 1.7 }}>
+                {selectedType.desc}
+              </div>
+            </div>
+
+            <div>
+              <SectionLabel>What Happens Next</SectionLabel>
+              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                {[
+                  "Generate intake and interview links for candidates.",
+                  "Share campaign access with recruiters or hiring managers.",
+                  "Start tracking applicant, interview, and shortlist conversion.",
+                ].map((item) => (
+                  <div key={item} style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
+                    <CheckCircle2 size={15} color={C.green} style={{ flexShrink: 0, marginTop: 2 }} />
+                    <div style={{ fontSize: 12.5, color: C.inkSoft, lineHeight: 1.65 }}>{item}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div style={{
+          padding: "16px 22px 20px",
+          borderTop: `1px solid ${C.line}`,
+          display: "flex",
+          justifyContent: "flex-end",
+          gap: 10,
+        }}>
+          <button
+            type="button"
+            onClick={onClose}
+            style={{
+              height: 40,
+              padding: "0 16px",
+              borderRadius: 11,
+              border: `1px solid ${C.line}`,
+              background: "transparent",
+              color: C.inkMuted,
+              cursor: "pointer",
+              fontSize: 12.5,
+              fontWeight: 700,
+              fontFamily: "'Sora', sans-serif",
+            }}
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            onClick={onClose}
+            style={{
+              height: 40,
+              padding: "0 18px",
+              borderRadius: 11,
+              border: "none",
+              background: `linear-gradient(135deg,${C.gold},${C.goldBright})`,
+              color: "#fff",
+              cursor: "pointer",
+              fontSize: 12.5,
+              fontWeight: 700,
+              fontFamily: "'Sora', sans-serif",
+              boxShadow: "0 8px 24px rgba(184,145,90,0.22)",
+            }}
+          >
+            Save Draft
+          </button>
         </div>
       </div>
-      {filtered.length === 0 && (
-        <div style={{ padding: "40px 22px", textAlign: "center", color: C.inkMuted, fontSize: 14 }}>No campaigns match your search.</div>
-      )}
-      {filtered.length > 0 && (
-        <DashboardTablePagination
-          page={pagination.currentPage}
-          totalPages={pagination.totalPages}
-          startIndex={pagination.startIndex}
-          endIndex={pagination.endIndex}
-          totalItems={pagination.totalItems}
-          itemLabel="campaigns"
-          onPageChange={setPage}
-        />
-      )}
-    </div>
+    </ModalBackdrop>
   );
 };
 
 // ─── Main Dashboard ───────────────────────────────────────────────────────────
 export default function Dashboard() {
-  const [showModal, setShowModal] = useState(false);
   const [selectedId, setSelectedId] = useState(null);
+  const [showModal, setShowModal] = useState(false);
   const [showInterModal, setShowInterModal] = useState(false);
-  const selectedCampaign = CAMPAIGNS.find(c => c.id === selectedId);
-  const dashboardTotals = useMemo(() => CAMPAIGNS.reduce((summary, campaign) => ({
-    campaigns: summary.campaigns + 1,
-    activeCampaigns: summary.activeCampaigns + (campaign.status === "active" ? 1 : 0),
-    applicants: summary.applicants + campaign.applicants,
-    interviewed: summary.interviewed + campaign.interviewed,
-    shortlisted: summary.shortlisted + campaign.shortlisted,
-  }), {
-    campaigns: 0,
-    activeCampaigns: 0,
-    applicants: 0,
-    interviewed: 0,
-    shortlisted: 0,
+
+  const selectedCampaign = CAMPAIGNS.find(c => c.id === selectedId) || null;
+
+  const dashboardTotals = useMemo(() => ({
+    campaigns: CAMPAIGNS.length,
+    activeCampaigns: CAMPAIGNS.filter(c => c.status === "active").length,
+    applicants: CAMPAIGNS.reduce((s, c) => s + c.applicants, 0),
+    interviewed: CAMPAIGNS.reduce((s, c) => s + c.interviewed, 0),
+    shortlisted: CAMPAIGNS.reduce((s, c) => s + c.shortlisted, 0),
   }), []);
-  const interviewRate = dashboardTotals.applicants
-    ? Math.round((dashboardTotals.interviewed / dashboardTotals.applicants) * 100)
-    : 0;
-  const shortlistRate = dashboardTotals.applicants
-    ? Math.round((dashboardTotals.shortlisted / dashboardTotals.applicants) * 100)
-    : 0;
+
+  const interviewRate = Math.round((dashboardTotals.interviewed / Math.max(dashboardTotals.applicants, 1)) * 100);
+  const shortlistRate = Math.round((dashboardTotals.shortlisted / Math.max(dashboardTotals.applicants, 1)) * 100);
 
   return (
     <>
       <FontLink />
-      <style>{`
-        *, *::before, *::after { box-sizing: border-box; }
-        html, body { margin: 0; padding: 0; scrollbar-width: thin; scrollbar-color: rgba(184,149,90,0.2) transparent; }
-        body {
-          min-height: 100vh;
-          background:
-            radial-gradient(ellipse 80vw 55vh at 100% -5%, rgba(184,149,90,0.1) 0%, transparent 55%),
-            radial-gradient(ellipse 60vw 45vh at -5% 95%, rgba(95,158,255,0.06) 0%, transparent 50%),
-            #080d1c;
-          font-family: 'Sora', sans-serif;
-        }
-        input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(0.5); cursor: pointer; }
-        input::placeholder { color: rgba(245,240,235,0.28); }
-        @media (max-width: 900px) {
-          .stats-grid { grid-template-columns: repeat(2,1fr) !important; }
-          .main-layout { flex-direction: column !important; }
-        }
-        @media (max-width: 960px) {
-          .circular-kpi-grid { grid-template-columns: 1fr !important; }
-          .insight-copy-grid { grid-template-columns: 1fr !important; }
-        }
-        @media (max-width: 600px) {
-          .stats-grid { grid-template-columns: 1fr !important; }
-        }
-      `}</style>
-
       <Navbar />
 
       <main style={{
-        maxWidth: 1360, margin: "0 auto",
-        padding: "clamp(84px,10vw,96px) clamp(16px,2.5vw,32px) 56px",
-        display: "flex", flexDirection: "column", gap: 24,
+        minHeight: "100vh",
+        background: C.bgDark,
+        paddingTop: 80,
+        padding: "80px clamp(16px,3vw,40px) 48px",
+        fontFamily: "'Sora', sans-serif",
+        display: "flex",
+        flexDirection: "column",
+        gap: 24,
       }}>
-        {/* Page header */}
-        <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
+        {/* Header */}
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", flexWrap: "wrap", gap: 16 }}>
           <div>
-            <div style={{
-              display: "inline-flex", alignItems: "center", gap: 6,
-              background: C.goldDim, border: `1px solid ${C.goldBorder}`,
-              borderRadius: 999, padding: "5px 12px",
-              fontSize: 10.5, fontWeight: 700, letterSpacing: "0.14em",
-              textTransform: "uppercase", color: C.goldBright, marginBottom: 12,
-            }}>
-              <span style={{ width: 6, height: 6, borderRadius: "50%", background: C.green, boxShadow: `0 0 6px ${C.green}` }} />
-              Dashboard
-            </div>
-            <h1 style={{ fontFamily: "'DM Serif Display', serif", fontStyle: "italic", fontSize: "clamp(2rem,4vw,3.2rem)", lineHeight: 1, letterSpacing: "-0.02em", margin: 0, color: C.inkWhite }}>
+            <h1 style={{ fontFamily: "'DM Serif Display', serif", fontStyle: "italic", fontSize: "clamp(2rem,4vw,3.2rem)", lineHeight: 1, letterSpacing: "-0.02em", margin: 0, color: C.gold }}>
               Hiring Campaigns
             </h1>
             <p style={{ fontSize: 14, color: C.inkMuted, marginTop: 8, marginBottom: 0 }}>Manage and track all your AI-powered interview campaigns.</p>
@@ -1695,13 +1741,13 @@ export default function Dashboard() {
             height: 46, padding: "0 22px",
             background: `linear-gradient(135deg,${C.gold},${C.goldBright})`,
             border: "none", borderRadius: 13,
-            color: "#1a1006", fontSize: 14, fontWeight: 700,
+            color: "#fff", fontSize: 14, fontWeight: 700,
             cursor: "pointer", display: "flex", alignItems: "center", gap: 8,
             fontFamily: "'Sora', sans-serif",
-            boxShadow: `0 4px 20px rgba(184,149,90,0.35)`, transition: "all 0.2s ease",
+            boxShadow: `0 4px 15px rgba(184,145,90,0.28)`, transition: "all 0.2s ease",
           }}
-            onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = `0 8px 28px rgba(184,149,90,0.45)`; }}
-            onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = `0 4px 20px rgba(184,149,90,0.35)`; }}
+            onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = `0 8px 28px rgba(184,145,90,0.40)`; }}
+            onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = `0 4px 15px rgba(184,145,90,0.28)`; }}
           >
             <Plus size={17} strokeWidth={2.5} /> New Campaign
           </button>
@@ -1711,18 +1757,20 @@ export default function Dashboard() {
         <div className="stats-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 12 }}>
           {[
             { label: "Total Campaigns", value: String(dashboardTotals.campaigns), sub: `${dashboardTotals.activeCampaigns} active`, icon: FileText, color: C.blue },
-            { label: "Total Applicants", value: String(dashboardTotals.applicants), sub: "Across all campaigns", icon: Users, color: C.goldBright },
+            { label: "Total Applicants", value: String(dashboardTotals.applicants), sub: "Across all campaigns", icon: Users, color: C.gold },
             { label: "Interviewed", value: String(dashboardTotals.interviewed), sub: `${interviewRate}% of total`, icon: MessageSquare, color: C.green },
             { label: "Shortlisted", value: String(dashboardTotals.shortlisted), sub: `${shortlistRate}% of total`, icon: TrendingUp, color: C.yellow },
           ].map(({ label, value, sub, icon: Icon, color }) => (
             <div key={label} style={{
-              background: C.bgPanel, border: `1px solid ${C.line}`,
+              background: "rgba(255, 250, 242, 0.85)", border: `1px solid ${C.line}`,
               borderRadius: 18, padding: "18px 20px",
-              display: "flex", alignItems: "center", gap: 14, backdropFilter: "blur(12px)",
+              display: "flex", alignItems: "center", gap: 14,
+              backdropFilter: "blur(12px)",
+              boxShadow: "0 2px 12px rgba(184,145,90,0.08)",
             }}>
               <div style={{
                 width: 42, height: 42, borderRadius: 12, flexShrink: 0,
-                background: `${color}1a`, border: `1px solid ${color}40`,
+                background: `${color}18`, border: `1px solid ${color}38`,
                 display: "grid", placeItems: "center",
               }}>
                 <Icon size={18} color={color} />
@@ -1737,32 +1785,17 @@ export default function Dashboard() {
         </div>
 
         {/* Main layout */}
-        <div className="main-layout" style={{ display: "flex", gap: 16, alignItems: "flex-start" }}>
-          <div style={{
-            flex: selectedCampaign ? "0 0 auto" : "1 1 100%",
-            width: selectedCampaign ? "calc(100% - 420px - 16px)" : "100%",
-            minWidth: 0, transition: "width 0.3s ease",
-          }}>
-            <CampaignTable onSelect={setSelectedId} selected={selectedId} onInterviewResults={() => setShowInterModal(true)} />
-          </div>
-
-          {selectedCampaign && (
-            <div style={{ flexShrink: 0, width: 420 }}>
-              <CampaignDetail campaign={selectedCampaign} onClose={() => setSelectedId(null)} />
-            </div>
-          )}
+        <div className="main-layout" style={{ minWidth: 0 }}>
+          <CampaignTable onSelect={setSelectedId} selected={selectedId} onInterviewResults={() => setShowInterModal(true)} />
         </div>
 
         {/* Circular Dashboard Insights */}
-        {!selectedCampaign && (
-          <DashboardCircularInsights campaign={selectedCampaign || CAMPAIGNS[0]} onCreateCampaign={() => setShowModal(true)} />
-        )}
+        <DashboardCircularInsights campaign={CAMPAIGNS[0]} onCreateCampaign={() => setShowModal(true)} />
       </main>
 
+      {selectedCampaign && <CampaignDetailModal campaign={selectedCampaign} onClose={() => setSelectedId(null)} />}
       {showModal && <CreateModal onClose={() => setShowModal(false)} />}
       {showInterModal && <InterviewResults onClose={() => setShowInterModal(false)} />}
     </>
   );
 }
-
-

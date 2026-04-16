@@ -807,35 +807,6 @@ function Nav() {
                 </>
               ) : (
                 <>
-                  <div style={{
-                    background: `linear-gradient(135deg, ${C.gold}, ${C.goldBright})`,
-                    border: "1px solid rgba(0,0,0,0.1)",
-                    borderRadius: 14,
-                    padding: "6px 16px",
-                    display: "flex",
-                    flexDirection: "column",
-                    justifyContent: "center",
-                    boxShadow: "0 4px 18px rgba(184,149,90,0.3)",
-                    minWidth: 120
-                  }}>
-                    <div style={{ 
-                      fontSize: 10, 
-                      fontWeight: 800, 
-                      color: "rgba(10,15,30,0.65)", 
-                      letterSpacing: "0.05em",
-                      marginBottom: -2
-                    }}>
-                      BALANCE ($)
-                    </div>
-                    <div style={{ 
-                      fontSize: 19, 
-                      fontWeight: 800, 
-                      color: "#0a0f1e",
-                      fontFamily: "'Sora', sans-serif"
-                    }}>
-                      $5000.00
-                    </div>
-                  </div>
                   <motion.button
                     onClick={() => setShowSettings(true)}
                     whileHover={{ scale: 1.05 }}
