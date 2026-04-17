@@ -885,7 +885,7 @@ const ResumePreviewModal = ({ candidate, embedded, onClose }) => {
       style={{
         position: "fixed",
         inset: 0,
-        zIndex: 360,
+        zIndex: 1200,
         background: "linear-gradient(270deg, rgba(4,7,16,0.86) 0%, rgba(4,7,16,0.48) 34%, rgba(4,7,16,0.08) 100%)",
         backdropFilter: "blur(5px)",
         display: "flex",

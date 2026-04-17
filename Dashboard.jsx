@@ -10,6 +10,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import CVResults from "./resume";
 import InterviewResults from "./Inter";
+import Interview from "./Interview";
 import { getPaginationWindow, MIN_TABLE_ROWS, paginateItems } from "./tablePagination";
 import DashboardCVResultsPanel from "./CVResultsPanel";
 
@@ -474,8 +475,8 @@ const ModalBackdrop = ({ children, onClose, zIndex = 1100, ariaLabel = "Modal", 
       position: "fixed",
       inset: 0,
       zIndex,
-      background: "rgba(28,20,9,0.28)",
-      backdropFilter: "blur(10px)",
+      background: "rgba(255, 250, 242, 0.55)",
+      backdropFilter: "saturate(1.12) blur(22px)",
       display: "grid",
       placeItems: "center",
       padding,
@@ -1528,11 +1529,7 @@ const CampaignDetailModal = ({ campaign, onClose, isMobile = false, isTablet = f
   );
 };
 
-const CreateModal = ({ onClose, isMobile = false, isTablet = false }) => {
-  const [title, setTitle] = useState("");
-  const [company, setCompany] = useState("");
-  const [language, setLanguage] = useState("EN");
-  const [accessType, setAccessType] = useState("Open access");
+const CreateModal = ({ onClose, onOpenInterviewPage, isMobile = false, isTablet = false }) => {
   const [campaignType, setCampaignType] = useState(CAMPAIGN_TYPES[0].id);
   const initialFocusRef = useRef(null);
 
@@ -1576,50 +1573,8 @@ const CreateModal = ({ onClose, isMobile = false, isTablet = false }) => {
           </IconBtn>
         </div>
 
-        <div style={{ padding: isMobile ? 16 : 22, display: "grid", gridTemplateColumns: isTablet ? "1fr" : "1.3fr 1fr", gap: 18 }}>
+        <div style={{ padding: isMobile ? 16 : 22, display: "grid", gridTemplateColumns: "1fr", gap: 18 }}>
           <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-            <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 12 }}>
-              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                <label style={{ fontSize: 12, fontWeight: 600, color: C.inkMuted, letterSpacing: "0.04em" }}>Campaign Title</label>
-                <input
-                  ref={initialFocusRef}
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  placeholder="Senior Account Executive"
-                  style={{
-                    height: 40,
-                    padding: "0 12px",
-                    background: C.bgInput,
-                    border: `1px solid ${C.line}`,
-                    borderRadius: 10,
-                    color: C.inkSoft,
-                    fontSize: 13,
-                    outline: "none",
-                    fontFamily: "'Sora', sans-serif",
-                  }}
-                />
-              </div>
-
-              <InputField
-                label="Company"
-                value={company}
-                onChange={(e) => setCompany(e.target.value)}
-                placeholder="Northstar Holdings"
-              />
-            </div>
-
-            <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 12 }}>
-              <SelectField label="Language" value={language} onChange={(e) => setLanguage(e.target.value)}>
-                <option value="EN">English</option>
-                <option value="AR">Arabic</option>
-              </SelectField>
-
-              <SelectField label="Access Type" value={accessType} onChange={(e) => setAccessType(e.target.value)}>
-                <option value="Open access">Open access</option>
-                <option value="Invite only">Invite only</option>
-              </SelectField>
-            </div>
-
             <div>
               <div style={{ fontSize: 12, fontWeight: 600, color: C.inkMuted, letterSpacing: "0.04em", marginBottom: 10 }}>Assessment Focus</div>
               <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "repeat(2, minmax(0, 1fr))", gap: 10 }}>
@@ -1630,7 +1585,13 @@ const CreateModal = ({ onClose, isMobile = false, isTablet = false }) => {
                     <button
                       key={id}
                       type="button"
-                      onClick={() => setCampaignType(id)}
+                      onClick={() => {
+                        setCampaignType(id);
+                        if (id === "first") {
+                          onOpenInterviewPage?.();
+                          onClose?.();
+                        }
+                      }}
                       style={{
                         padding: "12px 13px",
                         borderRadius: 14,
@@ -1666,54 +1627,7 @@ const CreateModal = ({ onClose, isMobile = false, isTablet = false }) => {
                 })}
               </div>
             </div>
-          </div>
 
-          <div style={{
-            background: "linear-gradient(180deg, rgba(184,145,90,0.10), rgba(184,145,90,0.04))",
-            border: `1px solid ${C.goldBorder}`,
-            borderRadius: 18,
-            padding: 16,
-            display: "flex",
-            flexDirection: "column",
-            gap: 14,
-          }}>
-            <div>
-              <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: C.gold }}>
-                Preview
-              </div>
-              <div style={{ fontSize: 24, fontFamily: "'DM Serif Display', serif", color: C.inkWhite, marginTop: 6 }}>
-                {title || "Untitled Campaign"}
-              </div>
-              <div style={{ fontSize: 13, color: C.inkMuted, marginTop: 6 }}>
-                {company || "Company name pending"} · {language} · {accessType}
-              </div>
-            </div>
-
-            <Divider />
-
-            <div>
-              <SectionLabel>Selected Flow</SectionLabel>
-              <div style={{ fontSize: 14, fontWeight: 700, color: C.inkWhite }}>{selectedType.label}</div>
-              <div style={{ fontSize: 12.5, color: C.inkMuted, marginTop: 6, lineHeight: 1.7 }}>
-                {selectedType.desc}
-              </div>
-            </div>
-
-            <div>
-              <SectionLabel>What Happens Next</SectionLabel>
-              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                {[
-                  "Generate intake and interview links for candidates.",
-                  "Share campaign access with recruiters or hiring managers.",
-                  "Start tracking applicant, interview, and shortlist conversion.",
-                ].map((item) => (
-                  <div key={item} style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
-                    <CheckCircle2 size={15} color={C.green} style={{ flexShrink: 0, marginTop: 2 }} />
-                    <div style={{ fontSize: 12.5, color: C.inkSoft, lineHeight: 1.65 }}>{item}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
           </div>
         </div>
 
@@ -1772,9 +1686,15 @@ export default function Dashboard() {
   const [selectedId, setSelectedId] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [showInterModal, setShowInterModal] = useState(false);
+  const navigate = useNavigate();
   const { isMobile, isTablet } = useViewportState();
 
   const selectedCampaign = CAMPAIGNS.find(c => c.id === selectedId) || null;
+
+  const handleOpenInterviewPage = () => {
+    setShowModal(false);
+    navigate("/interview");
+  };
 
   const dashboardTotals = useMemo(() => ({
     campaigns: CAMPAIGNS.length,
@@ -1822,7 +1742,7 @@ export default function Dashboard() {
             onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = `0 8px 28px rgba(184,145,90,0.40)`; }}
             onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = `0 4px 15px rgba(184,145,90,0.28)`; }}
           >
-            <Plus size={17} strokeWidth={2.5} /> New Campaign
+            <Plus size={17} strokeWidth={2.5} /> Create Campaign
           </button>
         </div>
 
@@ -1867,7 +1787,7 @@ export default function Dashboard() {
       </main>
 
       {selectedCampaign && <CampaignDetailModal campaign={selectedCampaign} onClose={() => setSelectedId(null)} isMobile={isMobile} isTablet={isTablet} />}
-      {showModal && <CreateModal onClose={() => setShowModal(false)} isMobile={isMobile} isTablet={isTablet} />}
+      {showModal && <CreateModal onClose={() => setShowModal(false)} onOpenInterviewPage={handleOpenInterviewPage} isMobile={isMobile} isTablet={isTablet} />}
       {showInterModal && <InterviewResults onClose={() => setShowInterModal(false)} />}
     </>
   );

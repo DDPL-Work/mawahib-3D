@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   ArrowLeft, Calendar, CheckSquare, Plus, Square, Upload,
@@ -10,32 +10,32 @@ import {
 
 // ─── Design Tokens ────────────────────────────────────────────────────────────
 const C = {
-  bgDark: "#080d1c",
-  bgPanel: "rgba(11,17,34,0.90)",
-  bgCard: "rgba(8,12,24,0.85)",
-  bgInput: "rgba(6,10,20,0.75)",
-  gold: "#b8955a",
-  goldBright: "#f0c97a",
-  goldDim: "rgba(240,201,122,0.14)",
-  goldBorder: "rgba(184,149,90,0.28)",
-  goldBorderHot: "rgba(240,201,122,0.55)",
-  inkWhite: "#ffffff",
-  inkSoft: "rgba(245,240,235,0.82)",
-  inkMuted: "rgba(245,240,235,0.48)",
-  inkFaint: "rgba(245,240,235,0.22)",
-  line: "rgba(184,149,90,0.16)",
-  lineStrong: "rgba(184,149,90,0.32)",
+  bgDark: "#30270f",
+  bgPanel: "rgba(255,249,236,0.92)",
+  bgCard: "rgba(255,250,241,0.96)",
+  bgInput: "rgba(255,255,255,0.96)",
+  gold: "#b88946",
+  goldBright: "#f2c771",
+  goldDim: "rgba(242,199,113,0.16)",
+  goldBorder: "rgba(184,145,90,0.24)",
+  goldBorderHot: "rgba(240,201,122,0.45)",
+  inkWhite: "#1f170e",
+  inkSoft: "rgba(31,23,14,0.94)",
+  inkMuted: "rgba(31,23,14,0.68)",
+  inkFaint: "rgba(31,23,14,0.42)",
+  line: "rgba(184,149,90,0.18)",
+  lineStrong: "rgba(184,149,90,0.30)",
   blue: "#5f9eff",
   blueDim: "rgba(95,158,255,0.12)",
   blueBorder: "rgba(95,158,255,0.28)",
   green: "#39c98f",
   greenDim: "rgba(57,201,143,0.12)",
   greenBorder: "rgba(57,201,143,0.28)",
-  yellow: "#e3c466",
-  yellowDim: "rgba(227,196,102,0.12)",
-  red: "#ff6b6b",
-  redDim: "rgba(255,107,107,0.10)",
-  redBorder: "rgba(255,107,107,0.28)",
+  yellow: "#d49b3f",
+  yellowDim: "rgba(212,155,63,0.15)",
+  red: "#d9534f",
+  redDim: "rgba(217,83,79,0.12)",
+  redBorder: "rgba(217,83,79,0.28)",
 };
 
 // ─── Initial Data ─────────────────────────────────────────────────────────────
@@ -308,6 +308,7 @@ const StepProgress = ({ current, onStepSelect, isStepUnlocked, getStepBlockedRea
 // ─── Main Component ───────────────────────────────────────────────────────────
 export default function Interview() {
   const navigate = useNavigate();
+  const pageRef = useRef(null);
   const [step, setStep] = useState(1);
   const [enableCV, setEnableCV] = useState(true);
   const [enableInterview, setEnableInterview] = useState(true);
@@ -462,7 +463,11 @@ export default function Interview() {
 
   // Always scroll to top when changing steps
   const goToStep = (n) => {
-    window.scrollTo({ top: 0, behavior: "instant" });
+    if (pageRef.current) {
+      pageRef.current.scrollTo({ top: 0, behavior: "instant" });
+    } else {
+      window.scrollTo({ top: 0, behavior: "instant" });
+    }
     setStep(n);
   };
 
@@ -471,22 +476,36 @@ export default function Interview() {
     goToStep(targetStep);
   };
 
+  const handleTopNavBack = () => {
+    if (step > 1) {
+      goToStep(step - 1);
+      return;
+    }
+
+    if (window.history.length > 1) {
+      navigate(-1);
+      return;
+    }
+
+    navigate("/dashboard");
+  };
+
   return (
     <>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=DM+Serif+Display:ital@0;1&display=swap');
         *, *::before, *::after { box-sizing: border-box; }
-        html, body { margin: 0; padding: 0; scrollbar-width: thin; scrollbar-color: rgba(184,149,90,0.2) transparent; }
+        html, body { margin: 0; padding: 0; scrollbar-width: thin; scrollbar-color: rgba(184,149,90,0.35) rgba(255,250,241,0.95); }
         body {
           min-height: 100vh;
           background:
-            radial-gradient(ellipse 80vw 56vh at 100% -8%, rgba(184,149,90,0.12) 0%, transparent 55%),
-            radial-gradient(ellipse 60vw 46vh at -8% 100%, rgba(95,158,255,0.06) 0%, transparent 52%),
-            #080d1c;
-          color: #f5f0eb; font-family: 'Sora', sans-serif;
+            radial-gradient(circle at 18% 14%, rgba(242,199,113,0.17), transparent 25%),
+            radial-gradient(circle at 88% 24%, rgba(184,149,90,0.14), transparent 20%),
+            #fff8ec;
+          color: ${C.inkSoft}; font-family: 'Sora', sans-serif;
         }
-        input::placeholder, textarea::placeholder { color: rgba(245,240,235,0.28); }
-        input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(0.5); cursor: pointer; }
+        input::placeholder, textarea::placeholder { color: rgba(31,23,14,0.35); }
+        input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(0.2); cursor: pointer; }
         .iv-date-input::-webkit-calendar-picker-indicator {
           opacity: 0;
           width: 38px;
@@ -501,27 +520,30 @@ export default function Interview() {
         .iv-pair-title {
           font-size: 12.5px;
           font-weight: 600;
-          color: rgba(245,240,235,0.82);
+          color: ${C.inkSoft};
           display: flex;
           align-items: center;
           gap: 5px;
           line-height: 1.2;
         }
         .iv-pair-optional {
-          color: rgba(245,240,235,0.22);
+          color: ${C.inkFaint};
           font-weight: 400;
           font-size: 11.5px;
         }
         .iv-pair-hint {
           font-size: 11.5px;
-          color: rgba(245,240,235,0.22);
+          color: ${C.inkFaint};
           line-height: 1.5;
           margin: 0;
         }
         .iv-step1-field { display: flex; flex-direction: column; }
         .iv-step1-head { min-height: 56px; }
-        input[type="range"] { accent-color: #f0c97a; cursor: pointer; }
-        select option { background: #0d1528; color: #f5f0eb; }
+        input[type="range"] { accent-color: ${C.goldBright}; cursor: pointer; }
+        select option { background: #fff9ee; color: ${C.inkSoft}; }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: rgba(255,250,241,0.95); }
+        ::-webkit-scrollbar-thumb { background: rgba(184,149,90,0.32); border-radius: 999px; }
         @media (max-width: 720px) {
           .iv-grid-2 { grid-template-columns: 1fr !important; }
           .iv-pair-field { grid-template-rows: auto auto auto; }
@@ -531,28 +553,47 @@ export default function Interview() {
         }
       `}</style>
 
-      <div style={{ minHeight: "100vh", padding: "clamp(16px,3vw,32px)" }}>
+      <div ref={pageRef} style={{ height: "100%", minHeight: 0, overflow: "auto", padding: "clamp(16px,3vw,32px)" }}>
         <div style={{ maxWidth: 900, margin: "0 auto", display: "flex", flexDirection: "column", gap: 20 }}>
 
           {/* ── Top Nav ── */}
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
             <button
-              onClick={() => step > 1 ? goToStep(step - 1) : navigate("/dashboard")}
+              onClick={handleTopNavBack}
               style={{
                 height: 38, padding: "0 14px", borderRadius: 10,
-                border: `1px solid ${C.line}`, background: "rgba(184,149,90,0.06)",
-                color: C.inkMuted, fontSize: 12.5, fontWeight: 600,
+                border: `1px solid ${C.goldBorder}`, background: C.goldDim,
+                color: C.inkSoft, fontSize: 12.5, fontWeight: 700,
                 cursor: "pointer", display: "flex", alignItems: "center", gap: 7,
                 fontFamily: "'Sora', sans-serif", transition: "all 0.18s",
+                boxShadow: "0 10px 24px rgba(184,149,90,0.10)",
               }}
-              onMouseEnter={e => { e.currentTarget.style.borderColor = C.lineStrong; e.currentTarget.style.color = C.inkSoft; }}
-              onMouseLeave={e => { e.currentTarget.style.borderColor = C.line; e.currentTarget.style.color = C.inkMuted; }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = C.goldBorderHot; e.currentTarget.style.background = "rgba(242,199,113,0.24)"; e.currentTarget.style.color = C.inkWhite; }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = C.goldBorder; e.currentTarget.style.background = C.goldDim; e.currentTarget.style.color = C.inkSoft; }}
             >
-              <ArrowLeft size={14} /> {step > 1 ? "Back" : "Dashboard"}
+              <ArrowLeft size={14} /> Back
             </button>
             <div style={{ flex: 1 }}>
               <div style={{ fontSize: 11, color: C.inkFaint, letterSpacing: "0.1em", textTransform: "uppercase" }}>
-                <span style={{ color: C.blue, cursor: "pointer" }} onClick={() => navigate("/dashboard")}>Dashboard</span> / Create Interview
+                <button
+                  type="button"
+                  onClick={() => navigate("/dashboard")}
+                  style={{
+                    background: "transparent",
+                    border: "none",
+                    padding: 0,
+                    margin: 0,
+                    color: C.blue,
+                    cursor: "pointer",
+                    fontWeight: 700,
+                    textDecoration: "underline",
+                    fontFamily: "'Sora', sans-serif",
+                    fontSize: 11,
+                  }}
+                >
+                  DASHBOARD
+                </button>
+                <span style={{ marginLeft: 7, color: C.inkFaint }}> / Create Interview</span>
               </div>
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>

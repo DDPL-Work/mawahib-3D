@@ -233,8 +233,6 @@ const ResumeSidebarModal = ({ candidate, theme, onClose }) => {
         zIndex: 1200,
         background: "rgba(12, 16, 26, 0.68)",
         backdropFilter: "blur(10px)",
-        display: "flex",
-        justifyContent: "flex-end",
         overflowY: "auto",
         padding: 20,
       }}
@@ -244,6 +242,7 @@ const ResumeSidebarModal = ({ candidate, theme, onClose }) => {
         style={{
           width: "min(760px, 100%)",
           minHeight: "100vh",
+          marginLeft: "auto",
           background: "rgba(255,250,242,0.98)",
           border: `1px solid ${theme.line}`,
           borderRadius: 24,
@@ -470,8 +469,20 @@ const ResumeSidebarModal = ({ candidate, theme, onClose }) => {
             {candidatePagination.pageItems.map((candidate, index) => {
               const statusStyle = statusStyles[candidate.reviewStatus] || statusStyles.Pending;
               return (
-                <div key={candidate.id} style={{ display: "grid", gridTemplateColumns: tableColumns, padding: "16px 14px", gap: 6, borderBottom: index < candidatePagination.pageItems.length - 1 ? `1px solid ${theme.line}` : "none", alignItems: "start" }}>
-                  <label style={{ display: "grid", placeItems: "start center", paddingTop: 6 }}><input type="checkbox" checked={selectedCandidateIds.includes(candidate.id)} onChange={() => toggleCandidateSelection(candidate.id)} /></label>
+                <div
+                  key={candidate.id}
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => openResumePreview(candidate)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter" || event.key === " ") {
+                      event.preventDefault();
+                      openResumePreview(candidate);
+                    }
+                  }}
+                  style={{ display: "grid", gridTemplateColumns: tableColumns, padding: "16px 14px", gap: 6, borderBottom: index < candidatePagination.pageItems.length - 1 ? `1px solid ${theme.line}` : "none", alignItems: "start", cursor: "pointer" }}
+                >
+                  <label style={{ display: "grid", placeItems: "start center", paddingTop: 6 }}><input type="checkbox" checked={selectedCandidateIds.includes(candidate.id)} onChange={(event) => { event.stopPropagation(); toggleCandidateSelection(candidate.id); }} /></label>
                   <div style={{ overflowWrap: "anywhere", wordBreak: "break-word" }}>
                     <div style={{ fontSize: 14, fontWeight: 700, color: theme.inkWhite, lineHeight: 1.2 }}>{candidate.name}</div>
                     <div style={{ fontSize: 12.5, color: theme.blue, marginTop: 4, lineHeight: 1.3, overflowWrap: "anywhere", wordBreak: "break-word" }}>{candidate.email}</div>
@@ -540,6 +551,7 @@ const ResumeSidebarModal = ({ candidate, theme, onClose }) => {
           <span style={{ color: theme.inkSoft, fontWeight: 600 }}>CV Results now use the requested candidates-only structure.</span> Filters, score ordering, suitability, and row selection stay inside the dashboard theme.
         </div>
       </div>
+      {previewCandidate && <ResumeSidebarModal candidate={previewCandidate} theme={theme} onClose={closeResumePreview} />}
     </div>
   );
 }

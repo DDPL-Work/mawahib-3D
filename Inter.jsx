@@ -3,7 +3,7 @@ import {
     ArrowLeft, Search, ChevronLeft, ChevronRight, Copy,
     Check, Eye, RotateCcw, Trash2, AlertCircle, Users,
     BarChart2, CheckCircle2, XCircle, Clock, Filter,
-    ChevronDown, Sparkles, Globe, MoreHorizontal,
+    ChevronDown, Sparkles, Globe, MoreHorizontal, Captions, CaptionsOff,
 } from "lucide-react";
 import { getPaginationWindow, paginateItems } from "./tablePagination";
 
@@ -115,6 +115,20 @@ const scoreColor = (s) => s >= 70 ? C.green : s >= 40 ? C.yellow : C.red;
 
 const avatarColors = ["#3a7bd5", "#8b5cf6", "#ec4899", "#f59e0b", "#10b981", "#ef4444"];
 const avatarColor = (name) => avatarColors[name.charCodeAt(0) % avatarColors.length];
+
+const getCaptionSegments = (candidate) => {
+    const firstName = candidate.name.split(" ")[0];
+    return [
+        { id: `${candidate.id}-1`, time: "00:04", speaker: "AI Intro", text: `Welcome ${firstName}. This session will focus on communication style, sales process ownership, and your approach to closing.` },
+        { id: `${candidate.id}-2`, time: "00:21", speaker: firstName, text: "Thank you. I am excited to walk through my background and share how I manage a consistent pipeline." },
+        { id: `${candidate.id}-3`, time: "00:47", speaker: "Interviewer", text: "Tell me about the type of accounts you handled recently and the metrics you were responsible for." },
+        { id: `${candidate.id}-4`, time: "01:16", speaker: firstName, text: "I managed mid-market and enterprise opportunities, tracked conversion by stage, and kept a strong follow-up rhythm in the CRM." },
+        { id: `${candidate.id}-5`, time: "01:54", speaker: "Interviewer", text: "How do you respond when a qualified prospect goes quiet late in the cycle?" },
+        { id: `${candidate.id}-6`, time: "02:20", speaker: firstName, text: "I review the last objection, tailor the next message to business impact, and reopen the conversation with a specific next step." },
+        { id: `${candidate.id}-7`, time: "02:58", speaker: "AI Insight", text: "Candidate shows structured thinking, clear ownership of the sales process, and a measured communication style under pressure." },
+        { id: `${candidate.id}-8`, time: "03:31", speaker: "Summary", text: `Session ${candidate.session} indicates steady confidence, relevant experience, and an interview score of ${candidate.score} out of 100.` },
+    ];
+};
 
 // ─── Small Components ─────────────────────────────────────────────────────────
 const Pill = ({ label, color, bg, border, small }) => (
@@ -350,6 +364,8 @@ const EvalCarousel = ({ candidateId, lang, setLang, hideBorder }) => {
 // ─── Candidate Row ────────────────────────────────────────────────────────────
 const CandidateRow = ({ c, expanded, onToggle, checked, onCheck, lang, setLang }) => {
     const vs = verdictStyle(c.verdict);
+    const [showCaptions, setShowCaptions] = useState(false);
+    const captionSegments = getCaptionSegments(c);
     return (
         <div style={{
             border: `1px solid rgba(184,149,90,0.18)`,
@@ -469,28 +485,121 @@ const CandidateRow = ({ c, expanded, onToggle, checked, onCheck, lang, setLang }
                         borderRight: `1px solid rgba(184,149,90,0.18)`,
                         display: "flex", flexDirection: "column"
                     }}>
-                        <div style={{ 
-                            fontSize: 10.5, fontWeight: 700, letterSpacing: "0.16em", 
-                            textTransform: "uppercase", color: C.inkFaint, marginBottom: 12,
-                            display: "flex", alignItems: "center", gap: 8
-                        }}>
-                            <span style={{ width: 6, height: 6, borderRadius: "50%", background: C.red, boxShadow: `0 0 6px ${C.red}` }}></span>
-                            Interview Recording
-                        </div>
                         <div style={{
-                            width: "100%", flex: 1, minHeight: 580, borderRadius: 12, overflow: "hidden",
-                            border: `1px solid rgba(184,149,90,0.18)`, background: C.bgInput,
-                            position: "relative"
+                            display: "flex", alignItems: "center", justifyContent: "space-between",
+                            gap: 12, marginBottom: 12, flexWrap: "wrap"
                         }}>
-                            {/* YT Video */}
-                            <iframe
-                                src="https://www.youtube.com/embed/n-cH2WyYJiA?rel=0&modestbranding=1&playsinline=1"
-                                title="Candidate Interview Recording"
-                                frameBorder="0"
-                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                                allowFullScreen
-                                style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%" }}
-                            />
+                            <div style={{ 
+                                fontSize: 10.5, fontWeight: 700, letterSpacing: "0.16em", 
+                                textTransform: "uppercase", color: C.inkFaint,
+                                display: "flex", alignItems: "center", gap: 8
+                            }}>
+                                <span style={{ width: 6, height: 6, borderRadius: "50%", background: C.red, boxShadow: `0 0 6px ${C.red}` }}></span>
+                                Interview Recording
+                            </div>
+                            <button
+                                type="button"
+                                aria-pressed={showCaptions}
+                                onClick={() => setShowCaptions((value) => !value)}
+                                style={{
+                                    height: 34,
+                                    padding: "0 12px",
+                                    borderRadius: 10,
+                                    border: `1px solid ${showCaptions ? C.blueBorder : C.line}`,
+                                    background: showCaptions ? C.blueDim : "rgba(255,255,255,0.7)",
+                                    color: showCaptions ? C.blue : C.inkMuted,
+                                    display: "inline-flex",
+                                    alignItems: "center",
+                                    gap: 8,
+                                    cursor: "pointer",
+                                    transition: "all 0.18s",
+                                    fontSize: 12,
+                                    fontWeight: 700,
+                                    fontFamily: "'Sora', sans-serif",
+                                    boxShadow: showCaptions ? "0 8px 18px rgba(58,123,213,0.12)" : "none",
+                                }}
+                                onMouseEnter={(e) => {
+                                    e.currentTarget.style.borderColor = showCaptions ? C.blueBorder : C.goldBorder;
+                                    e.currentTarget.style.background = showCaptions ? C.blueDim : C.goldDim;
+                                    e.currentTarget.style.color = showCaptions ? C.blue : C.inkSoft;
+                                }}
+                                onMouseLeave={(e) => {
+                                    e.currentTarget.style.borderColor = showCaptions ? C.blueBorder : C.line;
+                                    e.currentTarget.style.background = showCaptions ? C.blueDim : "rgba(255,255,255,0.7)";
+                                    e.currentTarget.style.color = showCaptions ? C.blue : C.inkMuted;
+                                }}
+                            >
+                                {showCaptions ? <CaptionsOff size={14} /> : <Captions size={14} />}
+                                {showCaptions ? "Hide Captions" : "Show Captions"}
+                            </button>
+                        </div>
+
+                        <div className={`inter-recording-shell ${showCaptions ? "captions-on" : "captions-off"}`}>
+                            {showCaptions && (
+                                <div className="inter-captions-panel">
+                                    <div style={{
+                                        padding: "14px 16px",
+                                        borderBottom: `1px solid ${C.line}`,
+                                        background: "linear-gradient(180deg, rgba(58,123,213,0.10), rgba(58,123,213,0.02))",
+                                    }}>
+                                        <div style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: C.blue, marginBottom: 4 }}>
+                                            Captions
+                                        </div>
+                                        <div style={{ fontSize: 12.5, color: C.inkMuted, lineHeight: 1.5 }}>
+                                            Scroll through the interview transcript while the recording stays visible.
+                                        </div>
+                                    </div>
+                                    <div className="inter-captions-scroll">
+                                        {captionSegments.map((segment, index) => (
+                                            <div key={segment.id} className="inter-caption-card">
+                                                <div style={{
+                                                    display: "flex", alignItems: "center", justifyContent: "space-between",
+                                                    gap: 8, marginBottom: 8
+                                                }}>
+                                                    <span style={{
+                                                        display: "inline-flex", alignItems: "center",
+                                                        height: 24, padding: "0 10px", borderRadius: 999,
+                                                        background: index % 2 === 0 ? C.blueDim : C.goldDim,
+                                                        border: `1px solid ${index % 2 === 0 ? C.blueBorder : C.goldBorder}`,
+                                                        color: index % 2 === 0 ? C.blue : C.gold,
+                                                        fontSize: 10.5, fontWeight: 700, letterSpacing: "0.08em",
+                                                        textTransform: "uppercase"
+                                                    }}>
+                                                        {segment.time}
+                                                    </span>
+                                                    <span style={{ fontSize: 11.5, fontWeight: 700, color: C.inkMuted }}>
+                                                        {segment.speaker}
+                                                    </span>
+                                                </div>
+                                                <p style={{ margin: 0, fontSize: 12.5, lineHeight: 1.7, color: C.inkSoft }}>
+                                                    {segment.text}
+                                                </p>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            <div style={{
+                                width: "100%",
+                                minWidth: 0,
+                                minHeight: showCaptions ? 420 : 580,
+                                borderRadius: 12,
+                                overflow: "hidden",
+                                border: `1px solid rgba(184,149,90,0.18)`,
+                                background: C.bgInput,
+                                position: "relative",
+                                boxShadow: "inset 0 1px 0 rgba(255,255,255,0.75)",
+                            }}>
+                                <iframe
+                                    src="https://www.youtube.com/embed/n-cH2WyYJiA?rel=0&modestbranding=1&playsinline=1"
+                                    title="Candidate Interview Recording"
+                                    frameBorder="0"
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                                    allowFullScreen
+                                    style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%" }}
+                                />
+                            </div>
                         </div>
                     </div>
 
@@ -649,6 +758,34 @@ export default function InterviewResults({ onClose, inline = false }) {
         .inter-hero { display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center; }
         .inter-expanded-grid { background: rgba(255,250,242,0.92); border-top: 1px solid rgba(184,149,90,0.18); }
         .inter-video-border { background: rgba(255,255,255,0.98); border-right: 1px solid rgba(184,149,90,0.18); }
+        .inter-recording-shell { display: block; }
+        .inter-recording-shell.captions-on { display: grid; grid-template-columns: minmax(260px, 320px) minmax(0, 1fr); gap: 16px; align-items: stretch; }
+        .inter-captions-panel {
+          display: flex;
+          flex-direction: column;
+          min-width: 0;
+          border: 1px solid rgba(184,149,90,0.18);
+          border-radius: 14px;
+          overflow: hidden;
+          background: linear-gradient(180deg, rgba(255,255,255,0.95), rgba(251,245,235,0.98));
+          box-shadow: inset 0 1px 0 rgba(255,255,255,0.78);
+        }
+        .inter-captions-scroll {
+          max-height: 580px;
+          overflow-y: auto;
+          padding: 12px;
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+          scrollbar-width: thin;
+          scrollbar-color: rgba(184,149,90,0.24) transparent;
+        }
+        .inter-caption-card {
+          padding: 12px 13px;
+          border: 1px solid rgba(184,149,90,0.16);
+          border-radius: 12px;
+          background: rgba(255,255,255,0.86);
+        }
         .inter-hero-top { width: 100%; display: flex; justify-content: flex-end; }
         .inter-modal input::placeholder { color: rgba(44, 30, 10, 0.28); }
         .inter-modal input[type="checkbox"] { accent-color: #f0c97a; }
@@ -659,6 +796,8 @@ export default function InterviewResults({ onClose, inline = false }) {
         @media (max-width: 900px) {
           .inter-expanded-grid { grid-template-columns: 1fr !important; }
           .inter-video-border { border-right: none !important; border-bottom: 1px solid rgba(184,149,90,0.16) !important; }
+          .inter-recording-shell.captions-on { grid-template-columns: 1fr !important; }
+          .inter-captions-scroll { max-height: 260px; }
         }
         @media (max-width: 720px) {
           .inter-shell { width: 96vw; max-height: 96vh; }
@@ -939,6 +1078,5 @@ export default function InterviewResults({ onClose, inline = false }) {
         </>
     );
 }
-
 
 
