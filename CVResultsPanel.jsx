@@ -228,8 +228,8 @@ export default function DashboardCVResultsPanel({ candidates, theme }) {
           position: "fixed",
           inset: 0,
           zIndex: 1200,
-          background: "rgba(12, 16, 26, 0.68)",
-          backdropFilter: "blur(10px)",
+          background: "rgba(12, 16, 26, 0.65)",
+          backdropFilter: "blur(12px)",
           padding: "40px 20px",
           display: "flex",
           alignItems: "center",
@@ -239,109 +239,187 @@ export default function DashboardCVResultsPanel({ candidates, theme }) {
         <section
           onClick={(event) => event.stopPropagation()}
           style={{
-            width: "min(820px, 100%)",
-            maxHeight: "90vh",
-            background: "rgba(255,250,242,0.98)",
+            width: "min(880px, 100%)",
+            maxHeight: "92vh",
+            background: "#fff",
             border: `1px solid ${theme.line}`,
-            borderRadius: 28,
-            boxShadow: "0 24px 80px rgba(10,18,32,0.25)",
+            borderRadius: 32,
+            boxShadow: "0 40px 100px rgba(10,18,32,0.35)",
             display: "flex",
             flexDirection: "column",
             overflow: "hidden",
+            position: "relative",
           }}
         >
-          <div style={{ padding: "24px 24px 18px", borderBottom: `1px solid ${theme.line}`, display: "flex", justifyContent: "space-between", gap: 16, alignItems: "flex-start" }}>
-            <div style={{ minWidth: 0 }}>
-              <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: theme.inkFaint, marginBottom: 8 }}>
-                Candidate Evaluation
-              </div>
-              <div style={{ fontSize: 24, fontWeight: 700, color: theme.inkWhite, fontFamily: "'DM Serif Display', serif", lineHeight: 1.05 }}>
-                {candidate.name}
-              </div>
-              <div style={{ fontSize: 13, color: theme.inkMuted, marginTop: 6 }}>{candidate.city}, {candidate.country} · {candidate.phone}</div>
+          {/* Header Action Bar */}
+          <div style={{
+            padding: "16px 24px",
+            borderBottom: `1px solid ${theme.line}`,
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            background: "rgba(255,250,242,0.8)",
+            backdropFilter: "blur(4px)",
+            zIndex: 10,
+          }}>
+            <div style={{ display: "flex", gap: 10 }}>
+              <a href={resumeUrl} target="_blank" rel="noreferrer" style={{ height: 36, padding: "0 16px", borderRadius: 10, border: `1px solid ${theme.line}`, background: "#fff", color: theme.inkMuted, display: "inline-flex", alignItems: "center", gap: 8, textDecoration: "none", fontSize: 13, fontWeight: 700, transition: "0.2s" }}>
+                <Eye size={15} /> Open PDF
+              </a>
+              <a href={resumeUrl} download={candidate.cvFile} style={{ height: 36, padding: "0 16px", borderRadius: 10, border: `1px solid ${theme.line}`, background: theme.goldDim, color: theme.gold, display: "inline-flex", alignItems: "center", gap: 8, textDecoration: "none", fontSize: 13, fontWeight: 700 }}>
+                <Download size={15} /> Download
+              </a>
             </div>
             <button
               type="button"
               onClick={onClose}
-              aria-label="Close candidate evaluation"
               style={{
-                width: 40,
-                height: 40,
-                borderRadius: 14,
-                border: `1px solid ${theme.line}`,
-                background: "rgba(255,255,255,0.9)",
-                color: theme.inkMuted,
-                display: "grid",
-                placeItems: "center",
-                cursor: "pointer",
+                width: 36, height: 36, borderRadius: 10, border: "none", background: "rgba(0,0,0,0.05)", color: theme.inkMuted,
+                display: "grid", placeItems: "center", cursor: "pointer", transition: "0.2s"
               }}
             >
               <X size={18} />
             </button>
           </div>
 
-          <div style={{ flex: 1, overflowY: "auto" }}>
-            <div style={{ padding: "22px 24px", display: "grid", gap: 18 }}>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
-                <div style={{ padding: 18, borderRadius: 18, background: "rgba(255,255,255,0.95)", border: `1px solid ${theme.line}` }}>
-                  <div style={{ fontSize: 11, color: theme.inkFaint, textTransform: "uppercase", letterSpacing: "0.11em", fontWeight: 700, marginBottom: 8 }}>Score</div>
-                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                    <div style={{ fontSize: 34, fontWeight: 800, color: theme.inkWhite }}>{candidate.finalScore}/100</div>
-                    <span style={{ padding: "6px 12px", borderRadius: 999, background: fitState.bg, border: `1px solid ${fitState.border}`, color: fitState.color, fontSize: 11.5, fontWeight: 700 }}>
-                      {fitState.label}
-                    </span>
-                  </div>
-                  <div style={{ marginTop: 14, display: "grid", gap: 6, color: theme.inkMuted, fontSize: 12 }}>
-                    <div>JD Score: {candidate.jdScore}</div>
-                    <div>Penalty: {candidate.penalty}</div>
-                    <div>Overqual: {candidate.overqualificationPenalty}</div>
-                  </div>
-                </div>
-                <div style={{ padding: 18, borderRadius: 18, background: "rgba(255,255,255,0.95)", border: `1px solid ${theme.line}` }}>
-                  <div style={{ fontSize: 11, color: theme.inkFaint, textTransform: "uppercase", letterSpacing: "0.11em", fontWeight: 700, marginBottom: 8 }}>Resume File</div>
-                  <div style={{ fontSize: 13.5, color: theme.inkWhite, wordBreak: "break-word" }}>{candidate.cvFile}</div>
-                  <div style={{ marginTop: 18, display: "flex", gap: 10, flexWrap: "wrap" }}>
-                    <a href={resumeUrl} target="_blank" rel="noreferrer" style={{ flex: "1 1 auto", minWidth: 140, height: 40, borderRadius: 12, border: `1px solid ${theme.line}`, background: "rgba(255,255,255,0.93)", color: theme.inkMuted, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8, textDecoration: "none", fontWeight: 700 }}>
-                      <Eye size={14} /> Open
-                    </a>
-                    <a href={resumeUrl} download={candidate.cvFile} style={{ flex: "1 1 auto", minWidth: 140, height: 40, borderRadius: 12, border: `1px solid ${theme.line}`, background: "rgba(184,145,90,0.12)", color: theme.gold, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8, textDecoration: "none", fontWeight: 700 }}>
-                      <Download size={14} /> Download
-                    </a>
-                  </div>
+          {/* Resume Document Area */}
+          <div style={{ flex: 1, overflowY: "auto", background: "#fcfaf7", padding: "40px clamp(20px, 6vw, 60px)" }}>
+            <div style={{
+              maxWidth: 720,
+              margin: "0 auto",
+              background: "#fff",
+              padding: "50px clamp(20px, 5vw, 60px)",
+              boxShadow: "0 10px 40px rgba(0,0,0,0.02)",
+              borderRadius: 4,
+              border: "1px solid rgba(0,0,0,0.03)",
+              minHeight: "100%",
+            }}>
+              {/* Header */}
+              <div style={{ textAlign: "center", marginBottom: 40 }}>
+                <h1 style={{
+                  fontFamily: "'DM Serif Display', serif",
+                  fontSize: 42,
+                  color: theme.inkWhite,
+                  marginBottom: 12,
+                  letterSpacing: "-0.01em",
+                }}>
+                  {candidate.name}
+                </h1>
+                <div style={{
+                  display: "flex",
+                  justifyContent: "center",
+                  flexWrap: "wrap",
+                  gap: "8px 16px",
+                  fontSize: 13,
+                  color: theme.inkMuted,
+                  fontWeight: 500,
+                }}>
+                  <span>{candidate.email}</span>
+                  <span style={{ color: theme.lineStrong }}>|</span>
+                  <span>{candidate.phone}</span>
+                  <span style={{ color: theme.lineStrong }}>|</span>
+                  <span>{candidate.city}, {candidate.country}</span>
                 </div>
               </div>
 
-              <div style={{ padding: 18, borderRadius: 18, background: "rgba(255,255,255,0.95)", border: `1px solid ${theme.line}`, display: "grid", gap: 12 }}>
-                <div style={{ fontSize: 11, color: theme.inkFaint, textTransform: "uppercase", letterSpacing: "0.11em", fontWeight: 700 }}>Profile Summary</div>
-                <p style={{ color: theme.inkMuted, fontSize: 13.5, lineHeight: 1.7, margin: 0 }}>
-                  {candidate.name} is a candidate from {candidate.city}, {candidate.country}. They submitted their CV on {candidate.submittedAtLabel} and currently have a final score of {candidate.finalScore}/100.
+              {/* Summary Section */}
+              <div style={{ marginBottom: 32 }}>
+                <div style={{ fontSize: 11, fontWeight: 800, color: theme.gold, letterSpacing: "0.15em", textTransform: "uppercase", borderBottom: `1px solid ${theme.line}`, paddingBottom: 6, marginBottom: 14 }}>
+                  Professional Summary
+                </div>
+                <p style={{ fontSize: 14.5, lineHeight: 1.7, color: theme.inkSoft, margin: 0 }}>
+                  {candidate.summary || `${candidate.name} is a professional ${candidate.reviewStatus === "Reviewed" ? "evaluated" : "candidate"} currently in our recruitment pipeline.`}
                 </p>
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 12 }}>
-                  <div style={{ display: "grid", gap: 5 }}>
-                    <div style={{ fontSize: 11, color: theme.inkFaint, textTransform: "uppercase", letterSpacing: "0.1em", fontWeight: 700 }}>Email</div>
-                    <div style={{ fontSize: 13, color: theme.inkWhite }}>{candidate.email}</div>
+              </div>
+
+              {/* Experience Section */}
+              <div style={{ marginBottom: 32 }}>
+                <div style={{ fontSize: 11, fontWeight: 800, color: theme.gold, letterSpacing: "0.15em", textTransform: "uppercase", borderBottom: `1px solid ${theme.line}`, paddingBottom: 6, marginBottom: 18 }}>
+                  Work Experience
+                </div>
+                {candidate.experience ? candidate.experience.map((exp, i) => (
+                  <div key={i} style={{ marginBottom: 24 }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 6 }}>
+                      <div style={{ fontSize: 15.5, fontWeight: 700, color: theme.inkWhite }}>{exp.title}</div>
+                      <div style={{ fontSize: 12, fontWeight: 600, color: theme.gold }}>{exp.period}</div>
+                    </div>
+                    <div style={{ fontSize: 13.5, fontWeight: 600, color: theme.inkMuted, marginBottom: 10 }}>{exp.company}</div>
+                    <ul style={{ margin: 0, paddingLeft: 18 }}>
+                      {exp.points.map((pt, j) => (
+                        <li key={j} style={{ fontSize: 14, color: theme.inkSoft, lineHeight: 1.6, marginBottom: 4 }}>{pt}</li>
+                      ))}
+                    </ul>
                   </div>
-                  <div style={{ display: "grid", gap: 5 }}>
-                    <div style={{ fontSize: 11, color: theme.inkFaint, textTransform: "uppercase", letterSpacing: "0.1em", fontWeight: 700 }}>Status</div>
-                    <div style={{ fontSize: 13, color: theme.inkWhite }}>{candidate.reviewStatus}</div>
+                )) : (
+                  <div style={{ fontSize: 14, color: theme.inkMuted, fontStyle: "italic" }}>No detailed experience provided in the parsed resume data.</div>
+                )}
+              </div>
+
+              {/* Education Section */}
+              <div style={{ marginBottom: 32 }}>
+                <div style={{ fontSize: 11, fontWeight: 800, color: theme.gold, letterSpacing: "0.15em", textTransform: "uppercase", borderBottom: `1px solid ${theme.line}`, paddingBottom: 6, marginBottom: 18 }}>
+                  Education
+                </div>
+                {candidate.education ? candidate.education.map((edu, i) => (
+                  <div key={i} style={{ marginBottom: 16 }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 4 }}>
+                      <div style={{ fontSize: 14, fontWeight: 700, color: theme.inkWhite }}>{edu.degree}</div>
+                      <div style={{ fontSize: 12, fontWeight: 600, color: theme.inkMuted }}>{edu.year}</div>
+                    </div>
+                    <div style={{ fontSize: 13, color: theme.inkMuted }}>{edu.institution}</div>
                   </div>
+                )) : (
+                  <div style={{ fontSize: 14, color: theme.inkMuted, fontStyle: "italic" }}>Education details not available.</div>
+                )}
+              </div>
+
+              {/* Skills Section */}
+              <div style={{ marginBottom: 40 }}>
+                <div style={{ fontSize: 11, fontWeight: 800, color: theme.gold, letterSpacing: "0.15em", textTransform: "uppercase", borderBottom: `1px solid ${theme.line}`, paddingBottom: 6, marginBottom: 14 }}>
+                  Technical Skills
+                </div>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: "8px 12px" }}>
+                  {candidate.skills ? candidate.skills.map(s => (
+                    <span key={s} style={{ fontSize: 12.5, fontWeight: 600, color: theme.inkSoft, background: "rgba(0,0,0,0.03)", padding: "4px 10px", borderRadius: 4 }}>{s}</span>
+                  )) : (
+                    <div style={{ fontSize: 14, color: theme.inkMuted, fontStyle: "italic" }}>No skills listed.</div>
+                  )}
                 </div>
               </div>
 
-              <div style={{ display: "grid", gap: 14 }}>
-                <div style={{ padding: 18, borderRadius: 18, background: "rgba(255,255,255,0.95)", border: `1px solid ${theme.line}` }}>
-                  <div style={{ fontSize: 11, color: theme.inkFaint, textTransform: "uppercase", letterSpacing: "0.11em", fontWeight: 700, marginBottom: 10 }}>Key Experience</div>
-                  <div style={{ display: "grid", gap: 10 }}>
-                    <div style={{ fontSize: 13, fontWeight: 700, color: theme.inkWhite }}>Sales Representative</div>
-                    <div style={{ color: theme.inkMuted, fontSize: 13, lineHeight: 1.7 }}>Experienced in customer outreach and follow-up in competitive GCC markets.</div>
-                  </div>
+              {/* Mawahib Assessment Box */}
+              <div style={{
+                background: "linear-gradient(135deg, rgba(184,145,90,0.05) 0%, rgba(184,145,90,0.02) 100%)",
+                border: `1px solid ${theme.goldBorder}`,
+                borderRadius: 16,
+                padding: 24,
+                position: "relative",
+                overflow: "hidden",
+              }}>
+                <div style={{
+                  position: "absolute", top: 0, right: 0, padding: "8px 16px",
+                  background: fitState.bg, borderBottomLeftRadius: 16, borderLeft: `1px solid ${fitState.border}`, borderBottom: `1px solid ${fitState.border}`,
+                  fontSize: 11, fontWeight: 800, color: fitState.color, letterSpacing: "0.05em",
+                }}>
+                  {fitState.label.toUpperCase()}
                 </div>
-                <div style={{ padding: 18, borderRadius: 18, background: "rgba(255,255,255,0.95)", border: `1px solid ${theme.line}` }}>
-                  <div style={{ fontSize: 11, color: theme.inkFaint, textTransform: "uppercase", letterSpacing: "0.11em", fontWeight: 700, marginBottom: 10 }}>Score Details</div>
-                  <div style={{ display: "grid", gap: 10 }}>
-                    <div style={{ fontSize: 13, color: theme.inkWhite }}>Job description fit: {candidate.jdScore}</div>
-                    <div style={{ fontSize: 13, color: theme.inkWhite }}>Penalty: {candidate.penalty}</div>
-                    <div style={{ fontSize: 13, color: theme.inkWhite }}>Overqualification penalty: {candidate.overqualificationPenalty}</div>
+                <div style={{ fontSize: 10, fontWeight: 800, color: theme.gold, letterSpacing: "0.12em", marginBottom: 16, textTransform: "uppercase" }}>
+                  Mawahib AI Assessment
+                </div>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 20, alignItems: "center" }}>
+                  <div>
+                    <div style={{ fontSize: 13, color: theme.inkSoft, lineHeight: 1.6, marginBottom: 12 }}>
+                      This candidate shows a <strong>{candidate.finalScore}% match</strong> for the JD requirements. Recommended for the next stage based on experience alignment.
+                    </div>
+                    <div style={{ display: "flex", gap: 16, fontSize: 12, color: theme.inkMuted, fontWeight: 600 }}>
+                      <span>JD Focus: {candidate.jdScore}%</span>
+                      <span>Penalty: {candidate.penalty}</span>
+                      <span>Overqual: {candidate.overqualificationPenalty}</span>
+                    </div>
+                  </div>
+                  <div style={{ textAlign: "center" }}>
+                    <div style={{ fontSize: 36, fontWeight: 800, color: theme.inkWhite, fontFamily: "'DM Serif Display', serif", lineHeight: 1 }}>{candidate.finalScore}</div>
+                    <div style={{ fontSize: 10, fontWeight: 700, color: theme.inkMuted, marginTop: 4 }}>MATCH SCORE</div>
                   </div>
                 </div>
               </div>

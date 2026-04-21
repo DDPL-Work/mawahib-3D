@@ -1806,44 +1806,44 @@ function Footer() {
     <footer style={{
       position: "relative", zIndex: 10,
       background: "rgba(2,4,12,.95)",
-      padding: isMobile ? `clamp(24px,4vw,36px) ${PAGE_X.mobile} clamp(18px,3vw,24px)` : `clamp(36px,5vw,50px) ${PAGE_X.desktop} clamp(24px,3vw,36px)`,
+      padding: isMobile ? `clamp(18px,3vw,24px) ${PAGE_X.mobile} clamp(14px,2.5vw,18px)` : `clamp(24px,4vw,32px) ${PAGE_X.desktop} clamp(18px,2.5vw,24px)`,
       borderTop: "1px solid rgba(184,149,90,.1)"
     }}>
       <div style={{ maxWidth: 1280, margin: "0 auto" }}>
         <div style={{
           display: "grid", gridTemplateColumns: isMobile ? "1fr" : "auto 1fr",
-          gap: isMobile ? 50 : 80, marginBottom: "clamp(40px,6vw,60px)"
+          gap: isMobile ? 32 : 60, marginBottom: "clamp(24px,4vw,32px)"
         }}>
           <div style={{ maxWidth: isMobile ? "100%" : 240, textAlign: isMobile ? "center" : "left", margin: isMobile ? "0 auto" : 0 }}>
-            <div style={{ display: "flex", justifyContent: isMobile ? "center" : "flex-start", marginBottom: 16 }}>
-              <MawahibLogo height={180} blend={false}/>
+            <div style={{ display: "flex", justifyContent: isMobile ? "center" : "flex-start", marginBottom: 12 }}>
+              <MawahibLogo height={120} blend={false}/>
             </div>
-            <p style={{ color: "rgba(255,255,255,.25)", fontSize: 13, lineHeight: 1.8, marginBottom: 20 }}>
+            <p style={{ color: "rgba(255,255,255,.25)", fontSize: 13, lineHeight: 1.7, marginBottom: 14 }}>
               AI-powered hiring intelligence for modern recruitment teams worldwide.
             </p>
             <a href="https://www.trustpilot.com/review/mawahib.ai" target="_blank" rel="noopener noreferrer"
-              style={{ display: "inline-flex", alignItems: "center", gap: 8, textDecoration: "none", background: "rgba(255,255,255,.04)", border: "1px solid rgba(255,255,255,.07)", borderRadius: 10, padding: "8px 14px" }}>
+              style={{ display: "inline-flex", alignItems: "center", gap: 7, textDecoration: "none", background: "rgba(255,255,255,.04)", border: "1px solid rgba(255,255,255,.07)", borderRadius: 9, padding: "6px 12px" }}>
               <TrustpilotMark/>
               <div style={{ display: "flex", gap: 1 }}>
-                {[...Array(5)].map((_,i) => <svg key={i} width={10} height={10} viewBox="0 0 24 24" fill="#00b67a"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>)}
+                {[...Array(5)].map((_,i) => <svg key={i} width={9} height={9} viewBox="0 0 24 24" fill="#00b67a"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>)}
               </div>
-              <span style={{ fontSize: 11, color: "rgba(255,255,255,.4)", fontWeight: 700 }}>4.9/5</span>
+              <span style={{ fontSize: 10, color: "rgba(255,255,255,.35)", fontWeight: 700 }}>4.9/5</span>
             </a>
           </div>
           <div style={{
             display: "grid",
             gridTemplateColumns: isMobile ? "repeat(3,1fr)" : "repeat(3,auto)",
-            gap: isMobile ? 40 : 80, justifyContent: isMobile ? "center" : "flex-end"
+            gap: isMobile ? 30 : 60, justifyContent: isMobile ? "center" : "flex-end"
           }}>
             {sections.map(([sect, items]) => (
               <div key={sect}>
-                <p style={{ fontSize: 10, fontWeight: 800, color: C.gold, letterSpacing: ".15em", marginBottom: 16, textTransform: "uppercase" }}>{sect}</p>
-                <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                <p style={{ fontSize: 10, fontWeight: 800, color: C.gold, letterSpacing: ".15em", marginBottom: 12, textTransform: "uppercase" }}>{sect}</p>
+                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                   {items.map((item) => {
                     const paths = { Pricing: "/pricing", About: "/about", Privacy: "/privacy" };
                     return paths[item] ? (
                       <motion.div key={item} whileHover={{ color: "rgba(255,255,255,.7)", x: 4 }} transition={{ duration: 0.25 }}>
-                        <Link to={paths[item]} style={{ color: "rgba(255,255,255,.3)", fontSize: 14, textDecoration: "none" }}>{item}</Link>
+                        <Link to={paths[item]} style={{ color: "rgba(255,255,255,.3)", fontSize: 13, textDecoration: "none" }}>{item}</Link>
                       </motion.div>
                     ) : null;
                   })}
@@ -1853,32 +1853,32 @@ function Footer() {
           </div>
         </div>
         <div style={{
-          marginTop: isMobile ? 0 : -20,
-          marginBottom: 30,
+          marginTop: isMobile ? 0 : -16,
+          marginBottom: 20,
           textAlign: isMobile ? "center" : "right"
         }}>
           <a href="mailto:info@mawahib.ai" style={{
-            color: "rgba(255,255,255,.3)",
-            fontSize: 14,
+            color: "rgba(255,255,255,.25)",
+            fontSize: 13,
             textDecoration: "none",
             transition: "color .25s"
           }}
           onMouseOver={(e) => e.target.style.color = "rgba(255,255,255,.7)"}
-          onMouseOut={(e) => e.target.style.color = "rgba(255,255,255,.3)"}
+          onMouseOut={(e) => e.target.style.color = "rgba(255,255,255,.25)"}
           >
             info@mawahib.ai
           </a>
         </div>
         <div style={{
-          borderTop: "1px solid rgba(255,255,255,.05)", paddingTop: 22,
+          borderTop: "1px solid rgba(255,255,255,.05)", paddingTop: 16,
           display: "flex", flexDirection: isMobile ? "column" : "row",
           justifyContent: "space-between", alignItems: "center",
-          gap: 16, textAlign: isMobile ? "center" : "left"
+          gap: 12, textAlign: isMobile ? "center" : "left"
         }}>
-          <p style={{ color: "rgba(255,255,255,.18)", fontSize: 12 }}>© 2026 Mawahib LLC. All rights reserved.</p>
-          <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 10 }}>
+          <p style={{ color: "rgba(255,255,255,.15)", fontSize: 11 }}>© 2026 Mawahib LLC. All rights reserved.</p>
+          <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 8 }}>
             {["AI-Powered", "SOC 2 Type II", "GDPR Ready"].map((b) => (
-              <span key={b} style={{ fontSize: 11, color: "rgba(255,255,255,.22)", border: "1px solid rgba(255,255,255,.07)", borderRadius: 9999, padding: "5px 12px", letterSpacing: ".05em" }}>{b}</span>
+              <span key={b} style={{ fontSize: 10, color: "rgba(255,255,255,.20)", border: "1px solid rgba(255,255,255,.07)", borderRadius: 9999, padding: "4px 10px", letterSpacing: ".05em" }}>{b}</span>
             ))}
           </div>
         </div>

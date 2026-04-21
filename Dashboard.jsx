@@ -185,6 +185,33 @@ const CV_RESULTS = [
     finalScore: 84,
     disqualified: "NO",
     suitable: true,
+    summary: "Senior Sales Representative with 6+ years of experience in B2B technology sales across the GCC. Proven track record of exceeding quotas and building long-term strategic partnerships with enterprise clients in Riyadh and Dubai.",
+    experience: [
+      {
+        title: "Senior Sales Account Manager",
+        company: "GlobalTech Solutions",
+        period: "2021 — Present",
+        points: [
+          "Exceeded annual sales targets by average of 15% for three consecutive years.",
+          "Managed a portfolio of 40+ enterprise accounts in the manufacturing sector.",
+          "Led the implementation of a new CRM workflow that improved lead conversion by 22%."
+        ]
+      },
+      {
+        title: "B2B Sales Representative",
+        company: "Innovate Middle East",
+        period: "2018 — 2021",
+        points: [
+          "Developed new business opportunities in the untapped SME market in Riyadh.",
+          "Conducted over 200 technical product demonstrations to C-level executives.",
+          "Reduced sales cycle time by 30% through effective qualifying techniques."
+        ]
+      }
+    ],
+    education: [
+      { degree: "B.Sc. in Business Administration", institution: "King Saud University", year: "2017" }
+    ],
+    skills: ["B2B Sales", "Strategic Negotiating", "CRM (Salesforce)", "Market Analysis", "Fluent Arabic & English"]
   },
   {
     id: "cv-mona-haddad",
@@ -205,6 +232,23 @@ const CV_RESULTS = [
     finalScore: 73,
     disqualified: "NO",
     suitable: true,
+    summary: "Detail-oriented Finance Analyst with experience in revenue operations and financial modeling. Specialized in the SaaS sector with a focus on EMEA markets and compliance tracking.",
+    experience: [
+      {
+        title: "Junior Finance Analyst",
+        company: "Skyline Ventures",
+        period: "2022 — Present",
+        points: [
+          "Maintained financial records for cross-border transactions in 5 currencies.",
+          "Assisted in the preparation of quarterly revenue reports for board members.",
+          "Optimized the accounts receivable process, reducing DTO by 5 days."
+        ]
+      }
+    ],
+    education: [
+      { degree: "B.A. in Finance & Accounting", institution: "University of Jordan", year: "2021" }
+    ],
+    skills: ["Financial Modeling", "QuickBooks", "Multi-currency Accounting", "Data Analytics (Python)"]
   },
   {
     id: "cv-yousef-nasser",
