@@ -2,7 +2,7 @@ import { useState, useMemo, useEffect } from "react";
 import {
     ArrowLeft, Search, ChevronLeft, ChevronRight, Copy,
     Check, Eye, RotateCcw, Trash2, AlertCircle, Users,
-    BarChart2, CheckCircle2, XCircle, Clock, Filter,
+    BarChart2, CheckCircle2, XCircle, Filter,
     ChevronDown, Sparkles, Globe, MoreHorizontal, Captions, CaptionsOff,
 } from "lucide-react";
 import { getPaginationWindow, paginateItems } from "./tablePagination";
@@ -230,132 +230,252 @@ const ScoreBar = ({ score }) => (
     </div>
 );
 
+const chunkCards = (items, size) => {
+    const chunks = [];
+    for (let index = 0; index < items.length; index += size) {
+        chunks.push(items.slice(index, index + size));
+    }
+    return chunks;
+};
+
+const EvaluationCard = ({ card }) => (
+    <div style={{
+        minHeight: 340,
+        background: "rgba(255,255,255,0.98)",
+        border: `1px solid rgba(184,149,90,0.22)`,
+        borderTop: `5px solid ${card.color}`,
+        borderRadius: 22,
+        overflow: "hidden",
+        boxShadow: "0 12px 32px rgba(184,149,90,0.1)",
+        display: "flex",
+        flexDirection: "column",
+        transition: "transform 0.25s ease",
+    }}>
+        <div style={{
+            padding: "24px 22px 16px",
+            display: "flex",
+            alignItems: "center",
+            gap: 12,
+            background: `${card.color}08`,
+        }}>
+            {card.dot && <span style={{ width: 12, height: 12, borderRadius: "50%", background: card.color, boxShadow: `0 0 10px ${card.color}` }} />}
+            <div style={{
+                flex: 1,
+                minWidth: 0,
+                fontSize: 15.5,
+                fontWeight: 700,
+                color: C.inkSoft,
+                padding: "12px 14px",
+                borderRadius: 16,
+                background: `${card.color}12`,
+            }}>
+                {card.label}
+            </div>
+        </div>
+
+        <div style={{ padding: "0 22px 24px", flex: 1, display: "flex", flexDirection: "column", justifyContent: "center" }}>
+            {card.content.type === "text" && (
+                <p style={{ fontSize: 14.5, color: C.inkSoft, lineHeight: 1.75, margin: 0 }}>
+                    {card.content.text}
+                </p>
+            )}
+            {card.content.type === "kv" && (
+                <div style={{ display: "grid", gap: 12 }}>
+                    {card.content.items.map(({ k, v }) => (
+                        <div key={k} style={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "center",
+                            gap: 12,
+                            border: `1px solid ${C.line}`,
+                            borderRadius: 14,
+                            padding: "14px 16px",
+                            background: "rgba(255,255,255,0.95)",
+                        }}>
+                            <span style={{ fontSize: 13.5, color: C.inkMuted }}>{k}</span>
+                            <span style={{ fontSize: 14.5, fontWeight: 700, color: C.inkSoft }}>{v}</span>
+                        </div>
+                    ))}
+                </div>
+            )}
+            {card.content.type === "scores" && (
+                <div style={{ display: "grid", gap: 16 }}>
+                    {card.content.items.map(({ k, v }) => (
+                        <div key={k}>
+                            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
+                                <span style={{ fontSize: 13, color: C.inkMuted }}>{k}</span>
+                                <span style={{ fontSize: 14, fontWeight: 700, color: scoreColor(v) }}>{v}%</span>
+                            </div>
+                            <div style={{ height: 8, borderRadius: 99, background: C.line, overflow: "hidden", border: "1px solid rgba(0,0,0,0.02)" }}>
+                                <div style={{ height: "100%", width: `${v}%`, borderRadius: 99, background: scoreColor(v), boxShadow: `0 0 8px ${scoreColor(v)}40` }} />
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            )}
+        </div>
+    </div>
+);
+
 // ─── Evaluation Card Carousel ─────────────────────────────────────────────────
 const EvalCarousel = ({ candidateId, lang, setLang, hideBorder }) => {
     const [idx, setIdx] = useState(0);
     const cards = EVAL_CARDS[candidateId] || [];
-    const card = cards[idx];
+    const pages = chunkCards(cards, 2);
+    const page = pages[idx] || [];
+    const totalPages = Math.max(1, pages.length);
+
+    useEffect(() => {
+        setIdx(0);
+    }, [candidateId]);
 
     return (
         <div style={{
-            background: hideBorder ? "transparent" : "rgba(4,8,20,0.6)", 
+            background: hideBorder ? "transparent" : "rgba(4,8,20,0.6)",
             borderTop: hideBorder ? "none" : `1px solid ${C.line}`,
             borderLeft: hideBorder ? "none" : `3px solid ${C.green}`,
-            display: "flex", flexDirection: "column", height: "100%"
+            display: "flex",
+            flexDirection: "column",
+            height: "100%",
+            minHeight: 0,
         }}>
-            {/* Eval header */}
             <div style={{
-                padding: "12px 20px", borderBottom: `1px solid ${C.line}`,
-                display: "flex", alignItems: "center", justifyContent: "space-between",
+                padding: "12px 20px",
+                borderBottom: `1px solid ${C.line}`,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
             }}>
                 <div style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: "0.16em", textTransform: "uppercase", color: C.inkFaint }}>
                     Evaluation
                 </div>
-                {/* Lang toggle */}
                 <div style={{ display: "flex", gap: 4, background: "rgba(255,250,242,0.80)", border: `1px solid rgba(184,149,90,0.18)`, borderRadius: 9, padding: 3 }}>
-                    {["EN", "AR"].map(l => (
+                    {["EN", "AR"].map((l) => (
                         <button key={l} onClick={() => setLang(l)} style={{
-                            height: 26, padding: "0 12px", borderRadius: 7,
+                            height: 26,
+                            padding: "0 12px",
+                            borderRadius: 7,
                             border: `1px solid ${lang === l ? C.goldBorder : "transparent"}`,
                             background: lang === l ? C.goldDim : "transparent",
                             color: lang === l ? C.goldBright : C.inkMuted,
-                            fontSize: 11.5, fontWeight: 700, cursor: "pointer",
-                            fontFamily: "'Sora', sans-serif", transition: "all 0.18s",
+                            fontSize: 11.5,
+                            fontWeight: 700,
+                            cursor: "pointer",
+                            fontFamily: "'Sora', sans-serif",
+                            transition: "all 0.18s",
                         }}>{l}</button>
                     ))}
                 </div>
             </div>
 
-            <div style={{ padding: "16px 20px", display: "flex", alignItems: "stretch", gap: 0 }}>
-                {/* Prev arrow */}
-                <button onClick={() => setIdx(i => Math.max(0, i - 1))} disabled={idx === 0} style={{
-                    width: 36, height: 36, borderRadius: "50%", flexShrink: 0, alignSelf: "center",
-                    border: `1px solid rgba(184,149,90,0.18)`, background: "rgba(255,250,242,0.90)",
-                    color: idx === 0 ? C.inkFaint : C.inkSoft, cursor: idx === 0 ? "not-allowed" : "pointer",
-                    display: "grid", placeItems: "center", marginRight: 12, transition: "all 0.18s",
-                }}
-                    onMouseEnter={e => { if (idx > 0) { e.currentTarget.style.borderColor = C.goldBorder; e.currentTarget.style.color = C.goldBright; } }}
-                    onMouseLeave={e => { e.currentTarget.style.borderColor = C.line; e.currentTarget.style.color = idx === 0 ? C.inkFaint : C.inkSoft; }}
-                ><ChevronLeft size={16} /></button>
+            <div style={{
+                padding: "18px 18px 12px",
+                display: "grid",
+                gridTemplateColumns: "44px minmax(0,1fr) 44px",
+                alignItems: "center",
+                gap: 12,
+                minHeight: 0,
+                flex: 1,
+            }}>
+                <button
+                    onClick={() => setIdx((current) => Math.max(0, current - 1))}
+                    disabled={idx === 0}
+                    style={{
+                        width: 36,
+                        height: 36,
+                        borderRadius: "50%",
+                        flexShrink: 0,
+                        alignSelf: "center",
+                        border: `1px solid rgba(184,149,90,0.18)`,
+                        background: "rgba(255,250,242,0.90)",
+                        color: idx === 0 ? C.inkFaint : C.inkSoft,
+                        cursor: idx === 0 ? "not-allowed" : "pointer",
+                        display: "grid",
+                        placeItems: "center",
+                        transition: "all 0.18s",
+                    }}
+                    onMouseEnter={(e) => { if (idx > 0) { e.currentTarget.style.borderColor = C.goldBorder; e.currentTarget.style.color = C.goldBright; } }}
+                    onMouseLeave={(e) => { e.currentTarget.style.borderColor = C.line; e.currentTarget.style.color = idx === 0 ? C.inkFaint : C.inkSoft; }}
+                >
+                    <ChevronLeft size={16} />
+                </button>
 
-                {/* Card area */}
-                <div style={{ flex: 1, minWidth: 0 }}>
-                    {card && (
+                <div style={{ minWidth: 0 }}>
+                    {page.length ? (
+                        <div className="eval-cards-grid">
+                            {page.map((pageCard) => (
+                                <EvaluationCard key={pageCard.id} card={pageCard} />
+                            ))}
+                        </div>
+                    ) : (
                         <div style={{
-                            background: "rgba(255,255,255,0.98)", border: `1px solid rgba(184,149,90,0.18)`,
-                            borderRadius: 16, overflow: "hidden",
+                            minHeight: 340,
+                            borderRadius: 22,
+                            border: `1px solid ${C.line}`,
+                            background: "rgba(251,245,235,0.7)",
+                            display: "flex",
+                            flexDirection: "column",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            gap: 16,
+                            color: C.inkFaint,
+                            textAlign: "center",
+                            padding: 24,
                         }}>
-                            {/* Card header */}
-                            <div style={{
-                                padding: "12px 16px", borderBottom: `2px solid ${card.color}`,
-                                display: "flex", alignItems: "center", gap: 8,
-                                background: `${card.color}08`,
+                            <div style={{ 
+                                width: 54, height: 54, borderRadius: 16, 
+                                background: "rgba(184,149,90,0.1)", 
+                                border: `1px solid ${C.line}`,
+                                display: "grid", placeItems: "center", marginBottom: 4
                             }}>
-                                {card.dot && <span style={{ width: 9, height: 9, borderRadius: "50%", background: card.color, boxShadow: `0 0 6px ${card.color}`, flexShrink: 0 }} />}
-                                <span style={{ fontSize: 13.5, fontWeight: 700, color: C.inkSoft }}>{card.label}</span>
+                                <Sparkles size={24} color={C.gold} opacity={0.6} />
                             </div>
-
-                            {/* Card body */}
-                            <div style={{ padding: "16px" }}>
-                                {card.content.type === "text" && (
-                                    <p style={{ fontSize: 13.5, color: C.inkSoft, lineHeight: 1.75, margin: 0 }}>{card.content.text}</p>
-                                )}
-                                {card.content.type === "kv" && (
-                                    <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
-                                        {card.content.items.map(({ k, v }, i) => (
-                                            <div key={k} style={{
-                                                display: "flex", justifyContent: "space-between", alignItems: "center",
-                                                padding: "10px 0",
-                                                borderBottom: i < card.content.items.length - 1 ? `1px solid ${C.line}` : "none",
-                                            }}>
-                                                <span style={{ fontSize: 13, color: C.inkMuted }}>{k}</span>
-                                                <span style={{ fontSize: 13.5, fontWeight: 600, color: C.inkSoft }}>{v}</span>
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
-                                {card.content.type === "scores" && (
-                                    <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                                        {card.content.items.map(({ k, v }) => (
-                                            <div key={k}>
-                                                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 5 }}>
-                                                    <span style={{ fontSize: 12.5, color: C.inkMuted }}>{k}</span>
-                                                    <span style={{ fontSize: 12.5, fontWeight: 700, color: scoreColor(v) }}>{v}</span>
-                                                </div>
-                                                <div style={{ height: 5, borderRadius: 99, background: C.line, overflow: "hidden" }}>
-                                                    <div style={{ height: "100%", width: `${v}%`, borderRadius: 99, background: scoreColor(v) }} />
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
+                            <div style={{ fontSize: 16, fontWeight: 700, color: C.inkSoft }}>No Evaluation Yet</div>
+                            <div style={{ fontSize: 13, maxWidth: 280, lineHeight: 1.6 }}>AI analysis will appear here once the candidate completes their session.</div>
                         </div>
                     )}
-
-                    {/* Dots */}
                     <div style={{ display: "flex", justifyContent: "center", gap: 6, marginTop: 12 }}>
-                        {cards.map((_, i) => (
-                            <button key={i} onClick={() => setIdx(i)} style={{
-                                width: i === idx ? 18 : 6, height: 6, borderRadius: 3,
-                                background: i === idx ? C.goldBright : "rgba(184,149,90,0.25)",
-                                border: "none", cursor: "pointer", padding: 0, transition: "all 0.2s",
-                            }} />
+                        {Array.from({ length: totalPages }).map((_, pageIndex) => (
+                            <button
+                                key={pageIndex}
+                                onClick={() => setIdx(pageIndex)}
+                                style={{
+                                    width: pageIndex === idx ? 18 : 6,
+                                    height: 6,
+                                    borderRadius: 3,
+                                    background: pageIndex === idx ? C.inkMuted : "rgba(184,149,90,0.25)",
+                                    border: "none",
+                                    cursor: "pointer",
+                                    padding: 0,
+                                    transition: "all 0.2s",
+                                }}
+                            />
                         ))}
                     </div>
                 </div>
 
-                {/* Next arrow */}
-                <button onClick={() => setIdx(i => Math.min(cards.length - 1, i + 1))} disabled={idx === cards.length - 1} style={{
-                    width: 36, height: 36, borderRadius: "50%", flexShrink: 0, alignSelf: "center",
-                    border: `1px solid rgba(184,149,90,0.18)`, background: "rgba(255,250,242,0.90)",
-                    color: idx === cards.length - 1 ? C.inkFaint : C.inkSoft,
-                    cursor: idx === cards.length - 1 ? "not-allowed" : "pointer",
-                    display: "grid", placeItems: "center", marginLeft: 12, transition: "all 0.18s",
-                }}
-                    onMouseEnter={e => { if (idx < cards.length - 1) { e.currentTarget.style.borderColor = C.goldBorder; e.currentTarget.style.color = C.goldBright; } }}
-                    onMouseLeave={e => { e.currentTarget.style.borderColor = C.line; e.currentTarget.style.color = idx === cards.length - 1 ? C.inkFaint : C.inkSoft; }}
-                ><ChevronRight size={16} /></button>
+                <button
+                    onClick={() => setIdx((current) => Math.min(totalPages - 1, current + 1))}
+                    disabled={idx === totalPages - 1}
+                    style={{
+                        width: 36,
+                        height: 36,
+                        borderRadius: "50%",
+                        flexShrink: 0,
+                        alignSelf: "center",
+                        border: `1px solid rgba(184,149,90,0.18)`,
+                        background: "rgba(255,250,242,0.90)",
+                        color: idx === totalPages - 1 ? C.inkFaint : C.inkSoft,
+                        cursor: idx === totalPages - 1 ? "not-allowed" : "pointer",
+                        display: "grid",
+                        placeItems: "center",
+                        transition: "all 0.18s",
+                    }}
+                    onMouseEnter={(e) => { if (idx < totalPages - 1) { e.currentTarget.style.borderColor = C.goldBorder; e.currentTarget.style.color = C.goldBright; } }}
+                    onMouseLeave={(e) => { e.currentTarget.style.borderColor = C.line; e.currentTarget.style.color = idx === totalPages - 1 ? C.inkFaint : C.inkSoft; }}
+                >
+                    <ChevronRight size={16} />
+                </button>
             </div>
         </div>
     );
@@ -364,7 +484,7 @@ const EvalCarousel = ({ candidateId, lang, setLang, hideBorder }) => {
 // ─── Candidate Row ────────────────────────────────────────────────────────────
 const CandidateRow = ({ c, expanded, onToggle, checked, onCheck, lang, setLang }) => {
     const vs = verdictStyle(c.verdict);
-    const [showCaptions, setShowCaptions] = useState(false);
+    const [showCaptions, setShowCaptions] = useState(true);
     const captionSegments = getCaptionSegments(c);
     return (
         <div style={{
@@ -377,7 +497,7 @@ const CandidateRow = ({ c, expanded, onToggle, checked, onCheck, lang, setLang }
             {/* Main row */}
             <div style={{
                 display: "grid",
-                gridTemplateColumns: "28px 44px 1fr 140px 130px 180px 90px 90px 120px",
+                gridTemplateColumns: "28px 44px minmax(220px,1.7fr) 104px 130px 150px 100px 146px",
                 gap: 10, padding: "14px 16px", alignItems: "center",
                 borderLeft: `3px solid ${expanded ? C.green : "transparent"}`,
                 transition: "border-color 0.2s",
@@ -396,6 +516,7 @@ const CandidateRow = ({ c, expanded, onToggle, checked, onCheck, lang, setLang }
                     <div style={{ minWidth: 0 }}>
                         <div style={{ fontSize: 13.5, fontWeight: 700, color: C.inkSoft, marginBottom: 1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{c.name}</div>
                         <div style={{ fontSize: 11.5, color: C.inkFaint, marginBottom: 2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{c.email}</div>
+                        <div style={{ fontSize: 11.5, color: C.inkMuted, marginBottom: 4, fontFamily: "monospace" }}>{c.phone}</div>
                         <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                             <span style={{ fontSize: 11, color: C.inkFaint, fontFamily: "monospace" }}>Session: {c.session}</span>
                             <CopyBtn value={c.session} small />
@@ -403,14 +524,24 @@ const CandidateRow = ({ c, expanded, onToggle, checked, onCheck, lang, setLang }
                     </div>
                 </div>
 
-                {/* Phone */}
-                <div style={{ fontSize: 13, color: C.inkMuted, fontFamily: "monospace" }}>{c.phone}</div>
-
-                {/* Started */}
-                <div style={{ fontSize: 11.5, color: C.inkFaint, lineHeight: 1.5 }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 4, marginBottom: 1 }}>
-                        <Clock size={10} color={C.inkFaint} /> {c.started}
-                    </div>
+                {/* View */}
+                <div>
+                    <button
+                        onClick={onToggle}
+                        style={{
+                            height: 30, padding: "0 12px", borderRadius: 8,
+                            border: `1px solid ${expanded ? C.goldBorder : C.line}`,
+                            background: expanded ? C.goldDim : "rgba(255,255,255,0.72)",
+                            color: expanded ? C.gold : C.inkMuted,
+                            fontSize: 11.5, fontWeight: 700, cursor: "pointer",
+                            fontFamily: "'Sora', sans-serif", transition: "all 0.18s",
+                            display: "inline-flex", alignItems: "center", gap: 5,
+                        }}
+                        onMouseEnter={e => { e.currentTarget.style.borderColor = C.goldBorder; e.currentTarget.style.color = C.gold; e.currentTarget.style.background = C.goldDim; }}
+                        onMouseLeave={e => { if (!expanded) { e.currentTarget.style.borderColor = C.line; e.currentTarget.style.color = C.inkMuted; e.currentTarget.style.background = "rgba(255,255,255,0.72)"; } }}
+                    >
+                        <Eye size={11} /> {expanded ? "Hide" : "View"}
+                    </button>
                 </div>
 
                 {/* Interview Status */}
@@ -434,23 +565,6 @@ const CandidateRow = ({ c, expanded, onToggle, checked, onCheck, lang, setLang }
                 <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
                     <Pill label={vs.label} color={vs.color} bg={vs.bg} border={vs.border} small />
                     <div style={{ display: "flex", gap: 4, marginTop: 4, width: "100%", justifyContent: "flex-start" }}>
-                        <button
-                            onClick={onToggle}
-                            style={{
-                                height: 26, padding: "0 10px", borderRadius: 7,
-                                border: `1px solid ${expanded ? C.goldBorder : C.line}`,
-                                background: expanded ? C.goldDim : "transparent",
-                                color: expanded ? C.goldBright : C.inkMuted,
-                                fontSize: 11, fontWeight: 600, cursor: "pointer",
-                                fontFamily: "'Sora', sans-serif", transition: "all 0.18s",
-                                display: "flex", alignItems: "center", gap: 5,
-                            }}
-                            onMouseEnter={e => { e.currentTarget.style.borderColor = C.goldBorder; e.currentTarget.style.color = C.goldBright; e.currentTarget.style.background = C.goldDim; }}
-                            onMouseLeave={e => { if (!expanded) { e.currentTarget.style.borderColor = C.line; e.currentTarget.style.color = C.inkMuted; e.currentTarget.style.background = "transparent"; } }}
-                        >
-                            <Eye size={10} /> {expanded ? "Hide" : "View"}
-                        </button>
-                        {/* R W I D icons */}
                         {[
                             { label: "R", title: "Resume", color: C.blue },
                             { label: "W", title: "Workspace", color: C.green },
@@ -475,9 +589,11 @@ const CandidateRow = ({ c, expanded, onToggle, checked, onCheck, lang, setLang }
             {/* Evaluation panel */}
             {expanded && (
                 <div className="inter-expanded-grid" style={{ 
+                    display: "grid",
+                    gridTemplateColumns: "minmax(0, 1.2fr) minmax(360px, 1fr)",
                     background: "rgba(255,250,242,0.94)", 
                     borderTop: `1px solid rgba(184,149,90,0.18)`,
-                    borderLeft: `3px solid ${vs.color}`,
+                    borderLeft: `4px solid ${vs.color}`,
                 }}>
                     {/* Video Player Area */}
                     <div className="inter-video-border" style={{ 
@@ -583,13 +699,14 @@ const CandidateRow = ({ c, expanded, onToggle, checked, onCheck, lang, setLang }
                             <div style={{
                                 width: "100%",
                                 minWidth: 0,
-                                minHeight: showCaptions ? 420 : 580,
+                                minHeight: showCaptions ? 248 : 304,
                                 borderRadius: 12,
                                 overflow: "hidden",
                                 border: `1px solid rgba(184,149,90,0.18)`,
                                 background: C.bgInput,
                                 position: "relative",
                                 boxShadow: "inset 0 1px 0 rgba(255,255,255,0.75)",
+                                aspectRatio: "16 / 9",
                             }}>
                                 <iframe
                                     src="https://www.youtube.com/embed/n-cH2WyYJiA?rel=0&modestbranding=1&playsinline=1"
@@ -604,7 +721,7 @@ const CandidateRow = ({ c, expanded, onToggle, checked, onCheck, lang, setLang }
                     </div>
 
                     {/* AI Evaluation */}
-                    <div style={{ minWidth: 0 }}>
+                    <div style={{ minWidth: 0, background: "rgba(255,255,255,0.94)" }}>
                         <EvalCarousel candidateId={c.id} lang={lang} setLang={setLang} hideBorder={true} />
                     </div>
                 </div>
@@ -759,7 +876,8 @@ export default function InterviewResults({ onClose, inline = false }) {
         .inter-expanded-grid { background: rgba(255,250,242,0.92); border-top: 1px solid rgba(184,149,90,0.18); }
         .inter-video-border { background: rgba(255,255,255,0.98); border-right: 1px solid rgba(184,149,90,0.18); }
         .inter-recording-shell { display: block; }
-        .inter-recording-shell.captions-on { display: grid; grid-template-columns: minmax(260px, 320px) minmax(0, 1fr); gap: 16px; align-items: stretch; }
+        .inter-recording-shell.captions-on { display: grid; grid-template-columns: minmax(220px, 280px) minmax(0, 1fr); gap: 16px; align-items: stretch; }
+        .eval-cards-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; align-items: stretch; }
         .inter-captions-panel {
           display: flex;
           flex-direction: column;
@@ -771,7 +889,7 @@ export default function InterviewResults({ onClose, inline = false }) {
           box-shadow: inset 0 1px 0 rgba(255,255,255,0.78);
         }
         .inter-captions-scroll {
-          max-height: 580px;
+          max-height: 500px;
           overflow-y: auto;
           padding: 12px;
           display: flex;
@@ -797,6 +915,7 @@ export default function InterviewResults({ onClose, inline = false }) {
           .inter-expanded-grid { grid-template-columns: 1fr !important; }
           .inter-video-border { border-right: none !important; border-bottom: 1px solid rgba(184,149,90,0.16) !important; }
           .inter-recording-shell.captions-on { grid-template-columns: 1fr !important; }
+          .eval-cards-grid { grid-template-columns: 1fr !important; }
           .inter-captions-scroll { max-height: 260px; }
         }
         @media (max-width: 720px) {
@@ -806,10 +925,10 @@ export default function InterviewResults({ onClose, inline = false }) {
           .inter-filter-grid { grid-template-columns: 1fr !important; }
         }
         @media (max-width: 1100px) {
-          .cand-grid { grid-template-columns: 28px 44px 1fr 110px 120px 130px 80px 80px 110px !important; }
+          .cand-grid { grid-template-columns: 28px 44px minmax(220px,1.5fr) 96px 120px 130px 90px 132px !important; }
         }
         @media (max-width: 860px) {
-          .cand-grid { grid-template-columns: 28px 1fr 100px 100px !important; }
+          .cand-grid { grid-template-columns: 28px 44px minmax(220px,1.25fr) 90px 110px 120px 84px 124px !important; }
           .cand-hide-md { display: none !important; }
         }
         @keyframes interFadeIn  { from { opacity: 0 } to { opacity: 1 } }
@@ -983,7 +1102,7 @@ export default function InterviewResults({ onClose, inline = false }) {
                         {/* Column headers */}
                         <div className="cand-grid" style={{
                             display: "grid",
-                            gridTemplateColumns: "28px 44px 1fr 140px 130px 180px 90px 90px 120px",
+                            gridTemplateColumns: "28px 44px minmax(220px,1.7fr) 104px 130px 150px 100px 146px",
                             gap: 10, padding: "10px 16px",
                             borderBottom: `1px solid ${C.line}`,
                             background: "rgba(255,255,255,0.015)",
@@ -992,9 +1111,9 @@ export default function InterviewResults({ onClose, inline = false }) {
                                 <input type="checkbox" checked={allChecked} onChange={toggleAll} style={{ cursor: "pointer", accentColor: C.goldBright, width: 15, height: 15 }} />
                             </div>
                             <div style={{ fontSize: 10.5, fontWeight: 700, color: C.inkFaint, letterSpacing: "0.1em" }}>#</div>
-                            {["Candidate", "Phone", "Interview Status", "Interview Status", "Initial Score", "Qualifier Rank", "Action"].map((h, i) => (
+                            {["Candidate", "View", "Status", "Initial Score", "Qualifier Rank", "Action"].map((h, i) => (
                                 <div key={i} style={{ fontSize: 10.5, fontWeight: 700, color: C.inkFaint, letterSpacing: "0.1em", textTransform: "uppercase" }}>
-                                    {["Candidate", "Phone", "Started", "Status", "Initial Score", "Qualifier Rank", "Action"][i]}
+                                    {["Candidate", "View", "Status", "Initial Score", "Qualifier Rank", "Action"][i]}
                                 </div>
                             ))}
                         </div>
@@ -1078,5 +1197,3 @@ export default function InterviewResults({ onClose, inline = false }) {
         </>
     );
 }
-
-

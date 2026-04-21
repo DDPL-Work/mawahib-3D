@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { AlertCircle, Download, Eye, Mail, MoreHorizontal, RotateCcw, X } from "lucide-react";
+import { AlertCircle, Download, Eye, MoreHorizontal, X } from "lucide-react";
 import { getPaginationWindow, MIN_TABLE_ROWS, paginateItems } from "./tablePagination";
 
 const TablePagination = ({ page, totalPages, startIndex, endIndex, totalItems, onPageChange, theme }) => {
@@ -66,7 +66,6 @@ export default function DashboardCVResultsPanel({ candidates, theme }) {
   const [genderFilter, setGenderFilter] = useState("all");
   const [countryFilter, setCountryFilter] = useState("all");
   const [cityFilter, setCityFilter] = useState("all");
-  const [phoneQuery, setPhoneQuery] = useState("");
   const [suitableFilter, setSuitableFilter] = useState("all");
   const [dateSort, setDateSort] = useState("newest");
   const [scoreSort, setScoreSort] = useState("high-to-low");
@@ -85,22 +84,21 @@ export default function DashboardCVResultsPanel({ candidates, theme }) {
 
   const filteredCandidates = useMemo(() => {
     const normalizedName = nameQuery.trim().toLowerCase();
-    const normalizedPhone = phoneQuery.trim().toLowerCase();
 
     const filtered = candidates.filter((candidate) => {
       const matchesName = !normalizedName
         || candidate.name.toLowerCase().includes(normalizedName)
-        || candidate.email.toLowerCase().includes(normalizedName);
+        || candidate.email.toLowerCase().includes(normalizedName)
+        || candidate.phone.toLowerCase().includes(normalizedName);
       const matchesStatus = statusFilter === "all" || candidate.reviewStatus === statusFilter;
       const matchesGender = genderFilter === "all" || candidate.gender === genderFilter;
       const matchesCountry = countryFilter === "all" || candidate.country === countryFilter;
       const matchesCity = cityFilter === "all" || candidate.city === cityFilter;
-      const matchesPhone = !normalizedPhone || candidate.phone.toLowerCase().includes(normalizedPhone);
       const matchesSuitable = suitableFilter === "all"
         || (suitableFilter === "yes" && candidate.suitable)
         || (suitableFilter === "no" && !candidate.suitable);
 
-      return matchesName && matchesStatus && matchesGender && matchesCountry && matchesCity && matchesPhone && matchesSuitable;
+      return matchesName && matchesStatus && matchesGender && matchesCountry && matchesCity && matchesSuitable;
     });
 
     return [...filtered].sort((left, right) => {
@@ -115,7 +113,7 @@ export default function DashboardCVResultsPanel({ candidates, theme }) {
       const rightTime = new Date(right.submittedAt).getTime();
       return dateSort === "newest" ? rightTime - leftTime : leftTime - rightTime;
     });
-  }, [candidates, nameQuery, statusFilter, genderFilter, countryFilter, cityFilter, phoneQuery, suitableFilter, dateSort, scoreSort]);
+  }, [candidates, nameQuery, statusFilter, genderFilter, countryFilter, cityFilter, suitableFilter, dateSort, scoreSort]);
 
   const candidatePagination = useMemo(
     () => paginateItems(filteredCandidates, candidatePage, MIN_TABLE_ROWS),
@@ -134,7 +132,7 @@ export default function DashboardCVResultsPanel({ candidates, theme }) {
 
   useEffect(() => {
     setCandidatePage(1);
-  }, [nameQuery, statusFilter, genderFilter, countryFilter, cityFilter, phoneQuery, suitableFilter, dateSort, scoreSort]);
+  }, [nameQuery, statusFilter, genderFilter, countryFilter, cityFilter, suitableFilter, dateSort, scoreSort]);
 
   useEffect(() => {
     setSelectedCandidateIds((currentIds) => currentIds.filter((id) => filteredCandidates.some((candidate) => candidate.id === id)));
@@ -146,7 +144,6 @@ export default function DashboardCVResultsPanel({ candidates, theme }) {
     setGenderFilter("all");
     setCountryFilter("all");
     setCityFilter("all");
-    setPhoneQuery("");
     setSuitableFilter("all");
     setDateSort("newest");
     setScoreSort("high-to-low");
@@ -191,168 +188,169 @@ export default function DashboardCVResultsPanel({ candidates, theme }) {
     Contacted: { bg: "rgba(45,158,117,0.10)", border: "rgba(45,158,117,0.24)", text: theme.green },
   };
 
-  const tableColumns = "48px minmax(140px, 1.6fr) minmax(100px, 0.85fr) minmax(100px, 0.9fr) minmax(90px, 0.75fr) minmax(100px, 0.9fr) minmax(95px, 0.8fr) minmax(80px, 0.7fr) minmax(95px, 0.85fr) minmax(90px, 0.75fr) minmax(90px, 0.75fr)";
+  const tableColumns = "48px minmax(220px, 1.95fr) minmax(120px, 0.85fr) minmax(100px, 0.8fr) minmax(100px, 0.82fr) minmax(180px, 1.25fr) minmax(110px, 0.82fr) minmax(90px, 0.78fr) minmax(96px, 0.82fr)";
 
-const ResumeSidebarModal = ({ candidate, theme, onClose }) => {
-  useEffect(() => {
-    if (!candidate) return undefined;
+  const ResumeSidebarModal = ({ candidate, theme, onClose }) => {
+    useEffect(() => {
+      if (!candidate) return undefined;
 
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
+      const previousOverflow = document.body.style.overflow;
+      document.body.style.overflow = "hidden";
 
-    const handleEscape = (event) => {
-      if (event.key === "Escape") onClose();
-    };
+      const handleEscape = (event) => {
+        if (event.key === "Escape") onClose();
+      };
 
-    window.addEventListener("keydown", handleEscape);
-    return () => {
-      document.body.style.overflow = previousOverflow;
-      window.removeEventListener("keydown", handleEscape);
-    };
-  }, [candidate, onClose]);
+      window.addEventListener("keydown", handleEscape);
+      return () => {
+        document.body.style.overflow = previousOverflow;
+        window.removeEventListener("keydown", handleEscape);
+      };
+    }, [candidate, onClose]);
 
-  if (!candidate) return null;
+    if (!candidate) return null;
 
-  const resumeUrl = `/demo/cv/${encodeURIComponent(candidate.cvFile)}`;
-  const isDisqualified = String(candidate.disqualified).toLowerCase() !== "no";
-  const fitState = isDisqualified
-    ? { label: "Review Required", color: theme.red, bg: "rgba(217,79,107,0.10)", border: "rgba(217,79,107,0.24)" }
-    : candidate.suitable
-      ? { label: "Strong Fit", color: theme.green, bg: "rgba(45,158,117,0.10)", border: "rgba(45,158,117,0.24)" }
-      : { label: "Consider", color: theme.gold, bg: "rgba(184,145,90,0.10)", border: theme.goldBorder };
+    const resumeUrl = `/demo/cv/${encodeURIComponent(candidate.cvFile)}`;
+    const isDisqualified = String(candidate.disqualified).toLowerCase() !== "no";
+    const fitState = isDisqualified
+      ? { label: "Review Required", color: theme.red, bg: "rgba(217,79,107,0.10)", border: "rgba(217,79,107,0.24)" }
+      : candidate.suitable
+        ? { label: "Strong Fit", color: theme.green, bg: "rgba(45,158,117,0.10)", border: "rgba(45,158,117,0.24)" }
+        : { label: "Consider", color: theme.gold, bg: "rgba(184,145,90,0.10)", border: theme.goldBorder };
 
-  return (
-    <div
-      role="dialog"
-      aria-modal="true"
-      aria-label={`Resume sidebar for ${candidate.name}`}
-      onClick={onClose}
-      style={{
-        position: "fixed",
-        inset: 0,
-        zIndex: 1200,
-        background: "rgba(12, 16, 26, 0.68)",
-        backdropFilter: "blur(10px)",
-        overflowY: "auto",
-        padding: 20,
-      }}
-    >
-      <section
-        onClick={(event) => event.stopPropagation()}
+    return (
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-label={`Resume sidebar for ${candidate.name}`}
+        onClick={onClose}
         style={{
-          width: "min(760px, 100%)",
-          minHeight: "100vh",
-          marginLeft: "auto",
-          background: "rgba(255,250,242,0.98)",
-          border: `1px solid ${theme.line}`,
-          borderRadius: 24,
-          boxShadow: "-24px 30px 80px rgba(10,18,32,0.18)",
+          position: "fixed",
+          inset: 0,
+          zIndex: 1200,
+          background: "rgba(12, 16, 26, 0.68)",
+          backdropFilter: "blur(10px)",
+          padding: "40px 20px",
           display: "flex",
-          flexDirection: "column",
-          overflow: "hidden",
+          alignItems: "center",
+          justifyContent: "center",
         }}
       >
-        <div style={{ padding: "24px 24px 18px", borderBottom: `1px solid ${theme.line}`, display: "flex", justifyContent: "space-between", gap: 16, alignItems: "flex-start" }}>
-          <div style={{ minWidth: 0 }}>
-            <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: theme.inkFaint, marginBottom: 8 }}>
-              Resume Preview
+        <section
+          onClick={(event) => event.stopPropagation()}
+          style={{
+            width: "min(820px, 100%)",
+            maxHeight: "90vh",
+            background: "rgba(255,250,242,0.98)",
+            border: `1px solid ${theme.line}`,
+            borderRadius: 28,
+            boxShadow: "0 24px 80px rgba(10,18,32,0.25)",
+            display: "flex",
+            flexDirection: "column",
+            overflow: "hidden",
+          }}
+        >
+          <div style={{ padding: "24px 24px 18px", borderBottom: `1px solid ${theme.line}`, display: "flex", justifyContent: "space-between", gap: 16, alignItems: "flex-start" }}>
+            <div style={{ minWidth: 0 }}>
+              <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: theme.inkFaint, marginBottom: 8 }}>
+                Candidate Evaluation
+              </div>
+              <div style={{ fontSize: 24, fontWeight: 700, color: theme.inkWhite, fontFamily: "'DM Serif Display', serif", lineHeight: 1.05 }}>
+                {candidate.name}
+              </div>
+              <div style={{ fontSize: 13, color: theme.inkMuted, marginTop: 6 }}>{candidate.city}, {candidate.country} · {candidate.phone}</div>
             </div>
-            <div style={{ fontSize: 24, fontWeight: 700, color: theme.inkWhite, fontFamily: "'DM Serif Display', serif", lineHeight: 1.05 }}>
-              {candidate.name}
-            </div>
-            <div style={{ fontSize: 13, color: theme.inkMuted, marginTop: 6 }}>{candidate.city}, {candidate.country} · {candidate.phone}</div>
+            <button
+              type="button"
+              onClick={onClose}
+              aria-label="Close candidate evaluation"
+              style={{
+                width: 40,
+                height: 40,
+                borderRadius: 14,
+                border: `1px solid ${theme.line}`,
+                background: "rgba(255,255,255,0.9)",
+                color: theme.inkMuted,
+                display: "grid",
+                placeItems: "center",
+                cursor: "pointer",
+              }}
+            >
+              <X size={18} />
+            </button>
           </div>
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="Close resume sidebar"
-            style={{
-              width: 40,
-              height: 40,
-              borderRadius: 14,
-              border: `1px solid ${theme.line}`,
-              background: "rgba(255,255,255,0.9)",
-              color: theme.inkMuted,
-              display: "grid",
-              placeItems: "center",
-              cursor: "pointer",
-            }}
-          >
-            <X size={18} />
-          </button>
-        </div>
 
-        <div style={{ flex: 1, overflowY: "auto" }}>
-          <div style={{ padding: "22px 24px", display: "grid", gap: 18 }}>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
-              <div style={{ padding: 18, borderRadius: 18, background: "rgba(255,255,255,0.95)", border: `1px solid ${theme.line}` }}>
-                <div style={{ fontSize: 11, color: theme.inkFaint, textTransform: "uppercase", letterSpacing: "0.11em", fontWeight: 700, marginBottom: 8 }}>Score</div>
-                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                  <div style={{ fontSize: 34, fontWeight: 800, color: theme.inkWhite }}>{candidate.finalScore}/100</div>
-                  <span style={{ padding: "6px 12px", borderRadius: 999, background: fitState.bg, border: `1px solid ${fitState.border}`, color: fitState.color, fontSize: 11.5, fontWeight: 700 }}>
-                    {fitState.label}
-                  </span>
+          <div style={{ flex: 1, overflowY: "auto" }}>
+            <div style={{ padding: "22px 24px", display: "grid", gap: 18 }}>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+                <div style={{ padding: 18, borderRadius: 18, background: "rgba(255,255,255,0.95)", border: `1px solid ${theme.line}` }}>
+                  <div style={{ fontSize: 11, color: theme.inkFaint, textTransform: "uppercase", letterSpacing: "0.11em", fontWeight: 700, marginBottom: 8 }}>Score</div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                    <div style={{ fontSize: 34, fontWeight: 800, color: theme.inkWhite }}>{candidate.finalScore}/100</div>
+                    <span style={{ padding: "6px 12px", borderRadius: 999, background: fitState.bg, border: `1px solid ${fitState.border}`, color: fitState.color, fontSize: 11.5, fontWeight: 700 }}>
+                      {fitState.label}
+                    </span>
+                  </div>
+                  <div style={{ marginTop: 14, display: "grid", gap: 6, color: theme.inkMuted, fontSize: 12 }}>
+                    <div>JD Score: {candidate.jdScore}</div>
+                    <div>Penalty: {candidate.penalty}</div>
+                    <div>Overqual: {candidate.overqualificationPenalty}</div>
+                  </div>
                 </div>
-                <div style={{ marginTop: 14, display: "grid", gap: 6, color: theme.inkMuted, fontSize: 12 }}>
-                  <div>JD Score: {candidate.jdScore}</div>
-                  <div>Penalty: {candidate.penalty}</div>
-                  <div>Overqual: {candidate.overqualificationPenalty}</div>
+                <div style={{ padding: 18, borderRadius: 18, background: "rgba(255,255,255,0.95)", border: `1px solid ${theme.line}` }}>
+                  <div style={{ fontSize: 11, color: theme.inkFaint, textTransform: "uppercase", letterSpacing: "0.11em", fontWeight: 700, marginBottom: 8 }}>Resume File</div>
+                  <div style={{ fontSize: 13.5, color: theme.inkWhite, wordBreak: "break-word" }}>{candidate.cvFile}</div>
+                  <div style={{ marginTop: 18, display: "flex", gap: 10, flexWrap: "wrap" }}>
+                    <a href={resumeUrl} target="_blank" rel="noreferrer" style={{ flex: "1 1 auto", minWidth: 140, height: 40, borderRadius: 12, border: `1px solid ${theme.line}`, background: "rgba(255,255,255,0.93)", color: theme.inkMuted, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8, textDecoration: "none", fontWeight: 700 }}>
+                      <Eye size={14} /> Open
+                    </a>
+                    <a href={resumeUrl} download={candidate.cvFile} style={{ flex: "1 1 auto", minWidth: 140, height: 40, borderRadius: 12, border: `1px solid ${theme.line}`, background: "rgba(184,145,90,0.12)", color: theme.gold, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8, textDecoration: "none", fontWeight: 700 }}>
+                      <Download size={14} /> Download
+                    </a>
+                  </div>
                 </div>
               </div>
-              <div style={{ padding: 18, borderRadius: 18, background: "rgba(255,255,255,0.95)", border: `1px solid ${theme.line}` }}>
-                <div style={{ fontSize: 11, color: theme.inkFaint, textTransform: "uppercase", letterSpacing: "0.11em", fontWeight: 700, marginBottom: 8 }}>Resume File</div>
-                <div style={{ fontSize: 13.5, color: theme.inkWhite, wordBreak: "break-word" }}>{candidate.cvFile}</div>
-                <div style={{ marginTop: 18, display: "flex", gap: 10, flexWrap: "wrap" }}>
-                  <a href={resumeUrl} target="_blank" rel="noreferrer" style={{ flex: "1 1 auto", minWidth: 140, height: 40, borderRadius: 12, border: `1px solid ${theme.line}`, background: "rgba(255,255,255,0.93)", color: theme.inkMuted, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8, textDecoration: "none", fontWeight: 700 }}>
-                    <Eye size={14} /> Open
-                  </a>
-                  <a href={resumeUrl} download={candidate.cvFile} style={{ flex: "1 1 auto", minWidth: 140, height: 40, borderRadius: 12, border: `1px solid ${theme.line}`, background: "rgba(184,145,90,0.12)", color: theme.gold, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8, textDecoration: "none", fontWeight: 700 }}>
-                    <Download size={14} /> Download
-                  </a>
-                </div>
-              </div>
-            </div>
 
-            <div style={{ padding: 18, borderRadius: 18, background: "rgba(255,255,255,0.95)", border: `1px solid ${theme.line}`, display: "grid", gap: 12 }}>
-              <div style={{ fontSize: 11, color: theme.inkFaint, textTransform: "uppercase", letterSpacing: "0.11em", fontWeight: 700 }}>Profile Summary</div>
-              <p style={{ color: theme.inkMuted, fontSize: 13.5, lineHeight: 1.7, margin: 0 }}>
-                {candidate.name} is a candidate from {candidate.city}, {candidate.country}. They submitted their CV on {candidate.submittedAtLabel} and currently have a final score of {candidate.finalScore}/100.
-              </p>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 12 }}>
-                <div style={{ display: "grid", gap: 5 }}>
-                  <div style={{ fontSize: 11, color: theme.inkFaint, textTransform: "uppercase", letterSpacing: "0.1em", fontWeight: 700 }}>Email</div>
-                  <div style={{ fontSize: 13, color: theme.inkWhite }}>{candidate.email}</div>
-                </div>
-                <div style={{ display: "grid", gap: 5 }}>
-                  <div style={{ fontSize: 11, color: theme.inkFaint, textTransform: "uppercase", letterSpacing: "0.1em", fontWeight: 700 }}>Status</div>
-                  <div style={{ fontSize: 13, color: theme.inkWhite }}>{candidate.reviewStatus}</div>
+              <div style={{ padding: 18, borderRadius: 18, background: "rgba(255,255,255,0.95)", border: `1px solid ${theme.line}`, display: "grid", gap: 12 }}>
+                <div style={{ fontSize: 11, color: theme.inkFaint, textTransform: "uppercase", letterSpacing: "0.11em", fontWeight: 700 }}>Profile Summary</div>
+                <p style={{ color: theme.inkMuted, fontSize: 13.5, lineHeight: 1.7, margin: 0 }}>
+                  {candidate.name} is a candidate from {candidate.city}, {candidate.country}. They submitted their CV on {candidate.submittedAtLabel} and currently have a final score of {candidate.finalScore}/100.
+                </p>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 12 }}>
+                  <div style={{ display: "grid", gap: 5 }}>
+                    <div style={{ fontSize: 11, color: theme.inkFaint, textTransform: "uppercase", letterSpacing: "0.1em", fontWeight: 700 }}>Email</div>
+                    <div style={{ fontSize: 13, color: theme.inkWhite }}>{candidate.email}</div>
+                  </div>
+                  <div style={{ display: "grid", gap: 5 }}>
+                    <div style={{ fontSize: 11, color: theme.inkFaint, textTransform: "uppercase", letterSpacing: "0.1em", fontWeight: 700 }}>Status</div>
+                    <div style={{ fontSize: 13, color: theme.inkWhite }}>{candidate.reviewStatus}</div>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <div style={{ display: "grid", gap: 14 }}>
-              <div style={{ padding: 18, borderRadius: 18, background: "rgba(255,255,255,0.95)", border: `1px solid ${theme.line}` }}>
-                <div style={{ fontSize: 11, color: theme.inkFaint, textTransform: "uppercase", letterSpacing: "0.11em", fontWeight: 700, marginBottom: 10 }}>Key Experience</div>
-                <div style={{ display: "grid", gap: 10 }}>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: theme.inkWhite }}>Sales Representative</div>
-                  <div style={{ color: theme.inkMuted, fontSize: 13, lineHeight: 1.7 }}>Experienced in customer outreach and follow-up in competitive GCC markets.</div>
+              <div style={{ display: "grid", gap: 14 }}>
+                <div style={{ padding: 18, borderRadius: 18, background: "rgba(255,255,255,0.95)", border: `1px solid ${theme.line}` }}>
+                  <div style={{ fontSize: 11, color: theme.inkFaint, textTransform: "uppercase", letterSpacing: "0.11em", fontWeight: 700, marginBottom: 10 }}>Key Experience</div>
+                  <div style={{ display: "grid", gap: 10 }}>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: theme.inkWhite }}>Sales Representative</div>
+                    <div style={{ color: theme.inkMuted, fontSize: 13, lineHeight: 1.7 }}>Experienced in customer outreach and follow-up in competitive GCC markets.</div>
+                  </div>
                 </div>
-              </div>
-              <div style={{ padding: 18, borderRadius: 18, background: "rgba(255,255,255,0.95)", border: `1px solid ${theme.line}` }}>
-                <div style={{ fontSize: 11, color: theme.inkFaint, textTransform: "uppercase", letterSpacing: "0.11em", fontWeight: 700, marginBottom: 10 }}>Score Details</div>
-                <div style={{ display: "grid", gap: 10 }}>
-                  <div style={{ fontSize: 13, color: theme.inkWhite }}>Job description fit: {candidate.jdScore}</div>
-                  <div style={{ fontSize: 13, color: theme.inkWhite }}>Penalty: {candidate.penalty}</div>
-                  <div style={{ fontSize: 13, color: theme.inkWhite }}>Overqualification penalty: {candidate.overqualificationPenalty}</div>
+                <div style={{ padding: 18, borderRadius: 18, background: "rgba(255,255,255,0.95)", border: `1px solid ${theme.line}` }}>
+                  <div style={{ fontSize: 11, color: theme.inkFaint, textTransform: "uppercase", letterSpacing: "0.11em", fontWeight: 700, marginBottom: 10 }}>Score Details</div>
+                  <div style={{ display: "grid", gap: 10 }}>
+                    <div style={{ fontSize: 13, color: theme.inkWhite }}>Job description fit: {candidate.jdScore}</div>
+                    <div style={{ fontSize: 13, color: theme.inkWhite }}>Penalty: {candidate.penalty}</div>
+                    <div style={{ fontSize: 13, color: theme.inkWhite }}>Overqualification penalty: {candidate.overqualificationPenalty}</div>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
-      </section>
-    </div>
-  );
-};
+        </section>
+      </div>
+    );
+  };
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
@@ -447,8 +445,8 @@ const ResumeSidebarModal = ({ candidate, theme, onClose }) => {
           <div style={{ width: "100%", minWidth: 0, overflow: "hidden" }}>
             <div style={{ display: "grid", gridTemplateColumns: tableColumns, padding: "14px 14px", gap: 6, borderBottom: `1px solid ${theme.line}`, background: "rgba(184,145,90,0.04)", alignItems: "center" }}>
               <label style={{ display: "grid", placeItems: "center" }}><input type="checkbox" checked={allVisibleSelected} onChange={toggleSelectAllVisible} /></label>
-              {["Candidate", "Details", "CV", "Status", "Action", "Country", "City", "Phone", "Final Score", "Suitable"].map((heading) => (
-                <div key={heading} style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: theme.inkSoft }}>{heading}</div>
+              {["Candidate", "Details", "CV", "Status", "Action", "Country", "City", "Suitable"].map((heading) => (
+                <div key={heading} style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: theme.inkSoft, textAlign: heading === "Candidate" ? "left" : "center" }}>{heading}</div>
               ))}
             </div>
 
@@ -461,8 +459,6 @@ const ResumeSidebarModal = ({ candidate, theme, onClose }) => {
               <div />
               <select value={countryFilter} onChange={(e) => setCountryFilter(e.target.value)} style={controlStyle}><option value="all">All</option>{countryOptions.map((country) => <option key={country} value={country}>{country}</option>)}</select>
               <select value={cityFilter} onChange={(e) => setCityFilter(e.target.value)} style={controlStyle}><option value="all">All</option>{cityOptions.map((city) => <option key={city} value={city}>{city}</option>)}</select>
-              <input value={phoneQuery} onChange={(e) => setPhoneQuery(e.target.value)} placeholder="Phone" style={controlStyle} />
-              <select value={scoreSort} onChange={(e) => setScoreSort(e.target.value)} style={controlStyle}><option value="high-to-low">High to low</option><option value="low-to-high">Low to high</option><option value="none">None</option></select>
               <select value={suitableFilter} onChange={(e) => setSuitableFilter(e.target.value)} style={controlStyle}><option value="all">All</option><option value="yes">Yes</option><option value="no">No</option></select>
             </div>
 
@@ -486,45 +482,48 @@ const ResumeSidebarModal = ({ candidate, theme, onClose }) => {
                   <div style={{ overflowWrap: "anywhere", wordBreak: "break-word" }}>
                     <div style={{ fontSize: 14, fontWeight: 700, color: theme.inkWhite, lineHeight: 1.2 }}>{candidate.name}</div>
                     <div style={{ fontSize: 12.5, color: theme.blue, marginTop: 4, lineHeight: 1.3, overflowWrap: "anywhere", wordBreak: "break-word" }}>{candidate.email}</div>
+                    <div style={{ fontSize: 12.5, color: theme.inkMuted, marginTop: 4 }}>{candidate.phone}</div>
                     <div style={{ fontSize: 12, color: theme.inkFaint, marginTop: 4 }}>{candidate.submittedAtLabel}</div>
                   </div>
-                  <button
-                  type="button"
-                  onClick={(event) => { event.stopPropagation(); openResumePreview(candidate); }}
-                  style={{ border: "none", background: "transparent", color: "#2146ff", padding: 0, textAlign: "left", cursor: "pointer", fontSize: 13, fontWeight: 600, fontFamily: "'Sora', sans-serif", whiteSpace: "normal", overflowWrap: "anywhere", wordBreak: "break-word" }}
-                >
-                  {candidate.detailsLabel}
-                </button>
-                <button
-                  type="button"
-                  onClick={(event) => { event.stopPropagation(); openResumePreview(candidate); }}
-                  style={{ border: "none", background: "transparent", color: "#2146ff", padding: 0, textAlign: "left", cursor: "pointer", fontSize: 13, fontWeight: 600, fontFamily: "'Sora', sans-serif", whiteSpace: "normal", overflowWrap: "anywhere", wordBreak: "break-word" }}
-                >
-                  {candidate.cvFile}
-                </button>
-                  <div><span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", minWidth: 90, padding: "6px 14px", borderRadius: 999, border: `1px solid ${statusStyle.border}`, background: statusStyle.bg, color: statusStyle.text, fontSize: 12.5, fontWeight: 700 }}>{candidate.reviewStatus}</span></div>
-                  <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 8 }}>
-                    {[{ key: "mail", icon: Mail, color: theme.green, bg: "rgba(45,158,117,0.10)", border: "rgba(45,158,117,0.26)" }, { key: "reject", icon: X, color: theme.red, bg: "rgba(217,79,107,0.08)", border: "rgba(217,79,107,0.22)" }, { key: "refresh", icon: RotateCcw, color: theme.yellow, bg: "rgba(196,138,0,0.08)", border: "rgba(196,138,0,0.22)" }].map(({ key, icon: Icon, color, bg, border }) => (
-                      <button key={key} type="button" style={{ width: 34, height: 34, minWidth: 34, borderRadius: 12, border: `1px solid ${border}`, background: bg, color, display: "grid", placeItems: "center", cursor: "pointer" }}>
-                        <Icon size={14} />
-                      </button>
-                    ))}
-                  </div>
-                  <div style={{ fontSize: 13.5, color: theme.inkSoft }}>{candidate.country}</div>
-                  <div style={{ fontSize: 13.5, color: theme.inkSoft }}>{candidate.city}</div>
-                  <div style={{ fontSize: 13.5, color: theme.inkWhite }}>{candidate.phone}</div>
-                  <div style={{ overflowWrap: "anywhere", wordBreak: "break-word" }}>
-                    <div style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", padding: "6px 12px", borderRadius: 999, background: candidate.finalScore >= 50 ? "rgba(45,158,117,0.12)" : "rgba(217,79,107,0.10)", border: `1px solid ${candidate.finalScore >= 50 ? "rgba(45,158,117,0.24)" : "rgba(217,79,107,0.22)"}`, color: candidate.finalScore >= 50 ? theme.green : theme.red, fontSize: 12.5, fontWeight: 700 }}>{candidate.finalScore}/100</div>
-                    <div style={{ display: "flex", flexDirection: "column", gap: 4, marginTop: 8, fontSize: 11.5, color: theme.inkMuted, lineHeight: 1.4, maxWidth: 140 }}>
-                      <div>JD: {candidate.jdScore}</div>
-                      <div>Penalty: {candidate.penalty}</div>
-                      <div>Overqual: {candidate.overqualificationPenalty}</div>
-                      <div>Disq: {candidate.disqualified}</div>
+                  <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
+                    <button
+                      type="button"
+                      onClick={(event) => { event.stopPropagation(); openResumePreview(candidate); }}
+                      style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", minWidth: 72, height: 34, padding: "0 14px", borderRadius: 10, border: `1px solid ${theme.blue}33`, background: "rgba(58,123,213,0.08)", color: theme.blue, cursor: "pointer", fontSize: 12.5, fontWeight: 700, fontFamily: "'Sora', sans-serif" }}
+                    >
+                      View
+                    </button>
+                    <div style={{ fontSize: 24, lineHeight: 1, fontWeight: 700, color: candidate.finalScore >= 50 ? theme.green : theme.red, fontFamily: "'DM Serif Display', serif" }}>
+                      {candidate.finalScore}
                     </div>
                   </div>
-                  <div style={{ overflowWrap: "anywhere", wordBreak: "break-word" }}>
+                  <button
+                    type="button"
+                    onClick={(event) => { event.stopPropagation(); openResumePreview(candidate); }}
+                    style={{ border: "none", background: "transparent", color: "#2146ff", padding: 0, textAlign: "center", cursor: "pointer", fontSize: 13, fontWeight: 600, fontFamily: "'Sora', sans-serif", whiteSpace: "normal", overflowWrap: "anywhere", wordBreak: "break-word", width: "100%" }}
+                  >
+                    Show CV
+                  </button>
+                  <div style={{ textAlign: "center" }}><span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", minWidth: 90, padding: "6px 14px", borderRadius: 999, border: `1px solid ${statusStyle.border}`, background: statusStyle.bg, color: statusStyle.text, fontSize: 12.5, fontWeight: 700 }}>{candidate.reviewStatus}</span></div>                  <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, flexWrap: "wrap", width: "100%" }}>
+                    <button
+                      type="button"
+                      onClick={(event) => event.stopPropagation()}
+                      style={{ minWidth: 82, height: 36, padding: "0 14px", borderRadius: 12, border: "1px solid rgba(45,158,117,0.26)", background: "rgba(45,158,117,0.10)", color: theme.green, display: "inline-flex", alignItems: "center", justifyContent: "center", cursor: "pointer", fontSize: 12.5, fontWeight: 700, fontFamily: "'Sora', sans-serif" }}
+                    >
+                      Invite
+                    </button>
+                    <button
+                      type="button"
+                      onClick={(event) => event.stopPropagation()}
+                      style={{ minWidth: 82, height: 36, padding: "0 14px", borderRadius: 12, border: "1px solid rgba(217,79,107,0.22)", background: "rgba(217,79,107,0.08)", color: theme.red, display: "inline-flex", alignItems: "center", justifyContent: "center", cursor: "pointer", fontSize: 12.5, fontWeight: 700, fontFamily: "'Sora', sans-serif" }}
+                    >
+                      Reject
+                    </button>
+                  </div>
+                  <div style={{ fontSize: 13.5, color: theme.inkSoft, textAlign: "center" }}>{candidate.country}</div>
+                  <div style={{ fontSize: 13.5, color: theme.inkSoft, textAlign: "center" }}>{candidate.city}</div>
+                  <div style={{ overflowWrap: "anywhere", wordBreak: "break-word", display: "flex", flexDirection: "column", alignItems: "center", width: "100%" }}>
                     <div style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", minWidth: 50, padding: "6px 10px", borderRadius: 999, border: `1px solid ${candidate.suitable ? "rgba(45,158,117,0.24)" : "rgba(217,79,107,0.22)"}`, background: candidate.suitable ? "rgba(45,158,117,0.10)" : "rgba(217,79,107,0.08)", color: candidate.suitable ? theme.green : theme.red, fontSize: 12.5, fontWeight: 700 }}>{candidate.suitable ? "YES" : "NO"}</div>
-                    <div style={{ fontSize: 11.5, color: theme.inkFaint, marginTop: 6 }}>{candidate.suitable ? "Score ≥ 50" : "Score < 50"}</div>
                   </div>
                 </div>
               );

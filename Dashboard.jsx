@@ -744,19 +744,7 @@ const DashboardTablePagination = ({ page, totalPages, startIndex, endIndex, tota
   );
 };
 
-// ─── Navbar ───────────────────────────────────────────────────────────────────
-const Navbar = () => (
-  <nav style={{
-    position: "fixed", top: 0, left: 0, right: 0, zIndex: 100,
-    padding: "0 clamp(16px,2.5vw,32px)", height: 64,
-    background: "rgba(249, 245, 239, 0.92)", borderBottom: `1px solid ${C.line}`,
-    backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)",
-    display: "flex", alignItems: "center", justifyContent: "space-between",
-    fontFamily: "'Sora', sans-serif",
-    boxShadow: "0 1px 12px rgba(184,145,90,0.08)",
-  }}>
-  </nav>
-);
+
 
 // ─── CV Results Panel ─────────────────────────────────────────────────────────
 // ✅ BUG FIX: Removed stray JSX (h1, p, button) that was accidentally pasted
@@ -964,6 +952,7 @@ const CampaignTable = ({ onSelect, selected, onInterviewResults, isMobile = fals
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [campaignPage, setCampaignPage] = useState(1);
+  const [activeActionMenuId, setActiveActionMenuId] = useState(null);
   const tableColumns = isTablet
     ? "minmax(220px, 2fr) minmax(120px, 0.8fr) minmax(110px, 0.8fr) minmax(130px, 0.9fr) minmax(150px, 0.9fr) minmax(180px, 1fr)"
     : "minmax(220px, 2.1fr) minmax(120px, 0.8fr) minmax(130px, 0.9fr) minmax(140px, 0.9fr) minmax(170px, 1fr) minmax(200px, 1.1fr)";
@@ -1101,7 +1090,17 @@ const CampaignTable = ({ onSelect, selected, onInterviewResults, isMobile = fals
             background: "rgba(184,145,90,0.05)",
           }}>
             {["Campaign", "Status", "Applicants", "Shortlisted", "Language", "Actions"].map((heading) => (
-              <div key={heading} style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: "0.13em", textTransform: "uppercase", color: C.inkFaint }}>
+              <div
+                key={heading}
+                style={{
+                  fontSize: 10.5,
+                  fontWeight: 700,
+                  letterSpacing: "0.13em",
+                  textTransform: "uppercase",
+                  color: C.inkFaint,
+                  textAlign: heading === "Actions" ? "center" : "left"
+                }}
+              >
                 {heading}
               </div>
             ))}
@@ -1207,40 +1206,130 @@ const CampaignTable = ({ onSelect, selected, onInterviewResults, isMobile = fals
                 </>
               )}
 
-              <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-                <IconBtn
-                  title="Copy intake code"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    navigator?.clipboard?.writeText(campaign.intakeCode);
-                  }}
-                >
-                  <Copy size={14} />
-                </IconBtn>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", position: "relative" }}>
                 <button
                   type="button"
                   onClick={(e) => {
                     e.stopPropagation();
-                    onInterviewResults?.();
+                    setActiveActionMenuId(activeActionMenuId === campaign.id ? null : campaign.id);
                   }}
                   style={{
-                    height: 34,
-                    padding: "0 12px",
-                    borderRadius: 9,
-                    border: `1px solid ${C.goldBorder}`,
-                    background: C.goldDim,
-                    color: C.gold,
+                    width: 38,
+                    height: 38,
+                    borderRadius: 12,
+                    border: `1px solid ${activeActionMenuId === campaign.id ? C.goldBorder : C.line}`,
+                    background: activeActionMenuId === campaign.id ? C.goldDim : "rgba(255,250,242,0.65)",
+                    color: activeActionMenuId === campaign.id ? C.gold : C.inkMuted,
+                    display: "grid",
+                    placeItems: "center",
                     cursor: "pointer",
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: 6,
-                    fontSize: 12,
-                    fontWeight: 700,
-                    fontFamily: "'Sora', sans-serif",
+                    transition: "all 0.2s",
+                  }}
+                  onMouseEnter={(e) => {
+                    if (activeActionMenuId !== campaign.id) {
+                      e.currentTarget.style.borderColor = C.goldBorder;
+                      e.currentTarget.style.background = C.goldDim;
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (activeActionMenuId !== campaign.id) {
+                      e.currentTarget.style.borderColor = C.line;
+                      e.currentTarget.style.background = "rgba(255,250,242,0.65)";
+                    }
                   }}
                 >
-                  <Eye size={14} /> Results
+                  <MoreHorizontal size={18} />
                 </button>
+
+                {activeActionMenuId === campaign.id && (
+                  <>
+                    <div
+                      onClick={(e) => { e.stopPropagation(); setActiveActionMenuId(null); }}
+                      style={{ position: "fixed", inset: 0, zIndex: 1000 }}
+                    />
+                    <div style={{
+                      position: "absolute",
+                      top: "calc(100% + 10px)",
+                      right: 0,
+                      zIndex: 1001,
+                      minWidth: 220,
+                      background: "rgba(255, 255, 255, 0.98)",
+                      backdropFilter: "blur(25px) saturate(180%)",
+                      border: "1px solid rgba(184, 145, 90, 0.25)",
+                      borderRadius: 18,
+                      padding: "10px",
+                      boxShadow: "0 20px 50px rgba(10, 18, 32, 0.22)",
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: 4,
+                    }}>
+                      {[
+                        { id: "RES", label: "View Results", icon: <Eye size={14} />, color: C.gold, onClick: () => onInterviewResults?.() },
+                        { id: "EDIT", label: "Edit Campaign", onClick: () => console.log("Edit") },
+                        { id: "DUP", label: "Duplicate", onClick: () => console.log("Duplicate") },
+                        {
+                          id: "SHR", label: "Share Campaign", onClick: () => {
+                            navigator?.clipboard?.writeText(campaign.intakeCode);
+                            alert("Intake code copied to clipboard!");
+                          }
+                        },
+                        { id: "AI", label: "Consultation Session", onClick: () => console.log("AI") },
+                        { id: "PDF", label: "Download Report", onClick: () => console.log("PDF") },
+                        { id: "DEL", label: "Delete Campaign", color: "#d94f6b", onClick: () => console.log("Delete") },
+                      ].map((item) => (
+                        <button
+                          key={item.id}
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            item.onClick();
+                            setActiveActionMenuId(null);
+                          }}
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 14,
+                            padding: "11px 14px",
+                            borderRadius: 12,
+                            border: "none",
+                            background: "transparent",
+                            cursor: "pointer",
+                            textAlign: "left",
+                            transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.background = item.color ? `${item.color}15` : "rgba(184, 145, 90, 0.08)";
+                            e.currentTarget.style.transform = "translateX(4px)";
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.background = "transparent";
+                            e.currentTarget.style.transform = "translateX(0)";
+                          }}
+                        >
+                          <span style={{
+                            fontSize: 10.5,
+                            fontWeight: 700,
+                            letterSpacing: "0.05em",
+                            color: item.color || "rgba(28, 20, 9, 0.5)",
+                            width: 38,
+                            flexShrink: 0,
+                            fontFamily: "'Sora', sans-serif"
+                          }}>
+                            {item.id}
+                          </span>
+                          <span style={{
+                            fontSize: 13.5,
+                            fontWeight: 500,
+                            color: item.color || C.inkSoft,
+                            fontFamily: "'Sora', sans-serif"
+                          }}>
+                            {item.label}
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  </>
+                )}
               </div>
             </div>
           );
@@ -1273,6 +1362,7 @@ const CampaignTable = ({ onSelect, selected, onInterviewResults, isMobile = fals
 
 const CampaignDetail = ({ campaign, onClose, modal = false, closeRef, isMobile = false, isTablet = false }) => {
   const [tab, setTab] = useState("overview");
+  const navigate = useNavigate();
 
   useEffect(() => {
     setTab("overview");
@@ -1307,7 +1397,7 @@ const CampaignDetail = ({ campaign, onClose, modal = false, closeRef, isMobile =
     }}>
       <div style={{ padding: "18px 18px 16px", borderBottom: `1px solid ${C.line}` }}>
         <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 10 }}>
-          <div>
+          <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: C.inkFaint, marginBottom: 8 }}>
               Campaign Detail
             </div>
@@ -1317,7 +1407,38 @@ const CampaignDetail = ({ campaign, onClose, modal = false, closeRef, isMobile =
             <div style={{ fontSize: 13, color: C.inkMuted, marginTop: 6 }}>
               {campaign.company} · {campaign.code}
             </div>
+
+            {isMobile && (
+              <div style={{ marginTop: 16, display: "flex", flexDirection: "column", gap: 10, borderTop: `1px solid ${C.line}`, paddingTop: 14 }}>
+                {[
+                  { label: "Campaign Created", value: campaign.created },
+                  { label: "CV Intake Ends", value: campaign.cvEnd || "No end date" },
+                  { label: "Interview Window Ends", value: campaign.interviewEnd || "No end date" },
+                ].map((item) => (
+                  <div key={item.label}>
+                    <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: C.inkFaint }}>{item.label}</div>
+                    <div style={{ fontSize: 11.5, color: C.inkWhite, fontWeight: 500, marginTop: 2 }}>{item.value}</div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
+
+          {!isMobile && (
+            <div style={{ textAlign: "right", display: "flex", flexDirection: "column", gap: 9, paddingRight: 10 }}>
+              {[
+                { label: "Campaign Created", value: campaign.created },
+                { label: "CV Intake Ends", value: campaign.cvEnd || "No end date" },
+                { label: "Interview Window Ends", value: campaign.interviewEnd || "No end date" },
+              ].map((item) => (
+                <div key={item.label}>
+                  <div style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: C.inkFaint }}>{item.label}</div>
+                  <div style={{ fontSize: 11.5, color: C.inkWhite, fontWeight: 500, marginTop: 1 }}>{item.value}</div>
+                </div>
+              ))}
+            </div>
+          )}
+
           <IconBtn title="Close details" onClick={onClose} buttonRef={modal ? closeRef : undefined}>
             <X size={15} />
           </IconBtn>
@@ -1331,7 +1452,7 @@ const CampaignDetail = ({ campaign, onClose, modal = false, closeRef, isMobile =
       </div>
 
       <div style={{ padding: isMobile ? 14 : 16, display: "flex", flexDirection: "column", gap: 16, maxHeight: "calc(100vh - 130px)", overflow: "auto" }}>
-        <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "repeat(2, minmax(0, 1fr))", gap: 10 }}>
+        <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : isTablet ? "repeat(2, 1fr)" : "repeat(4, 1fr)", gap: 10 }}>
           {[
             { label: "Applicants", value: campaign.applicants, color: C.blue },
             { label: "Interviewed", value: campaign.interviewed, color: C.yellow },
@@ -1354,12 +1475,12 @@ const CampaignDetail = ({ campaign, onClose, modal = false, closeRef, isMobile =
           ))}
         </div>
 
-        <div style={{ display: "flex", gap: 6, background: "rgba(255,250,242,0.92)", border: `1px solid rgba(184,149,90,0.18)`, borderRadius: 12, padding: 4 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10 }}>
           {[
-            { id: "overview", label: "Overview" },
-            { id: "cv", label: "CV Results" },
-            { id: "results", label: "Results" },
-          ].map(({ id, label }) => {
+            { id: "overview", label: "Overview", icon: Layers, theme: { base: C.blue, border: "rgba(58,123,213,0.45)", bg1: C.blueDim, bg2: "rgba(58,123,213,0.02)", hover: "rgba(58,123,213,0.08)", shadow: "rgba(58,123,213,0.22)" } },
+            { id: "cv", label: "CV Results", icon: FileText, theme: { base: C.goldBright, border: C.goldBorderHot, bg1: C.goldDim, bg2: "rgba(184,145,90,0.04)", hover: "rgba(184,145,90,0.10)", shadow: "rgba(184,145,90,0.20)" } },
+            { id: "results", label: "Results", icon: Award, theme: { base: C.green, border: "rgba(45,158,117,0.45)", bg1: C.greenDim, bg2: "rgba(45,158,117,0.02)", hover: "rgba(45,158,117,0.08)", shadow: "rgba(45,158,117,0.22)" } },
+          ].map(({ id, label, icon: Icon, theme: t }) => {
             const active = tab === id;
 
             return (
@@ -1368,18 +1489,56 @@ const CampaignDetail = ({ campaign, onClose, modal = false, closeRef, isMobile =
                 type="button"
                 onClick={() => setTab(id)}
                 style={{
-                  flex: 1,
-                  height: 34,
-                  borderRadius: 9,
-                  border: `1px solid ${active ? C.goldBorder : "transparent"}`,
-                  background: active ? "rgba(184,149,90,0.18)" : "transparent",
-                  color: active ? C.inkSoft : C.inkMuted,
+                  height: 84,
+                  borderRadius: 18,
+                  border: `1px solid ${active ? t.border : `rgba(${id === "overview" ? "58,123,213" : id === "cv" ? "184,145,90" : "45,158,117"}, 0.22)`}`,
+                  background: active
+                    ? `linear-gradient(135deg, ${t.bg1}, ${t.bg2})`
+                    : `rgba(${id === "overview" ? "58,123,213" : id === "cv" ? "184,145,90" : "45,158,117"}, 0.10)`,
+                  color: active ? C.inkWhite : `rgba(${id === "overview" ? "58,123,213" : id === "cv" ? "184,145,90" : "45,158,117"}, 0.95)`,
                   cursor: "pointer",
-                  fontSize: 12,
+                  fontSize: 12.5,
                   fontWeight: 700,
                   fontFamily: "'Sora', sans-serif",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 10,
+                  transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                  boxShadow: active
+                    ? `0 12px 28px ${t.shadow}`
+                    : `0 2px 8px rgba(${id === "overview" ? "58,123,213" : id === "cv" ? "184,145,90" : "45,158,117"}, 0.06)`,
+                  backdropFilter: "blur(10px)",
                 }}
+                onMouseEnter={!active ? e => {
+                  e.currentTarget.style.background = t.hover;
+                  e.currentTarget.style.borderColor = t.border;
+                  e.currentTarget.style.transform = "translateY(-3px)";
+                  e.currentTarget.style.boxShadow = `0 10px 20px ${t.shadow}`;
+                  e.currentTarget.style.color = C.inkWhite;
+                } : undefined}
+                onMouseLeave={!active ? e => {
+                  e.currentTarget.style.background = `rgba(${id === "overview" ? "58,123,213" : id === "cv" ? "184,145,90" : "45,158,117"}, 0.10)`;
+                  e.currentTarget.style.borderColor = `rgba(${id === "overview" ? "58,123,213" : id === "cv" ? "184,145,90" : "45,158,117"}, 0.22)`;
+                  e.currentTarget.style.transform = "translateY(0)";
+                  e.currentTarget.style.boxShadow = `0 2px 8px rgba(${id === "overview" ? "58,123,213" : id === "cv" ? "184,145,90" : "45,158,117"}, 0.06)`;
+                  e.currentTarget.style.color = `rgba(${id === "overview" ? "58,123,213" : id === "cv" ? "184,145,90" : "45,158,117"}, 0.95)`;
+
+                } : undefined}
               >
+                <div style={{
+                  width: 38,
+                  height: 38,
+                  borderRadius: 12,
+                  background: active ? "#fff" : "rgba(255,255,255,0.5)",
+                  display: "grid",
+                  placeItems: "center",
+                  boxShadow: active ? `0 4px 12px ${t.shadow}` : "none",
+                  transition: "all 0.2s"
+                }}>
+                  <Icon size={20} color={t.base} style={{ opacity: active ? 1 : 0.7 }} />
+                </div>
                 {label}
               </button>
             );
@@ -1388,27 +1547,6 @@ const CampaignDetail = ({ campaign, onClose, modal = false, closeRef, isMobile =
 
         {tab === "overview" ? (
           <>
-            <div style={{ background: "rgba(255,250,242,0.70)", border: `1px solid ${C.line}`, borderRadius: 16, padding: 14 }}>
-              <SectionLabel>Timeline</SectionLabel>
-              <div style={{ display: "grid", gridTemplateColumns: "20px 1fr", rowGap: 12, columnGap: 10 }}>
-                {[
-                  { icon: Calendar, label: "Campaign Created", value: campaign.created },
-                  { icon: Clock, label: "CV Intake Ends", value: campaign.cvEnd },
-                  { icon: MessageSquare, label: "Interview Window Ends", value: campaign.interviewEnd },
-                ].map(({ icon: Icon, label, value }) => (
-                  <div key={label} style={{ display: "contents" }}>
-                    <div style={{ width: 20, display: "grid", placeItems: "center" }}>
-                      <Icon size={14} color={C.gold} />
-                    </div>
-                    <div>
-                      <div style={{ fontSize: 12.5, color: C.inkSoft, fontWeight: 600 }}>{label}</div>
-                      <div style={{ fontSize: 12, color: C.inkFaint, marginTop: 2 }}>{value}</div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
             <div style={{ background: "rgba(255,250,242,0.70)", border: `1px solid ${C.line}`, borderRadius: 16, padding: 14 }}>
               <SectionLabel>Funnel Performance</SectionLabel>
               <AxisBarChart data={funnelData} />
@@ -1421,7 +1559,7 @@ const CampaignDetail = ({ campaign, onClose, modal = false, closeRef, isMobile =
                     <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.11em", textTransform: "uppercase", color: C.inkFaint }}>CV Submission</div>
                     <div style={{ fontSize: 22, color: C.blue, fontWeight: 700, marginTop: 6 }}>Enabled</div>
                   </div>
-                  <button type="button" style={{ border: `1px solid ${C.line}`, borderRadius: 12, background: "rgba(255,250,242,0.98)", color: C.inkMuted, height: 36, padding: "0 14px", fontSize: 12.5, fontWeight: 700, cursor: "pointer" }}>
+                  <button type="button" onClick={() => navigate("/interview", { state: { editMode: true } })} style={{ border: `1px solid ${C.line}`, borderRadius: 12, background: "rgba(255,250,242,0.98)", color: C.inkMuted, height: 36, padding: "0 14px", fontSize: 12.5, fontWeight: 700, cursor: "pointer", transition: "all 0.2s ease" }} onMouseEnter={e => { e.currentTarget.style.borderColor = C.gold; e.currentTarget.style.color = C.gold; }} onMouseLeave={e => { e.currentTarget.style.borderColor = C.line; e.currentTarget.style.color = C.inkMuted; }}>
                     Edit
                   </button>
                 </div>
@@ -1436,7 +1574,7 @@ const CampaignDetail = ({ campaign, onClose, modal = false, closeRef, isMobile =
                     <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.11em", textTransform: "uppercase", color: C.inkFaint }}>Interview</div>
                     <div style={{ fontSize: 22, color: C.yellow, fontWeight: 700, marginTop: 6 }}>Enabled</div>
                   </div>
-                  <button type="button" style={{ border: `1px solid ${C.line}`, borderRadius: 12, background: "rgba(255,250,242,0.98)", color: C.inkMuted, height: 36, padding: "0 14px", fontSize: 12.5, fontWeight: 700, cursor: "pointer" }}>
+                  <button type="button" onClick={() => navigate("/interview", { state: { editMode: true } })} style={{ border: `1px solid ${C.line}`, borderRadius: 12, background: "rgba(255,250,242,0.98)", color: C.inkMuted, height: 36, padding: "0 14px", fontSize: 12.5, fontWeight: 700, cursor: "pointer", transition: "all 0.2s ease" }} onMouseEnter={e => { e.currentTarget.style.borderColor = C.gold; e.currentTarget.style.color = C.gold; }} onMouseLeave={e => { e.currentTarget.style.borderColor = C.line; e.currentTarget.style.color = C.inkMuted; }}>
                     Edit
                   </button>
                 </div>
@@ -1710,7 +1848,6 @@ export default function Dashboard() {
   return (
     <>
       <FontLink />
-      <Navbar />
 
       <main style={{
         minHeight: "100vh",

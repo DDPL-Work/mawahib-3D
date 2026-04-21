@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { LogOut, FileText, HelpCircle, Settings, X, Sparkles } from "lucide-react";
+import { LogOut, FileText, HelpCircle, Settings, X, Sparkles, Calendar } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { DASHBOARD_AUTH_KEY } from "./authConfig";
 import { useNavigate } from "react-router-dom";
@@ -94,6 +94,7 @@ export default function SettingsModal({ onClose }) {
         </div>
 
         <div style={{ padding: "6px 0" }}>
+          <Option icon={Calendar} label="My Calendar" onClick={onClose} />
           <Option icon={FileText} label="Statement" onClick={onClose} />
           <Option icon={Sparkles} label="Start Tour" onClick={onClose} />
           <Option icon={Settings} label="Change Password" onClick={onClose} />

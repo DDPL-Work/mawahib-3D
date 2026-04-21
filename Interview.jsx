@@ -1,5 +1,5 @@
 import { useMemo, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import {
   ArrowLeft, Calendar, CheckSquare, Plus, Square, Upload,
   ChevronDown, ChevronUp, Info, Sparkles, Wand2, RefreshCw,
@@ -308,6 +308,8 @@ const StepProgress = ({ current, onStepSelect, isStepUnlocked, getStepBlockedRea
 // ─── Main Component ───────────────────────────────────────────────────────────
 export default function Interview() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const editMode = location.state?.editMode || false;
   const pageRef = useRef(null);
   const [step, setStep] = useState(1);
   const [enableCV, setEnableCV] = useState(true);
@@ -614,7 +616,7 @@ export default function Interview() {
               fontSize: "clamp(1.8rem,4vw,2.8rem)", color: C.inkWhite,
               margin: "0 0 8px", lineHeight: 1,
             }}>
-              Create New Interview
+              {editMode ? "Edit Interview" : "Create New Interview"}
             </h1>
             <p style={{ fontSize: 13.5, color: C.inkMuted, margin: 0 }}>
               Fill your job campaign details and generate CV submission and interview links.
@@ -1504,7 +1506,13 @@ export default function Interview() {
               {/* Generate links CTA */}
               {!showLinks ? (
                 <button
-                  onClick={() => setShowLinks(true)}
+                  onClick={() => {
+                    if (editMode) {
+                      navigate("/dashboard");
+                    } else {
+                      setShowLinks(true);
+                    }
+                  }}
                   style={{
                     width: "100%", height: 56, borderRadius: 14, border: "none", marginTop: 8,
                     background: `linear-gradient(135deg,${C.blue},#4f87ff)`,
@@ -1516,7 +1524,7 @@ export default function Interview() {
                   onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 10px 32px rgba(95,158,255,0.4)"; }}
                   onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 6px 24px rgba(95,158,255,0.3)"; }}
                 >
-                  <Link2 size={20} /> Generate Campaign Links
+                  {editMode ? "Save Interview" : <><Link2 size={20} /> Generate Campaign Links</>}
                 </button>
               ) : (
                 <div style={{

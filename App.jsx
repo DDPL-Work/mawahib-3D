@@ -760,9 +760,9 @@ function Nav() {
           position: "fixed", top: 0, left: 0, right: 0, zIndex: 1000, height: isMobile ? 64 : 74,
           padding: isMobile ? `0 ${PAGE_X.mobile}` : `0 ${PAGE_X.desktop}`,
           display: "flex", alignItems: "center", justifyContent: "space-between",
-          background: scrolled || isOpen ? "rgba(3,6,16,.85)" : "transparent",
-          backdropFilter: scrolled || isOpen ? "blur(24px) saturate(1.4)" : "none",
-          borderBottom: scrolled || isOpen ? "1px solid rgba(184,149,90,.12)" : "none",
+          background: scrolled || isOpen || pathname !== "/" ? "rgba(10,15,30,.98)" : "transparent",
+          backdropFilter: scrolled || isOpen || pathname !== "/" ? "blur(24px) saturate(1.4)" : "none",
+          borderBottom: scrolled || isOpen || pathname !== "/" ? "1px solid rgba(184,149,90,.15)" : "none",
           transition: "all .4s cubic-bezier(.16,1,.3,1)"
         }}>
         
@@ -807,6 +807,10 @@ function Nav() {
                 </>
               ) : (
                 <>
+                  <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", marginRight: 8, justifyContent: "center" }}>
+                    <span style={{ fontSize: 13, fontWeight: 800, color: C.gold, letterSpacing: "0.06em", lineHeight: 1.3 }}>Mawahib</span>
+                    <span style={{ fontSize: 11, color: "rgba(255,255,255,0.65)", fontWeight: 500, lineHeight: 1.2 }}>Welcome, Rohan</span>
+                  </div>
                   <motion.button
                     onClick={() => setShowSettings(true)}
                     whileHover={{ scale: 1.05 }}
