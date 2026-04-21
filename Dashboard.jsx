@@ -1080,8 +1080,8 @@ const CampaignTable = ({ onSelect, selected, onInterviewResults, isMobile = fals
   const [campaignPage, setCampaignPage] = useState(1);
   const [activeActionMenuId, setActiveActionMenuId] = useState(null);
   const tableColumns = isTablet
-    ? "minmax(220px, 2fr) minmax(120px, 0.8fr) minmax(110px, 0.8fr) minmax(130px, 0.9fr) minmax(150px, 0.9fr) minmax(180px, 1fr)"
-    : "minmax(220px, 2.1fr) minmax(120px, 0.8fr) minmax(130px, 0.9fr) minmax(140px, 0.9fr) minmax(170px, 1fr) minmax(200px, 1.1fr)";
+    ? "minmax(160px, 1.1fr) minmax(110px, 1.1fr) minmax(200px, 1.8fr) minmax(180px, 1.7fr) minmax(120px, 0.8fr) minmax(160px, 0.7fr)"
+    : "minmax(180px, 1.3fr) minmax(120px, 1.2fr) minmax(240px, 1.9fr) minmax(200px, 1.8fr) minmax(140px, 0.9fr) minmax(180px, 0.8fr)";
 
   const filteredCampaigns = useMemo(() => {
     const search = query.trim().toLowerCase();
@@ -1250,7 +1250,7 @@ const CampaignTable = ({ onSelect, selected, onInterviewResults, isMobile = fals
             borderBottom: `1px solid ${C.line}`,
             background: "rgba(184,145,90,0.05)",
           }}>
-            {["Campaign", "Status", "Applicants", "Shortlisted", "Language", "Actions"].map((heading) => (
+            {["Campaign", "Status", "Job", "Company", "Language", "Actions"].map((heading) => (
               <div
                 key={heading}
                 style={{
@@ -1309,11 +1309,8 @@ const CampaignTable = ({ onSelect, selected, onInterviewResults, isMobile = fals
             >
               <div style={{ minWidth: 0 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-                  <div style={{ fontSize: 14, fontWeight: 700, color: C.inkWhite }}>{campaign.title}</div>
+                  <div style={{ fontSize: 15, fontWeight: 700, color: C.inkWhite, fontFamily: "'DM Serif Display', serif" }}>{campaign.code}</div>
                   <Tag label={campaign.status === "active" ? "General" : "Stage 2"} />
-                </div>
-                <div style={{ fontSize: 12.5, color: C.inkMuted, marginTop: 4 }}>
-                  {campaign.company} · {campaign.code}
                 </div>
                 <div style={{ fontSize: 11.5, color: C.inkFaint, marginTop: 4 }}>
                   Created {campaign.created}
@@ -1330,12 +1327,12 @@ const CampaignTable = ({ onSelect, selected, onInterviewResults, isMobile = fals
                   </div>
                   <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 10 }}>
                     {[
-                      { label: "Applicants", value: campaign.applicants, tone: C.inkWhite, sub: "total applicants" },
-                      { label: "Shortlisted", value: campaign.shortlisted, tone: C.green, sub: `${campaign.interviewed} interviewed` },
+                      { label: "Job", value: campaign.title, tone: C.inkWhite, sub: campaign.focus },
+                      { label: "Company", value: campaign.company, tone: C.gold, sub: campaign.code },
                     ].map((item) => (
                       <div key={item.label} style={{ background: "rgba(255,250,242,0.72)", border: `1px solid ${C.line}`, borderRadius: 14, padding: "12px 13px" }}>
                         <div style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: "0.11em", textTransform: "uppercase", color: C.inkFaint }}>{item.label}</div>
-                        <div style={{ fontSize: 22, fontWeight: 700, color: item.tone, fontFamily: "'DM Serif Display', serif", marginTop: 6 }}>{item.value}</div>
+                        <div style={{ fontSize: 14, fontWeight: 700, color: item.tone, marginTop: 6, lineHeight: 1.3 }}>{item.value}</div>
                         <div style={{ fontSize: 11.5, color: C.inkFaint, marginTop: 4 }}>{item.sub}</div>
                       </div>
                     ))}
@@ -1346,18 +1343,14 @@ const CampaignTable = ({ onSelect, selected, onInterviewResults, isMobile = fals
                   <StatusDot status={campaign.status} />
 
                   <div>
-                    <div style={{ fontSize: 18, fontWeight: 700, color: C.inkWhite, fontFamily: "'DM Serif Display', serif" }}>
-                      {campaign.applicants}
+                    <div style={{ fontSize: 14, fontWeight: 600, color: C.inkSoft, lineHeight: 1.4 }}>
+                      {campaign.title}
                     </div>
-                    <div style={{ fontSize: 11.5, color: C.inkFaint }}>total applicants</div>
                   </div>
 
                   <div>
-                    <div style={{ fontSize: 18, fontWeight: 700, color: C.green, fontFamily: "'DM Serif Display', serif" }}>
-                      {campaign.shortlisted}
-                    </div>
-                    <div style={{ fontSize: 11.5, color: C.inkFaint }}>
-                      {campaign.interviewed} interviewed
+                    <div style={{ fontSize: 13.5, fontWeight: 600, color: C.inkMuted }}>
+                      {campaign.company}
                     </div>
                   </div>
 
