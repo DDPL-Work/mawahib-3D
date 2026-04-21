@@ -1080,10 +1080,37 @@ const CampaignTable = ({ onSelect, selected, onInterviewResults, isMobile = fals
   const [sortFilter, setSortFilter] = useState("newest");
   const [campaignPage, setCampaignPage] = useState(1);
   const [activeActionMenuId, setActiveActionMenuId] = useState(null);
-  const [menuRect, setMenuRect] = useState(null);
+  const [portalCoords, setPortalCoords] = useState(null);
+  const activeBtnRef = useRef(null);
   const tableColumns = isTablet
     ? "minmax(160px, 1.1fr) minmax(110px, 1.1fr) minmax(200px, 1.8fr) minmax(180px, 1.7fr) minmax(120px, 0.8fr) minmax(160px, 0.7fr)"
     : "minmax(180px, 1.3fr) minmax(120px, 1.2fr) minmax(240px, 1.9fr) minmax(200px, 1.8fr) minmax(140px, 0.9fr) minmax(180px, 0.8fr)";
+
+  const updatePortalPosition = () => {
+    if (!activeActionMenuId || !activeBtnRef.current) return;
+    const rect = activeBtnRef.current.getBoundingClientRect();
+    const menuHeight = 310; // Adjusted for icons + padding
+    const spaceBelow = window.innerHeight - rect.bottom;
+    const shouldFlip = spaceBelow < menuHeight && rect.top > menuHeight;
+
+    setPortalCoords({
+      top: shouldFlip ? undefined : rect.bottom + 8,
+      bottom: shouldFlip ? window.innerHeight - rect.top + 8 : undefined,
+      right: window.innerWidth - rect.right,
+    });
+  };
+
+  useEffect(() => {
+    if (activeActionMenuId) {
+      updatePortalPosition();
+      window.addEventListener("scroll", updatePortalPosition, true);
+      window.addEventListener("resize", updatePortalPosition);
+    }
+    return () => {
+      window.removeEventListener("scroll", updatePortalPosition, true);
+      window.removeEventListener("resize", updatePortalPosition);
+    };
+  }, [activeActionMenuId]);
 
   const filteredCampaigns = useMemo(() => {
     const search = query.trim().toLowerCase();
@@ -1148,7 +1175,7 @@ const CampaignTable = ({ onSelect, selected, onInterviewResults, isMobile = fals
       background: "rgba(255, 250, 242, 0.82)",
       border: `1px solid ${C.line}`,
       borderRadius: 22,
-      overflow: "hidden",
+      position: "relative",
       boxShadow: "0 6px 24px rgba(184,145,90,0.08)",
       backdropFilter: "blur(14px)",
     }}>
@@ -1160,6 +1187,8 @@ const CampaignTable = ({ onSelect, selected, onInterviewResults, isMobile = fals
         justifyContent: "space-between",
         gap: 14,
         flexWrap: "wrap",
+        borderTopLeftRadius: 22,
+        borderTopRightRadius: 22,
       }}>
         <div>
           <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: C.inkFaint }}>
@@ -1271,7 +1300,7 @@ const CampaignTable = ({ onSelect, selected, onInterviewResults, isMobile = fals
         </div>
       )}
 
-      <div style={{ display: "flex", flexDirection: "column", overflowX: isMobile ? "visible" : "auto", minHeight: 380 }}>
+      <div style={{ display: "flex", flexDirection: "column", overflowX: isMobile ? "visible" : "auto" }}>
         {campaignPagination.pageItems.map((campaign, index) => {
           const isSelected = selected === campaign.id;
 
@@ -1365,18 +1394,12 @@ const CampaignTable = ({ onSelect, selected, onInterviewResults, isMobile = fals
               <div style={{ display: "flex", alignItems: "center", justifyContent: "center", position: "relative" }}>
                 <button
                   type="button"
+                  ref={activeActionMenuId === campaign.id ? activeBtnRef : null}
                   onClick={(e) => {
                     e.stopPropagation();
                     if (activeActionMenuId === campaign.id) {
                       setActiveActionMenuId(null);
                     } else {
-                      const rect = e.currentTarget.getBoundingClientRect();
-                      const isLateRow = index >= campaignPagination.pageItems.length - 2 && campaignPagination.pageItems.length > 2;
-                      setMenuRect(
-                        isLateRow 
-                          ? { bottom: window.innerHeight - rect.top + 10, right: window.innerWidth - rect.right }
-                          : { top: rect.bottom + 10, right: window.innerWidth - rect.right }
-                      );
                       setActiveActionMenuId(campaign.id);
                     }
                   }}
@@ -1408,17 +1431,18 @@ const CampaignTable = ({ onSelect, selected, onInterviewResults, isMobile = fals
                   <MoreHorizontal size={18} />
                 </button>
 
-                {activeActionMenuId === campaign.id && createPortal(
+                {activeActionMenuId === campaign.id && portalCoords && createPortal(
                   <>
                     <div
                       onClick={(e) => { e.stopPropagation(); setActiveActionMenuId(null); }}
-                      style={{ position: "fixed", inset: 0, zIndex: 100000 }}
+                      style={{ position: "fixed", inset: 0, zIndex: 998 }}
                     />
                     <div style={{
                       position: "fixed",
-                      ...(menuRect?.top ? { top: menuRect.top } : { bottom: menuRect?.bottom }),
-                      right: menuRect?.right,
-                      zIndex: 100001,
+                      top: portalCoords.top,
+                      bottom: portalCoords.bottom,
+                      right: portalCoords.right,
+                      zIndex: 999,
                       minWidth: 220,
                       background: "rgba(255, 255, 255, 0.98)",
                       backdropFilter: "blur(25px) saturate(180%)",
@@ -1524,6 +1548,7 @@ const CampaignTable = ({ onSelect, selected, onInterviewResults, isMobile = fals
         totalItems={filteredCampaigns.length}
         itemLabel="campaigns"
         onPageChange={setCampaignPage}
+        style={{ borderBottomLeftRadius: 22, borderBottomRightRadius: 22 }}
       />
     </section>
   );

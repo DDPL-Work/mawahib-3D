@@ -1925,7 +1925,7 @@ export default function App() {
         initial={{ opacity: 0 }}
         animate={loaded ? { opacity: 1 } : {}}
         transition={{ duration: .5 }}
-        style={{ position: "relative", zIndex: 10 }}>
+        style={{ position: "relative" }}>
         <ScrollProgress/>
         <AppChrome/>
         <Routes>
