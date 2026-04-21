@@ -1,4 +1,4 @@
-﻿import { useState, useMemo, useRef, useEffect } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import {
   Plus, Search, Settings, LogOut, Clock, Copy, ExternalLink,
   BarChart2, Users, CheckCircle2, ArrowRight, MoreHorizontal,
@@ -77,6 +77,7 @@ const CAMPAIGNS = [
     company: "Demo Company",
     created: "Mar 30, 2026",
     status: "active",
+    focus: "First Interview",
     applicants: 108,
     interviewed: 28,
     shortlisted: 12,
@@ -93,6 +94,7 @@ const CAMPAIGNS = [
     company: "Northstar Holdings",
     created: "Apr 02, 2026",
     status: "active",
+    focus: "Problem Solving",
     applicants: 94,
     interviewed: 24,
     shortlisted: 10,
@@ -109,6 +111,7 @@ const CAMPAIGNS = [
     company: "Orbit SaaS",
     created: "Apr 01, 2026",
     status: "active",
+    focus: "Situational Judgment (SJT)",
     applicants: 76,
     interviewed: 18,
     shortlisted: 7,
@@ -125,6 +128,7 @@ const CAMPAIGNS = [
     company: "Sahara Cloud",
     created: "Mar 28, 2026",
     status: "paused",
+    focus: "Cognitive Ability",
     applicants: 63,
     interviewed: 15,
     shortlisted: 6,
@@ -141,6 +145,7 @@ const CAMPAIGNS = [
     company: "Apex Industrial",
     created: "Mar 27, 2026",
     status: "active",
+    focus: "Teamwork & Communication",
     applicants: 88,
     interviewed: 21,
     shortlisted: 8,
@@ -642,25 +647,100 @@ const InputField = ({ label, value, onChange, placeholder, type = "text" }) => (
   </div>
 );
 
-const SelectField = ({ label, value, onChange, children }) => (
-  <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-    <label style={{ fontSize: 12, fontWeight: 600, color: C.inkMuted, letterSpacing: "0.04em" }}>{label}</label>
-    <select
-      value={value} onChange={onChange}
-      style={{
-        height: 40, padding: "0 12px",
-        background: C.bgInput, border: `1px solid ${C.line}`,
-        borderRadius: 10, color: C.inkSoft, fontSize: 13, outline: "none",
-        fontFamily: "'Sora', sans-serif", cursor: "pointer", appearance: "none",
-        transition: "border-color 0.18s",
-      }}
-      onFocus={e => e.target.style.borderColor = C.goldBorder}
-      onBlur={e => e.target.style.borderColor = C.line}
-    >
-      {children}
-    </select>
-  </div>
-);
+const ModernSelect = ({ value, onChange, options, icon: Icon }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const containerRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (containerRef.current && !containerRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const selectedOption = options.find(opt => opt.id === value) || options[0];
+
+  return (
+    <div ref={containerRef} style={{ position: "relative", minWidth: 160 }}>
+      <button
+        type="button"
+        onClick={() => setIsOpen(!isOpen)}
+        style={{
+          width: "100%",
+          height: 40,
+          padding: "0 14px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: 10,
+          background: "#fff",
+          border: `1px solid ${isOpen ? C.goldBorder : C.line}`,
+          borderRadius: 12,
+          cursor: "pointer",
+          transition: "all 0.2s ease",
+          boxShadow: isOpen ? "0 4px 12px rgba(184,145,90,0.08)" : "none",
+        }}
+      >
+        <span style={{ fontSize: 13, color: C.inkSoft, fontWeight: 500, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+          {selectedOption.label}
+        </span>
+        <ChevronDown size={14} color={C.inkMuted} style={{ transform: isOpen ? "rotate(180deg)" : "none", transition: "transform 0.2s" }} />
+      </button>
+
+      {isOpen && (
+        <div style={{
+          position: "absolute",
+          top: "calc(100% + 6px)",
+          left: 0,
+          right: 0,
+          zIndex: 100,
+          background: "#fff",
+          border: `1px solid ${C.lineStrong}`,
+          borderRadius: 14,
+          padding: "6px",
+          boxShadow: "0 12px 30px rgba(28,20,9,0.12)",
+          display: "flex",
+          flexDirection: "column",
+          gap: 2,
+        }}>
+          {options.map((option) => (
+            <button
+              key={option.id}
+              type="button"
+              onClick={() => {
+                onChange(option.id);
+                setIsOpen(false);
+              }}
+              style={{
+                padding: "10px 12px",
+                borderRadius: 10,
+                border: "none",
+                background: value === option.id ? C.goldDim : "transparent",
+                color: value === option.id ? C.gold : C.inkSoft,
+                fontSize: 13,
+                fontWeight: value === option.id ? 700 : 500,
+                textAlign: "left",
+                cursor: "pointer",
+                transition: "all 0.15s",
+              }}
+              onMouseEnter={e => {
+                if (value !== option.id) e.currentTarget.style.background = "rgba(184,145,90,0.05)";
+              }}
+              onMouseLeave={e => {
+                if (value !== option.id) e.currentTarget.style.background = "transparent";
+              }}
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
 
 const IconBtn = ({ children, onClick, title, active, buttonRef }) => (
   <button
@@ -951,6 +1031,8 @@ const LegacyCVResultsPanel = ({ campaign }) => {
 const CampaignTable = ({ onSelect, selected, onInterviewResults, isMobile = false, isTablet = false }) => {
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [focusFilter, setFocusFilter] = useState("all");
+  const [sortFilter, setSortFilter] = useState("newest");
   const [campaignPage, setCampaignPage] = useState(1);
   const [activeActionMenuId, setActiveActionMenuId] = useState(null);
   const tableColumns = isTablet
@@ -960,8 +1042,14 @@ const CampaignTable = ({ onSelect, selected, onInterviewResults, isMobile = fals
   const filteredCampaigns = useMemo(() => {
     const search = query.trim().toLowerCase();
 
-    return CAMPAIGNS.filter((campaign) => {
+    const parseDate = (d) => {
+      if (!d || d === "No end date" || d === "Paused") return Infinity;
+      return new Date(d).getTime();
+    };
+
+    let list = CAMPAIGNS.filter((campaign) => {
       const matchesStatus = statusFilter === "all" || campaign.status === statusFilter;
+      const matchesFocus = focusFilter === "all" || campaign.focus === focusFilter;
       const matchesSearch = !search || [
         campaign.title,
         campaign.company,
@@ -969,9 +1057,30 @@ const CampaignTable = ({ onSelect, selected, onInterviewResults, isMobile = fals
         campaign.intakeCode,
       ].some((value) => value.toLowerCase().includes(search));
 
-      return matchesStatus && matchesSearch;
+      return matchesStatus && matchesFocus && matchesSearch;
     });
-  }, [query, statusFilter]);
+
+    // Sorting
+    list.sort((a, b) => {
+      switch (sortFilter) {
+        case "oldest":
+          return new Date(a.created).getTime() - new Date(b.created).getTime();
+        case "mostInvited":
+          return b.applicants - a.applicants;
+        case "mostCompleted":
+          return b.shortlisted - a.shortlisted;
+        case "cvEndSoonest":
+          return parseDate(a.cvEnd) - parseDate(b.cvEnd);
+        case "interviewEndSoonest":
+          return parseDate(a.interviewEnd) - parseDate(b.interviewEnd);
+        case "newest":
+        default:
+          return new Date(b.created).getTime() - new Date(a.created).getTime();
+      }
+    });
+
+    return list;
+  }, [query, statusFilter, focusFilter, sortFilter]);
 
   const campaignPagination = useMemo(
     () => paginateItems(filteredCampaigns, campaignPage, MIN_TABLE_ROWS),
@@ -986,7 +1095,7 @@ const CampaignTable = ({ onSelect, selected, onInterviewResults, isMobile = fals
 
   useEffect(() => {
     setCampaignPage(1);
-  }, [query, statusFilter]);
+  }, [query, statusFilter, focusFilter, sortFilter]);
 
   return (
     <section style={{
@@ -1015,24 +1124,24 @@ const CampaignTable = ({ onSelect, selected, onInterviewResults, isMobile = fals
           </div>
         </div>
 
-        <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
+        <div style={{ display: "flex", gap: 12, flexWrap: "wrap", alignItems: "center", flex: isMobile ? "1 1 100%" : "0 1 auto" }}>
           <div style={{
             display: "flex",
             alignItems: "center",
-            gap: 8,
-            minWidth: isMobile ? "100%" : 250,
-            width: isMobile ? "100%" : undefined,
+            gap: 10,
+            width: isMobile ? "100%" : 280,
             height: 40,
-            padding: "0 12px",
+            padding: "0 14px",
             borderRadius: 12,
             border: `1px solid ${C.line}`,
-            background: C.bgInput,
+            background: "#fff",
+            boxShadow: "inset 0 1px 3px rgba(0,0,0,0.02)",
           }}>
             <Search size={15} color={C.inkFaint} />
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search by title, company, or code"
+              placeholder="Search by title, company, or code…"
               style={{
                 border: "none",
                 outline: "none",
@@ -1045,36 +1154,44 @@ const CampaignTable = ({ onSelect, selected, onInterviewResults, isMobile = fals
             />
           </div>
 
-          <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-            {[
-              { id: "all", label: "All" },
+          <ModernSelect
+            value={focusFilter}
+            onChange={setFocusFilter}
+            options={[
+              { id: "all", label: "All campaign focus" },
+              { id: "First Interview", label: "First Interview" },
+              { id: "Second Interview", label: "Second Interview" },
+              { id: "Problem Solving", label: "Problem Solving" },
+              { id: "Situational Judgment (SJT)", label: "Situational Judgment (SJT)" },
+              { id: "Cognitive Ability", label: "Cognitive Ability" },
+              { id: "English Communication", label: "English Communication" },
+              { id: "Work Ethics & Reliability", label: "Work Ethics & Reliability" },
+              { id: "Teamwork & Communication", label: "Teamwork & Communication" },
+            ]}
+          />
+
+          <ModernSelect
+            value={statusFilter}
+            onChange={setStatusFilter}
+            options={[
+              { id: "all", label: "All status" },
               { id: "active", label: "Active" },
-              { id: "paused", label: "Paused" },
-            ].map(({ id, label }) => {
-              const active = statusFilter === id;
-              return (
-                <button
-                  key={id}
-                  type="button"
-                  onClick={() => setStatusFilter(id)}
-                  style={{
-                    height: 36,
-                    padding: "0 14px",
-                    borderRadius: 999,
-                    border: `1px solid ${active ? C.goldBorder : C.line}`,
-                    background: active ? C.goldDim : "rgba(255,250,242,0.65)",
-                    color: active ? C.gold : C.inkMuted,
-                    cursor: "pointer",
-                    fontSize: 12.5,
-                    fontWeight: 700,
-                    fontFamily: "'Sora', sans-serif",
-                  }}
-                >
-                  {label}
-                </button>
-              );
-            })}
-          </div>
+              { id: "paused", label: "Non-active" },
+            ]}
+          />
+
+          <ModernSelect
+            value={sortFilter}
+            onChange={setSortFilter}
+            options={[
+              { id: "newest", label: "Sort: Newest" },
+              { id: "oldest", label: "Sort: Oldest" },
+              { id: "mostInvited", label: "Sort: Most invited" },
+              { id: "mostCompleted", label: "Sort: Most completed" },
+              { id: "cvEndSoonest", label: "Sort: CV end (soonest)" },
+              { id: "interviewEndSoonest", label: "Sort: Interview end (soonest)" },
+            ]}
+          />
         </div>
       </div>
 
@@ -1264,7 +1381,6 @@ const CampaignTable = ({ onSelect, selected, onInterviewResults, isMobile = fals
                       gap: 4,
                     }}>
                       {[
-                        { id: "RES", label: "View Results", icon: <Eye size={14} />, color: C.gold, onClick: () => onInterviewResults?.() },
                         { id: "EDIT", label: "Edit Campaign", onClick: () => console.log("Edit") },
                         { id: "DUP", label: "Duplicate", onClick: () => console.log("Duplicate") },
                         {
