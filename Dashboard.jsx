@@ -5,9 +5,10 @@ import {
   Sparkles, TrendingUp, FileText, MessageSquare, Brain, Gavel,
   Globe, Layers, X, Calendar, Link2, Eye,
   UserCheck, UserX, AlertCircle, Award, BarChart, PieChart,
-  ChevronDown, Mail, RotateCcw,
+  ChevronDown, Mail, RotateCcw, Edit2, Trash2, Share2
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { createPortal } from "react-dom";
 import CVResults from "./resume";
 import InterviewResults from "./Inter";
 import Interview from "./Interview";
@@ -1079,6 +1080,7 @@ const CampaignTable = ({ onSelect, selected, onInterviewResults, isMobile = fals
   const [sortFilter, setSortFilter] = useState("newest");
   const [campaignPage, setCampaignPage] = useState(1);
   const [activeActionMenuId, setActiveActionMenuId] = useState(null);
+  const [menuRect, setMenuRect] = useState(null);
   const tableColumns = isTablet
     ? "minmax(160px, 1.1fr) minmax(110px, 1.1fr) minmax(200px, 1.8fr) minmax(180px, 1.7fr) minmax(120px, 0.8fr) minmax(160px, 0.7fr)"
     : "minmax(180px, 1.3fr) minmax(120px, 1.2fr) minmax(240px, 1.9fr) minmax(200px, 1.8fr) minmax(140px, 0.9fr) minmax(180px, 0.8fr)";
@@ -1269,7 +1271,7 @@ const CampaignTable = ({ onSelect, selected, onInterviewResults, isMobile = fals
         </div>
       )}
 
-      <div style={{ display: "flex", flexDirection: "column", overflowX: isMobile ? "visible" : "auto" }}>
+      <div style={{ display: "flex", flexDirection: "column", overflowX: isMobile ? "visible" : "auto", minHeight: 380 }}>
         {campaignPagination.pageItems.map((campaign, index) => {
           const isSelected = selected === campaign.id;
 
@@ -1365,7 +1367,18 @@ const CampaignTable = ({ onSelect, selected, onInterviewResults, isMobile = fals
                   type="button"
                   onClick={(e) => {
                     e.stopPropagation();
-                    setActiveActionMenuId(activeActionMenuId === campaign.id ? null : campaign.id);
+                    if (activeActionMenuId === campaign.id) {
+                      setActiveActionMenuId(null);
+                    } else {
+                      const rect = e.currentTarget.getBoundingClientRect();
+                      const isLateRow = index >= campaignPagination.pageItems.length - 2 && campaignPagination.pageItems.length > 2;
+                      setMenuRect(
+                        isLateRow 
+                          ? { bottom: window.innerHeight - rect.top + 10, right: window.innerWidth - rect.right }
+                          : { top: rect.bottom + 10, right: window.innerWidth - rect.right }
+                      );
+                      setActiveActionMenuId(campaign.id);
+                    }
                   }}
                   style={{
                     width: 38,
@@ -1395,17 +1408,17 @@ const CampaignTable = ({ onSelect, selected, onInterviewResults, isMobile = fals
                   <MoreHorizontal size={18} />
                 </button>
 
-                {activeActionMenuId === campaign.id && (
+                {activeActionMenuId === campaign.id && createPortal(
                   <>
                     <div
                       onClick={(e) => { e.stopPropagation(); setActiveActionMenuId(null); }}
-                      style={{ position: "fixed", inset: 0, zIndex: 1000 }}
+                      style={{ position: "fixed", inset: 0, zIndex: 100000 }}
                     />
                     <div style={{
-                      position: "absolute",
-                      top: "calc(100% + 10px)",
-                      right: 0,
-                      zIndex: 1001,
+                      position: "fixed",
+                      ...(menuRect?.top ? { top: menuRect.top } : { bottom: menuRect?.bottom }),
+                      right: menuRect?.right,
+                      zIndex: 100001,
                       minWidth: 220,
                       background: "rgba(255, 255, 255, 0.98)",
                       backdropFilter: "blur(25px) saturate(180%)",
@@ -1418,17 +1431,17 @@ const CampaignTable = ({ onSelect, selected, onInterviewResults, isMobile = fals
                       gap: 4,
                     }}>
                       {[
-                        { id: "EDIT", label: "Edit Campaign", onClick: () => console.log("Edit") },
-                        { id: "DUP", label: "Duplicate", onClick: () => console.log("Duplicate") },
+                        { id: "EDIT", label: "Edit Campaign", icon: <Edit2 size={16} />, onClick: () => console.log("Edit") },
+                        { id: "DUP", label: "Duplicate", icon: <Copy size={16} />, onClick: () => console.log("Duplicate") },
                         {
-                          id: "SHR", label: "Share Campaign", onClick: () => {
+                          id: "SHR", label: "Share Campaign", icon: <Share2 size={16} />, onClick: () => {
                             navigator?.clipboard?.writeText(campaign.intakeCode);
                             alert("Intake code copied to clipboard!");
                           }
                         },
-                        { id: "AI", label: "Consultation Session", onClick: () => console.log("AI") },
-                        { id: "PDF", label: "Download Report", onClick: () => console.log("PDF") },
-                        { id: "DEL", label: "Delete Campaign", color: "#d94f6b", onClick: () => console.log("Delete") },
+                        { id: "AI", label: "Consultation Session", icon: <Sparkles size={16} />, onClick: () => console.log("AI") },
+                        { id: "PDF", label: "Download Report", icon: <FileText size={16} />, onClick: () => console.log("PDF") },
+                        { id: "DEL", label: "Delete Campaign", icon: <Trash2 size={16} />, color: "#d94f6b", onClick: () => console.log("Delete") },
                       ].map((item) => (
                         <button
                           key={item.id}
@@ -1459,19 +1472,21 @@ const CampaignTable = ({ onSelect, selected, onInterviewResults, isMobile = fals
                             e.currentTarget.style.transform = "translateX(0)";
                           }}
                         >
-                          <span style={{
-                            fontSize: 10.5,
-                            fontWeight: 700,
-                            letterSpacing: "0.05em",
-                            color: item.color || "rgba(28, 20, 9, 0.5)",
-                            width: 38,
+                          <div style={{
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            width: 32,
+                            height: 32,
+                            borderRadius: 8,
+                            background: item.color ? `${item.color}15` : "rgba(184, 145, 90, 0.1)",
+                            color: item.color || C.gold,
                             flexShrink: 0,
-                            fontFamily: "'Sora', sans-serif"
                           }}>
-                            {item.id}
-                          </span>
+                            {item.icon}
+                          </div>
                           <span style={{
-                            fontSize: 13.5,
+                            fontSize: 14,
                             fontWeight: 500,
                             color: item.color || C.inkSoft,
                             fontFamily: "'Sora', sans-serif"
@@ -1481,7 +1496,8 @@ const CampaignTable = ({ onSelect, selected, onInterviewResults, isMobile = fals
                         </button>
                       ))}
                     </div>
-                  </>
+                  </>,
+                  document.body
                 )}
               </div>
             </div>
