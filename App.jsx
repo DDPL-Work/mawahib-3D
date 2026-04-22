@@ -23,6 +23,7 @@ import SettingsModal from "./SettingsModal";
 import Interview from "./Interview";
 import HowItWorks from "./HowItWorks";
 import CompanyTrustSection from "./Companytrustsection";
+import Calender from "./Calender";
 import { Settings, LogOut, Menu, X } from "lucide-react";
 import { DASHBOARD_AUTH_KEY } from "./authConfig";
 
@@ -1162,15 +1163,42 @@ function Ticker() {
    COMPANIES TRUST MAWAHIB SECTION
    (moved here — ABOVE ProblemSection)
 ══════════════════════════════════════════════════════════════════════ */
-const StarRating = ({ n = 5, size = 13 }) => (
-  <div style={{ display: "flex", gap: 2 }}>
-    {[...Array(n)].map((_, i) => (
-      <svg key={i} width={size} height={size} viewBox="0 0 24 24" fill="#00b67a">
-        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-      </svg>
-    ))}
-  </div>
-);
+const StarRating = ({ rating = 5, size = 13 }) => {
+  const fullStars = Math.floor(rating);
+  const hasHalfStar = rating % 1 !== 0;
+
+  return (
+    <div style={{ display: "flex", gap: 2 }}>
+      {[...Array(5)].map((_, i) => {
+        if (i < fullStars) {
+          return (
+            <svg key={i} width={size} height={size} viewBox="0 0 24 24" fill="#00b67a">
+              <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+            </svg>
+          );
+        } else if (i === fullStars && hasHalfStar) {
+          return (
+            <svg key={i} width={size} height={size} viewBox="0 0 24 24" style={{ display: "block" }}>
+              <defs>
+                <linearGradient id={`halfStar-${size}`}>
+                  <stop offset="50%" stopColor="#00b67a" />
+                  <stop offset="50%" stopColor="rgba(255,255,255,0.15)" />
+                </linearGradient>
+              </defs>
+              <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" fill={`url(#halfStar-${size})`} />
+            </svg>
+          );
+        } else {
+          return (
+            <svg key={i} width={size} height={size} viewBox="0 0 24 24" fill="rgba(255,255,255,0.15)">
+              <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+            </svg>
+          );
+        }
+      })}
+    </div>
+  );
+};
 const TrustpilotMark = () => (
   <svg viewBox="0 0 110 22" style={{ height: 15, width: "auto", display: "block", flexShrink: 0 }}>
     <text x="0" y="17" fontFamily="Arial,sans-serif" fontWeight="800" fontSize="17" fill="white" letterSpacing="-0.3">Trustpilot</text>
@@ -1255,8 +1283,8 @@ function CompaniesTrustSection() {
         }}>
           <TrustpilotMark />
           <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
-            <StarRating n={5} size={18} />
-            <span style={{ fontSize: 15, fontWeight: 800, color: "#fff" }}>4.9 / 5</span>
+            <StarRating rating={4.6} size={18} />
+            <span style={{ fontSize: 15, fontWeight: 800, color: "#fff" }}>4.6 / 5</span>
           </div>
           <p style={{ fontSize: 10, color: "rgba(255,255,255,.28)" }}>Rated <strong style={{ color: "#00b67a" }}>Excellent</strong> · 200+ verified reviews</p>
         </div>
@@ -1809,28 +1837,28 @@ function Footer() {
     <footer style={{
       position: "relative", zIndex: 10,
       background: "rgba(2,4,12,.98)",
-      padding: isMobile ? "12px 20px 8px" : "16px 80px 10px",
+      padding: isMobile ? "8px 20px 4px" : "10px 80px 6px",
       borderTop: "1px solid rgba(184,149,90,.12)"
     }}>
       <div style={{ maxWidth: 1280, margin: "0 auto" }}>
         <div style={{
           display: "grid", gridTemplateColumns: isMobile ? "1fr" : "auto 1fr",
-          gap: isMobile ? 20 : 60, marginBottom: 8
+          gap: isMobile ? 12 : 40, marginBottom: 30
         }}>
           <div style={{ maxWidth: isMobile ? "100%" : 280, textAlign: isMobile ? "center" : "left", margin: isMobile ? "0 auto" : 0 }}>
-            <div style={{ display: "flex", justifyContent: isMobile ? "center" : "flex-start", marginBottom: 4 }}>
+            <div style={{ display: "flex", justifyContent: isMobile ? "center" : "flex-start", marginBottom: 2 }}>
               <MawahibLogo width={isMobile ? 124 : 156} blend={false} />
             </div>
-            <p style={{ color: "rgba(255,255,255,.85)", fontSize: 13, lineHeight: 1.7, marginBottom: 4 }}>
+            <p style={{ color: "rgba(255,255,255,.85)", fontSize: 12.5, lineHeight: 1.6, marginBottom: 2 }}>
               AI-powered hiring intelligence for modern recruitment teams worldwide.
             </p>
             <a href="https://www.trustpilot.com/review/mawahib.ai" target="_blank" rel="noopener noreferrer"
               style={{ display: "inline-flex", alignItems: "center", gap: 7, textDecoration: "none", background: "rgba(255,255,255,.04)", border: "1px solid rgba(255,255,255,.07)", borderRadius: 9, padding: "6px 12px" }}>
               <TrustpilotMark />
               <div style={{ display: "flex", gap: 1 }}>
-                {[...Array(5)].map((_, i) => <svg key={i} width={9} height={9} viewBox="0 0 24 24" fill="#00b67a"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" /></svg>)}
+                <StarRating rating={4.6} size={9} />
               </div>
-              <span style={{ fontSize: 10, color: "rgba(255,255,255,.7)", fontWeight: 700 }}>4.9/5</span>
+              <span style={{ fontSize: 10, color: "rgba(255,255,255,.7)", fontWeight: 700 }}>4.6/5</span>
             </a>
           </div>
           <div style={{
@@ -1840,8 +1868,8 @@ function Footer() {
           }}>
             {sections.map(([sect, items]) => (
               <div key={sect}>
-                <p style={{ fontSize: 10, fontWeight: 800, color: C.gold, letterSpacing: ".15em", marginBottom: 12, textTransform: "uppercase" }}>{sect}</p>
-                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                <p style={{ fontSize: 9, fontWeight: 800, color: C.gold, letterSpacing: ".15em", marginBottom: 6, textTransform: "uppercase" }}>{sect}</p>
+                <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                   {items.map((item) => {
                     const paths = {
                       Pricing: "/pricing",
@@ -1875,14 +1903,11 @@ function Footer() {
           </div>
         </div>
         <div style={{
-          marginTop: isMobile ? 0 : -72,
-          marginBottom: 10,
+          marginTop: isMobile ? 0 : -84,
+          marginBottom: 6,
           textAlign: isMobile ? "center" : "right"
         }}>
-          <div style={{ color: "rgba(255,255,255,.75)", fontSize: 11, fontWeight: 600, letterSpacing: "0.03em", marginBottom: 6 }}>
-            Trusted by 400+ teams globally.
-          </div>
-          <p style={{ color: "rgba(255,255,255,.45)", fontSize: 10, lineHeight: 1.6, fontWeight: 400, marginBottom: 12, maxWidth: isMobile ? "100%" : 280, marginLeft: isMobile ? "0" : "auto" }}>
+          <p style={{ color: "rgba(255,255,255,.45)", fontSize: 9.5, lineHeight: 1.5, fontWeight: 400, marginBottom: 6, maxWidth: isMobile ? "100%" : 280, marginLeft: isMobile ? "0" : "auto" }}>
             Revolutionizing recruitment through neural matching and unbiased AI intelligence.
           </p>
           <a href="mailto:info@mawahib.ai" style={{
@@ -1900,10 +1925,10 @@ function Footer() {
           </a>
         </div>
         <div style={{
-          borderTop: "1px solid rgba(255,255,255,.05)", paddingTop: 8,
+          borderTop: "1px solid rgba(255,255,255,.05)", paddingTop: 6,
           display: "flex", flexDirection: isMobile ? "column" : "row",
           justifyContent: "space-between", alignItems: "center",
-          gap: 12, textAlign: isMobile ? "center" : "left"
+          gap: 10, textAlign: isMobile ? "center" : "left"
         }}>
           <p style={{ color: "rgba(255,255,255,.45)", fontSize: 11, fontWeight: 500 }}>© 2026 Mawahib LLC. All rights reserved.</p>
           <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 10 }}>
@@ -2002,6 +2027,7 @@ export default function App() {
           <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
           <Route path="/resume" element={<ProtectedRoute><CVResults /></ProtectedRoute>} />
           <Route path="/interview" element={<ProtectedRoute><Interview /></ProtectedRoute>} />
+          <Route path="/calendar" element={<ProtectedRoute><Calender /></ProtectedRoute>} />
           <Route path="/how-mawahib-works" element={<HowItWorks />} />
         </Routes>
         <Footer />

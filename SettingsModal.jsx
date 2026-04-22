@@ -94,9 +94,8 @@ export default function SettingsModal({ onClose }) {
         </div>
 
         <div style={{ padding: "6px 0" }}>
-          <Option icon={Calendar} label="My Calendar" onClick={onClose} />
+          <Option icon={Calendar} label="My Calendar" onClick={() => { onClose(); navigate("/calendar"); }} />
           <Option icon={FileText} label="Statement" onClick={onClose} />
-          <Option icon={Sparkles} label="Start Tour" onClick={onClose} />
           <Option icon={Settings} label="Change Password" onClick={onClose} />
         </div>
 
