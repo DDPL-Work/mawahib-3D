@@ -867,30 +867,27 @@ export default function Interview() {
 
                   {/* Require Sample */}
                   <div style={{
-                    display: "flex", alignItems: "flex-start", justifyContent: "space-between",
-                    gap: 14, padding: "14px 16px", marginBottom: 20,
-                    background: "rgba(6,10,20,0.45)", border: `1px solid ${C.line}`,
-                    borderRadius: 12,
+                    display: "flex", alignItems: "center", justifyContent: "space-between",
+                    gap: 14, padding: "18px 20px", marginBottom: 20,
+                    background: "rgba(184,149,90,0.06)", border: `1px solid ${C.goldBorder}`,
+                    borderRadius: 16,
                   }}>
                     <div>
-                      <div style={{ fontSize: 13.5, fontWeight: 700, color: C.inkWhite, marginBottom: 4 }}>Require Sample</div>
-                      <div style={{ fontSize: 12.5, color: C.inkFaint, lineHeight: 1.55 }}>If enabled, candidates must upload a portfolio/sample file with their CV.</div>
+                      <div style={{ fontSize: 14, fontWeight: 700, color: C.inkSoft, marginBottom: 4 }}>Require Sample</div>
+                      <div style={{ fontSize: 12.5, color: C.inkMuted, lineHeight: 1.55 }}>If enabled, candidates must upload a portfolio/sample file with their CV.</div>
                     </div>
                     <div
                       onClick={() => setF("requireSample", !form.requireSample)}
                       style={{
-                        width: 20, height: 20, borderRadius: 5, flexShrink: 0, marginTop: 2,
-                        border: `1.5px solid ${form.requireSample ? C.goldBright : C.line}`,
-                        background: form.requireSample ? `linear-gradient(135deg,${C.gold},${C.goldBright})` : "transparent",
+                        width: 22, height: 22, borderRadius: 6, flexShrink: 0,
+                        border: `1.5px solid ${form.requireSample ? C.gold : C.lineStrong}`,
+                        background: form.requireSample ? C.gold : "rgba(255,255,255,0.8)",
                         display: "grid", placeItems: "center", cursor: "pointer",
-                        transition: "all 0.18s",
+                        transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
+                        boxShadow: form.requireSample ? `0 0 0 3px ${C.goldDim}` : "none"
                       }}
                     >
-                      {form.requireSample && (
-                        <svg width="11" height="11" viewBox="0 0 12 12" fill="none">
-                          <path d="M2 6l3 3 5-5" stroke="#1a1006" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                        </svg>
-                      )}
+                      {form.requireSample && <Check size={14} color="#fff" strokeWidth={3} />}
                     </div>
                   </div>
 
@@ -904,14 +901,14 @@ export default function Interview() {
                     </div>
 
                     {/* Intake table */}
-                    <div style={{ background: "rgba(6,10,20,0.4)", border: `1px solid ${C.line}`, borderRadius: 14, overflow: "hidden" }}>
+                    <div style={{ background: "rgba(184,149,90,0.03)", border: `1px solid ${C.goldBorder}`, borderRadius: 16, overflow: "hidden" }}>
                       <div className="iv-intake-row" style={{
                         display: "grid", gridTemplateColumns: "1.3fr 1.3fr 100px 100px 36px",
-                        padding: "10px 14px", borderBottom: `1px solid ${C.line}`,
-                        background: "rgba(255,255,255,0.02)",
+                        padding: "12px 14px", borderBottom: `1px solid ${C.line}`,
+                        background: "rgba(184,149,90,0.05)",
                       }}>
                         {["Question", "Ideal Answer", "Type", "Scoring", ""].map(h => (
-                          <div key={h} style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: "0.11em", textTransform: "uppercase", color: C.inkFaint }}>{h}</div>
+                          <div key={h} style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.12em", textTransform: "uppercase", color: C.inkMuted }}>{h}</div>
                         ))}
                       </div>
 
@@ -957,10 +954,10 @@ export default function Interview() {
                             {hasSingleSelect && (
                               <div style={{ padding: "0 14px 12px" }}>
                                 <div style={{
-                                  background: "rgba(6,10,20,0.6)",
-                                  border: `1px solid ${C.line}`,
-                                  borderRadius: 10,
-                                  padding: 12,
+                                  background: "rgba(184,149,90,0.03)",
+                                  border: `1px solid ${C.goldBorder}`,
+                                  borderRadius: 12,
+                                  padding: 16,
                                 }}>
                                   <div style={{ fontSize: 12.5, fontWeight: 700, color: C.inkWhite, marginBottom: 4 }}>
                                     Single Select Configuration
@@ -1211,7 +1208,7 @@ export default function Interview() {
                         {mandatoryQList.map((q, i) => (
                           <div key={i} style={{
                             display: "flex", alignItems: "center", gap: 10,
-                            padding: "9px 12px", background: "rgba(6,10,20,0.5)",
+                            padding: "9px 12px", background: "rgba(255,255,255,0.05)",
                             border: `1px solid ${C.line}`, borderRadius: 9,
                           }}>
                             <span style={{ fontSize: 11.5, fontWeight: 700, color: C.inkFaint, minWidth: 18 }}>{i + 1}.</span>
@@ -1232,8 +1229,8 @@ export default function Interview() {
 
                   {/* Access Control */}
                   <div style={{
-                    background: "rgba(6,10,20,0.5)", border: `1px solid ${C.line}`,
-                    borderRadius: 14, overflow: "hidden",
+                    background: "rgba(184,149,90,0.03)", border: `1px solid ${C.goldBorder}`,
+                    borderRadius: 18, overflow: "hidden",
                   }}>
                     <div style={{
                       padding: "14px 16px", borderBottom: `1px solid ${C.line}`,
@@ -1245,14 +1242,14 @@ export default function Interview() {
                     <div style={{ padding: "14px 16px" }}>
                       <div style={{
                         display: "flex", alignItems: "center", justifyContent: "space-between",
-                        gap: 12, padding: "12px 14px",
-                        background: allowEveryone ? "rgba(57,201,143,0.04)" : "rgba(255,255,255,0.02)",
-                        border: `1px solid ${allowEveryone ? C.greenBorder : C.line}`,
-                        borderRadius: 12, transition: "all 0.2s",
+                        gap: 12, padding: "16px 18px",
+                        background: allowEveryone ? "rgba(184,149,90,0.08)" : "transparent",
+                        border: `1px solid ${allowEveryone ? C.goldBorder : C.line}`,
+                        borderRadius: 14, transition: "all 0.2s",
                       }}>
                         <div>
-                          <div style={{ fontSize: 13.5, fontWeight: 600, color: C.inkWhite, marginBottom: 3 }}>Allow everyone</div>
-                          <div style={{ fontSize: 12.5, color: C.inkFaint }}>
+                          <div style={{ fontSize: 14, fontWeight: 700, color: C.inkSoft, marginBottom: 3 }}>Allow everyone</div>
+                          <div style={{ fontSize: 12.5, color: C.inkMuted }}>
                             Any candidate can enter using the interview code — no email restriction required.
                           </div>
                         </div>
@@ -1261,16 +1258,17 @@ export default function Interview() {
 
                       {/* Invite by email */}
                       <div style={{
-                        marginTop: 12, padding: "14px 16px",
-                        background: "rgba(6,10,20,0.4)", border: `1px solid ${C.line}`,
-                        borderRadius: 12, opacity: allowEveryone ? 0.45 : 1,
-                        transition: "opacity 0.25s",
+                        marginTop: 12, padding: "20px",
+                        background: allowEveryone ? "rgba(184,149,90,0.04)" : "rgba(255,255,255,0.6)",
+                        border: `1px solid ${C.goldBorder}`,
+                        borderRadius: 16, opacity: allowEveryone ? 0.5 : 1,
+                        transition: "all 0.3s",
                         pointerEvents: allowEveryone ? "none" : "auto",
                       }}>
                         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 10, marginBottom: 14 }}>
                           <div>
-                            <div style={{ fontSize: 13.5, fontWeight: 700, color: C.inkWhite, marginBottom: 3 }}>Import Invited Emails</div>
-                            <div style={{ fontSize: 12, color: C.inkFaint }}>Upload an Excel file with candidate name, email, and phone columns.</div>
+                            <div style={{ fontSize: 14, fontWeight: 700, color: C.inkSoft, marginBottom: 3 }}>Import Invited Emails</div>
+                            <div style={{ fontSize: 12, color: C.inkMuted }}>Upload an Excel file with candidate name, email, and phone columns.</div>
                           </div>
                           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                             <GhostBtn disabled small>Download Template</GhostBtn>

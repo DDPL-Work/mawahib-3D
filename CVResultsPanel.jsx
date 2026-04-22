@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { AlertCircle, Download, Eye, MoreHorizontal, X } from "lucide-react";
 import { getPaginationWindow, MIN_TABLE_ROWS, paginateItems } from "./tablePagination";
+import EvaluationModal from "./EvaluationModal";
+
 
 const TablePagination = ({ page, totalPages, startIndex, endIndex, totalItems, onPageChange, theme }) => {
   const pageNumbers = getPaginationWindow(page, totalPages);
@@ -72,6 +74,8 @@ export default function DashboardCVResultsPanel({ candidates, theme }) {
   const [candidatePage, setCandidatePage] = useState(1);
   const [selectedCandidateIds, setSelectedCandidateIds] = useState([]);
   const [previewCandidate, setPreviewCandidate] = useState(null);
+  const [evaluationCandidate, setEvaluationCandidate] = useState(null);
+
 
   const countryOptions = useMemo(
     () => Array.from(new Set(candidates.map((candidate) => candidate.country))).sort(),
@@ -168,6 +172,10 @@ export default function DashboardCVResultsPanel({ candidates, theme }) {
 
   const openResumePreview = (candidate) => setPreviewCandidate(candidate);
   const closeResumePreview = () => setPreviewCandidate(null);
+
+  const openEvaluationModal = (candidate) => setEvaluationCandidate(candidate);
+  const closeEvaluationModal = () => setEvaluationCandidate(null);
+
 
   const controlStyle = {
     height: 34,
@@ -523,7 +531,7 @@ export default function DashboardCVResultsPanel({ candidates, theme }) {
           <div style={{ width: "100%", minWidth: 0, overflow: "hidden" }}>
             <div style={{ display: "grid", gridTemplateColumns: tableColumns, padding: "14px 14px", gap: 6, borderBottom: `1px solid ${theme.line}`, background: "rgba(184,145,90,0.04)", alignItems: "center" }}>
               <label style={{ display: "grid", placeItems: "center" }}><input type="checkbox" checked={allVisibleSelected} onChange={toggleSelectAllVisible} /></label>
-              {["Candidate", "Details", "CV", "Status", "Action", "Country", "City", "Suitable"].map((heading) => (
+              {["Candidate", "Details", "Attachments", "Status", "Action", "Country", "City", "Suitable"].map((heading) => (
                 <div key={heading} style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: theme.inkSoft, textAlign: heading === "Candidate" ? "left" : "center" }}>{heading}</div>
               ))}
             </div>
@@ -566,8 +574,10 @@ export default function DashboardCVResultsPanel({ candidates, theme }) {
                   <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
                     <button
                       type="button"
-                      onClick={(event) => { event.stopPropagation(); openResumePreview(candidate); }}
-                      style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", minWidth: 72, height: 34, padding: "0 14px", borderRadius: 10, border: `1px solid ${theme.blue}33`, background: "rgba(58,123,213,0.08)", color: theme.blue, cursor: "pointer", fontSize: 12.5, fontWeight: 700, fontFamily: "'Sora', sans-serif" }}
+                      onClick={(event) => { event.stopPropagation(); openEvaluationModal(candidate); }}
+                      onMouseEnter={e => { e.currentTarget.style.background = "rgba(58,123,213,0.18)"; e.currentTarget.style.borderColor = theme.blue; }}
+                      onMouseLeave={e => { e.currentTarget.style.background = "rgba(58,123,213,0.08)"; e.currentTarget.style.borderColor = `${theme.blue}33`; }}
+                      style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", minWidth: 72, height: 34, padding: "0 14px", borderRadius: 10, border: `1px solid ${theme.blue}33`, background: "rgba(58,123,213,0.08)", color: theme.blue, cursor: "pointer", fontSize: 12.5, fontWeight: 700, fontFamily: "'Sora', sans-serif", transition: "all 0.2s ease" }}
                     >
                       View
                     </button>
@@ -629,6 +639,8 @@ export default function DashboardCVResultsPanel({ candidates, theme }) {
         </div>
       </div>
       {previewCandidate && <ResumeSidebarModal candidate={previewCandidate} theme={theme} onClose={closeResumePreview} />}
+      {evaluationCandidate && <EvaluationModal candidate={evaluationCandidate} theme={theme} onClose={closeEvaluationModal} />}
     </div>
+
   );
 }

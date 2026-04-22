@@ -1673,7 +1673,7 @@ const CampaignDetail = ({ campaign, onClose, modal = false, closeRef, isMobile =
           {[
             { id: "overview", label: "Overview", icon: Layers, theme: { base: C.blue, border: "rgba(58,123,213,0.45)", bg1: C.blueDim, bg2: "rgba(58,123,213,0.02)", hover: "rgba(58,123,213,0.08)", shadow: "rgba(58,123,213,0.22)" } },
             { id: "cv", label: "CV Results", icon: FileText, theme: { base: C.goldBright, border: C.goldBorderHot, bg1: C.goldDim, bg2: "rgba(184,145,90,0.04)", hover: "rgba(184,145,90,0.10)", shadow: "rgba(184,145,90,0.20)" } },
-            { id: "results", label: "Results", icon: Award, theme: { base: C.green, border: "rgba(45,158,117,0.45)", bg1: C.greenDim, bg2: "rgba(45,158,117,0.02)", hover: "rgba(45,158,117,0.08)", shadow: "rgba(45,158,117,0.22)" } },
+            { id: "results", label: "Interview Results", icon: Award, theme: { base: C.green, border: "rgba(45,158,117,0.45)", bg1: C.greenDim, bg2: "rgba(45,158,117,0.02)", hover: "rgba(45,158,117,0.08)", shadow: "rgba(45,158,117,0.22)" } },
           ].map(({ id, label, icon: Icon, theme: t }) => {
             const active = tab === id;
 
