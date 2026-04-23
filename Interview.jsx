@@ -5,7 +5,7 @@ import {
   ChevronDown, ChevronUp, Info, Sparkles, Wand2, RefreshCw,
   Trash2, GripVertical, AlertCircle, Check, ExternalLink,
   Copy, Link2, Video, Globe, Users, FileText, Settings2,
-  BarChart3, X,
+  BarChart3, X, Download
 } from "lucide-react";
 
 // ─── Design Tokens ────────────────────────────────────────────────────────────
@@ -1315,8 +1315,8 @@ export default function Interview() {
                             <div style={{ fontSize: 12, color: C.inkMuted }}>Upload an Excel file with candidate name, email, and phone columns.</div>
                           </div>
                           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                            <GhostBtn disabled small>Download Template</GhostBtn>
-                            <GhostBtn disabled small>Download Current</GhostBtn>
+                            <GhostBtn small icon={Download} onClick={() => alert("Downloading template...")}>Download Template</GhostBtn>
+                            <GhostBtn small icon={Download} onClick={() => alert("Downloading current list...")}>Download Current</GhostBtn>
                           </div>
                         </div>
 
