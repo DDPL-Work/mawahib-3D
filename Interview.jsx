@@ -114,15 +114,30 @@ const GhostBtn = ({ children, onClick, icon: Icon, danger, primary, disabled, sm
     style={{
       height: small ? 30 : 36, padding: small ? "0 10px" : "0 14px",
       border: `1px solid ${danger ? C.redBorder : primary ? C.blueBorder : C.line}`,
-      background: danger ? C.redDim : primary ? C.blueDim : "rgba(184,149,90,0.06)",
+      background: danger ? C.redDim : primary ? C.blueDim : "rgba(184,149,90,0.04)",
       color: danger ? C.red : primary ? C.blue : C.inkSoft,
       borderRadius: 9, fontSize: small ? 11.5 : 12.5, fontWeight: 600,
       cursor: disabled ? "not-allowed" : "pointer", opacity: disabled ? 0.45 : 1,
       display: "inline-flex", alignItems: "center", gap: 6,
-      fontFamily: "'Sora', sans-serif", transition: "all 0.18s", whiteSpace: "nowrap",
+      fontFamily: "'Sora', sans-serif", transition: "all 0.22s cubic-bezier(0.4, 0, 0.2, 1)",
+      whiteSpace: "nowrap", position: "relative", overflow: "hidden",
     }}
-    onMouseEnter={e => { if (!disabled) { e.currentTarget.style.borderColor = danger ? C.red : primary ? C.blue : C.lineStrong; e.currentTarget.style.color = danger ? "#ffaaaa" : primary ? "#b8d4ff" : "#fff"; } }}
-    onMouseLeave={e => { if (!disabled) { e.currentTarget.style.borderColor = danger ? C.redBorder : primary ? C.blueBorder : C.line; e.currentTarget.style.color = danger ? C.red : primary ? C.blue : C.inkSoft; } }}
+    onMouseEnter={e => {
+      if (!disabled) {
+        e.currentTarget.style.borderColor = danger ? C.red : primary ? C.blue : C.goldBorder;
+        e.currentTarget.style.background = danger ? "rgba(217,83,79,0.15)" : primary ? "rgba(95,158,255,0.18)" : "rgba(184,149,90,0.08)";
+        e.currentTarget.style.transform = "translateY(-1px)";
+        e.currentTarget.style.boxShadow = "0 4px 12px rgba(0,0,0,0.08)";
+      }
+    }}
+    onMouseLeave={e => {
+      if (!disabled) {
+        e.currentTarget.style.borderColor = danger ? C.redBorder : primary ? C.blueBorder : C.line;
+        e.currentTarget.style.background = danger ? C.redDim : primary ? C.blueDim : "rgba(184,149,90,0.04)";
+        e.currentTarget.style.transform = "translateY(0)";
+        e.currentTarget.style.boxShadow = "none";
+      }
+    }}
   >
     {Icon && <Icon size={small ? 12 : 14} />} {children}
   </button>
@@ -324,6 +339,9 @@ export default function Interview() {
   const [mandatoryQList, setMandatoryQList] = useState([]);
   const [showLinks, setShowLinks] = useState(false);
   const [copied, setCopied] = useState(null);
+  const [invitedCandidates, setInvitedCandidates] = useState([]);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef(null);
   const copyRef = { current: null };
 
   const [form, setForm] = useState({
@@ -420,6 +438,32 @@ export default function Interview() {
     setCopied(key);
     clearTimeout(copyRef.current);
     copyRef.current = setTimeout(() => setCopied(null), 1800);
+  };
+
+  const addInvitedRow = () => {
+    setInvitedCandidates(prev => [{ id: Date.now(), name: "", email: "", phone: "" }, ...prev]);
+  };
+  const updateInvited = (id, key, val) => {
+    setInvitedCandidates(prev => prev.map(c => c.id === id ? { ...c, [key]: val } : c));
+  };
+  const removeInvited = (id) => {
+    setInvitedCandidates(prev => prev.filter(c => c.id !== id));
+  };
+  const handleExcelUpload = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    // Professional mock simulation
+    setTimeout(() => {
+      const mockData = [
+        { id: Date.now() + 1, name: "Ali Al-Fahad", email: "ali.fahad@mawahib.ai", phone: "+966 50 444 1234" },
+        { id: Date.now() + 2, name: "Layla Hassan", email: "layla.h@example.com", phone: "+966 55 222 9876" },
+        { id: Date.now() + 3, name: "Omar Bakri", email: "omar.b@mawahib.ai", phone: "+966 54 111 5566" },
+      ];
+      setInvitedCandidates(prev => [...mockData, ...prev]);
+      setUploading(false);
+      e.target.value = ""; // clear input
+    }, 1200);
   };
 
   const generatedLinks = {
@@ -1279,24 +1323,80 @@ export default function Interview() {
                         {/* Upload area */}
                         <div style={{
                           border: `1.5px dashed ${C.line}`, borderRadius: 10,
-                          padding: "20px", textAlign: "center", cursor: "pointer",
-                          transition: "all 0.18s",
+                          padding: "20px", textAlign: "center", cursor: uploading ? "wait" : "pointer",
+                          transition: "all 0.18s", position: "relative", overflow: "hidden",
                         }}
-                          onMouseEnter={e => { e.currentTarget.style.borderColor = C.goldBorder; e.currentTarget.style.background = "rgba(184,149,90,0.04)"; }}
-                          onMouseLeave={e => { e.currentTarget.style.borderColor = C.line; e.currentTarget.style.background = "transparent"; }}
+                          onClick={() => !uploading && fileInputRef.current?.click()}
+                          onMouseEnter={e => { if (!uploading) { e.currentTarget.style.borderColor = C.goldBorder; e.currentTarget.style.background = "rgba(184,149,90,0.04)"; } }}
+                          onMouseLeave={e => { if (!uploading) { e.currentTarget.style.borderColor = C.line; e.currentTarget.style.background = "transparent"; } }}
                         >
-                          <Upload size={22} color={C.inkFaint} style={{ marginBottom: 8, display: "block", margin: "0 auto 8px" }} />
-                          <div style={{ fontSize: 13, color: C.inkMuted, marginBottom: 4 }}>Drop your Excel file here, or click to browse</div>
-                          <div style={{ fontSize: 11.5, color: C.inkFaint }}>Supported: .xlsx, .xls</div>
+                          <input type="file" ref={fileInputRef} onChange={handleExcelUpload} accept=".xlsx,.xls" style={{ display: "none" }} />
+                          {uploading ? (
+                            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10 }}>
+                              <RefreshCw size={24} color={C.gold} className="animate-spin" style={{ animation: "spin 1s linear infinite" }} />
+                              <div style={{ fontSize: 13, fontWeight: 600, color: C.gold }}>Processing Excel...</div>
+                            </div>
+                          ) : (
+                            <>
+                              <Upload size={22} color={C.inkFaint} style={{ marginBottom: 8, display: "block", margin: "0 auto 8px" }} />
+                              <div style={{ fontSize: 13, color: C.inkMuted, marginBottom: 4 }}>Drop your Excel file here, or click to browse</div>
+                              <div style={{ fontSize: 11.5, color: C.inkFaint }}>Supported: .xlsx, .xls</div>
+                            </>
+                          )}
                         </div>
 
-                        {/* Candidate list placeholder */}
-                        <div style={{ marginTop: 12, padding: "12px 14px", background: "rgba(255,255,255,0.02)", borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                          <div>
-                            <div style={{ fontSize: 13, fontWeight: 600, color: C.inkSoft, marginBottom: 2 }}>Invited candidates</div>
-                            <div style={{ fontSize: 12, color: C.inkFaint }}>No candidates loaded yet.</div>
+                        {/* Candidate list */}
+                        <div style={{ marginTop: 12 }}>
+                          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+                            <div style={{ fontSize: 13, fontWeight: 700, color: C.inkSoft }}>Invited candidates ({invitedCandidates.length})</div>
+                            <GhostBtn small icon={Plus} onClick={addInvitedRow} primary>Add row</GhostBtn>
                           </div>
-                          <GhostBtn disabled small icon={Plus}>Add row</GhostBtn>
+
+                          <div style={{
+                            background: "rgba(255,255,255,0.02)", border: `1px solid ${C.line}`,
+                            borderRadius: 12, overflow: "hidden"
+                          }}>
+                            {invitedCandidates.length === 0 ? (
+                              <div style={{ padding: "20px", textAlign: "center", color: C.inkFaint, fontSize: 12.5 }}>
+                                No candidates loaded yet. Use Excel upload or Add row manually.
+                              </div>
+                            ) : (
+                              <>
+                                <div style={{
+                                  display: "grid", gridTemplateColumns: "1fr 1.2fr 1fr 36px",
+                                  padding: "8px 12px", borderBottom: `1px solid ${C.line}`,
+                                  background: "rgba(184,149,90,0.04)",
+                                }}>
+                                  {["Name", "Email", "Phone", ""].map(h => (
+                                    <div key={h} style={{ fontSize: 9.5, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.08em", color: C.inkMuted }}>{h}</div>
+                                  ))}
+                                </div>
+                                <div style={{ maxHeight: 240, overflowY: "auto" }}>
+                                  {invitedCandidates.map((c, idx) => (
+                                    <div key={c.id} style={{
+                                      display: "grid", gridTemplateColumns: "1fr 1.2fr 1fr 36px",
+                                      padding: "8px 12px", gap: 8, alignItems: "center",
+                                      borderBottom: idx < invitedCandidates.length - 1 ? `1px solid ${C.line}` : "none",
+                                    }}>
+                                      <input value={c.name} onChange={e => updateInvited(c.id, "name", e.target.value)} placeholder="Full Name" style={{ background: "transparent", border: "none", borderBottom: `1px solid ${C.line}`, fontSize: 12.5, color: C.inkSoft, outline: "none", padding: "2px 0" }} />
+                                      <input value={c.email} onChange={e => updateInvited(c.id, "email", e.target.value)} placeholder="email@example.com" style={{ background: "transparent", border: "none", borderBottom: `1px solid ${C.line}`, fontSize: 12.5, color: C.inkSoft, outline: "none", padding: "2px 0" }} />
+                                      <input value={c.phone} onChange={e => updateInvited(c.id, "phone", e.target.value)} placeholder="+966 ..." style={{ background: "transparent", border: "none", borderBottom: `1px solid ${C.line}`, fontSize: 12.5, color: C.inkSoft, outline: "none", padding: "2px 0" }} />
+                                      <button onClick={() => removeInvited(c.id)} style={{
+                                        width: 28, height: 28, borderRadius: 6, border: "none",
+                                        background: "transparent", color: C.inkFaint, cursor: "pointer",
+                                        display: "grid", placeItems: "center", transition: "all 0.15s"
+                                      }}
+                                        onMouseEnter={e => { e.currentTarget.style.color = C.red; e.currentTarget.style.background = C.redDim; }}
+                                        onMouseLeave={e => { e.currentTarget.style.color = C.inkFaint; e.currentTarget.style.background = "transparent"; }}
+                                      >
+                                        <Trash2 size={13} />
+                                      </button>
+                                    </div>
+                                  ))}
+                                </div>
+                              </>
+                            )}
+                          </div>
                         </div>
                       </div>
                     </div>

@@ -4,6 +4,7 @@ import {
     Check, Eye, RotateCcw, Trash2, AlertCircle, Users,
     BarChart2, CheckCircle2, XCircle, Filter,
     ChevronDown, Sparkles, Globe, MoreHorizontal, Captions, CaptionsOff,
+    Calendar, MapPin, Save, Clock, RefreshCw, Info,
 } from "lucide-react";
 import { getPaginationWindow, paginateItems } from "./tablePagination";
 
@@ -102,7 +103,7 @@ const CANDIDATES = [
     { id: 12, num: 12, initials: "TA", name: "Tariq Adel", email: "tariq.demo@example.com", phone: "0500000012", session: "DEMO-SESSION-012", started: "Apr 07, 2026, 12:00 PM", status: "Completed", score: 87, rank: null, verdict: "pass" },
 ];
 
-const INTERVIEW_TABS = ["First Interview", "Second Interview (0)"];
+const INTERVIEW_TABS = ["First Interview", "Second Interview (1)"];
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 const verdictStyle = (v) => ({
@@ -730,7 +731,7 @@ const CandidateRow = ({ c, expanded, onToggle, checked, onCheck, lang, setLang }
     );
 };
 
-export default function InterviewResults({ onClose, inline = false }) {
+export default function InterviewResults({ onClose, inline = false, campaign = null }) {
     const [activeTab, setActiveTab] = useState(0);
     const [search, setSearch] = useState("");
     const [statusFilter, setStatusFilter] = useState("All");
@@ -742,6 +743,23 @@ export default function InterviewResults({ onClose, inline = false }) {
     const [lang, setLang] = useState("EN");
     const [page, setPage] = useState(1);
     const isInline = inline;
+    const isSecondInterview = campaign?.focus === "Second Interview";
+    const tabs = isSecondInterview
+        ? ["First Interview", "Second Interview (1)"]
+        : ["First Interview"];
+    const [setupCompany, setSetupCompany] = useState("Mawahib Test");
+    const [setupPosition, setSetupPosition] = useState("Sales");
+    const [setupFormat, setSetupFormat] = useState("online");
+    const [setupLocation, setSetupLocation] = useState("");
+    const [setupNotes, setSetupNotes] = useState("");
+    const [setupTimezone, setSetupTimezone] = useState("Amman");
+    const [setupPeriodStart, setSetupPeriodStart] = useState("2026-04-21");
+    const [setupPeriodEnd, setSetupPeriodEnd] = useState("2026-04-27");
+    const [showTimeTable, setShowTimeTable] = useState(false);
+    const [slotSelections, setSlotSelections] = useState({});
+    const [secondSessions, setSecondSessions] = useState([]);
+    const [setupSaved, setSetupSaved] = useState(false);
+    const [filledSlots, setFilledSlots] = useState(false);
     const interRootStyle = isInline
       ? {
           position: "relative",
@@ -1011,7 +1029,7 @@ export default function InterviewResults({ onClose, inline = false }) {
 
                     {/* ── Interview type tabs ── */}
                     <div style={{ display: "flex", gap: 4, background: C.bgPanel, border: `1px solid rgba(184,149,90,0.18)`, borderRadius: 14, padding: 5, backdropFilter: "blur(12px)", alignSelf: "center" }}>
-                        {INTERVIEW_TABS.map((tab, i) => (
+                        {tabs.map((tab, i) => (
                             <button key={tab} onClick={() => setActiveTab(i)} style={{
                                 height: 36, padding: "0 18px", borderRadius: 10,
                                 border: `1px solid ${activeTab === i ? C.goldBorder : "transparent"}`,
@@ -1023,6 +1041,7 @@ export default function InterviewResults({ onClose, inline = false }) {
                         ))}
                     </div>
 
+                    {activeTab === 0 && (<>
                     {/* ── Filter bar ── */}
                     <div style={{
                         background: C.bgPanel, border: `1px solid ${C.line}`,
@@ -1190,6 +1209,183 @@ export default function InterviewResults({ onClose, inline = false }) {
                             </div>
                         </div>
                     </div>
+                    </>)}
+
+                    {/* ── Second Interview Setup Tab ── */}
+                    {activeTab === 1 && (
+                    <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+
+                        {/* Action bar */}
+                        <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", justifyContent: "space-between" }}>
+                            <h2 style={{ fontFamily: "'DM Serif Display', serif", fontSize: "1.35rem", fontWeight: 400, color: C.inkSoft, margin: 0 }}>Second Interview Results</h2>
+                            <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                                <button onClick={() => { setSetupSaved(true); setTimeout(() => setSetupSaved(false), 2000); }} style={{ height: 36, padding: "0 14px", borderRadius: 10, border: `1px solid ${C.line}`, background: "rgba(255,250,242,0.90)", color: C.inkMuted, fontSize: 12.5, fontWeight: 600, cursor: "pointer", fontFamily: "'Sora',sans-serif", display: "flex", alignItems: "center", gap: 6, transition: "all 0.18s" }} onMouseEnter={e => { e.currentTarget.style.borderColor = C.goldBorder; e.currentTarget.style.color = C.gold; }} onMouseLeave={e => { e.currentTarget.style.borderColor = C.line; e.currentTarget.style.color = C.inkMuted; }}>
+                                    <Info size={13} /> Setup Interview Info
+                                </button>
+                                <button onClick={() => { setShowTimeTable(true); setFilledSlots(true); }} style={{ height: 36, padding: "0 16px", borderRadius: 10, border: "none", background: `linear-gradient(135deg,${C.green},#1d8a62)`, color: "#fff", fontSize: 12.5, fontWeight: 700, cursor: "pointer", fontFamily: "'Sora',sans-serif", display: "flex", alignItems: "center", gap: 6, boxShadow: "0 4px 14px rgba(45,158,117,0.28)", transition: "all 0.18s" }} onMouseEnter={e => e.currentTarget.style.opacity = "0.88"} onMouseLeave={e => e.currentTarget.style.opacity = "1"}>
+                                    <Calendar size={13} /> Fill Interview Slots
+                                </button>
+                                <span style={{ fontSize: 12.5, color: C.inkMuted, padding: "0 6px" }}>Campaigns: 1</span>
+                                <button style={{ height: 36, padding: "0 12px", borderRadius: 10, border: `1px solid ${C.line}`, background: "transparent", color: C.inkMuted, fontSize: 12.5, fontWeight: 600, cursor: "pointer", fontFamily: "'Sora',sans-serif", display: "flex", alignItems: "center", gap: 6 }}>
+                                    <RefreshCw size={12} /> Refresh comparisons
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Setup card */}
+                        <div style={{ background: C.bgCard, border: `1px solid ${C.line}`, borderRadius: 18, overflow: "hidden", backdropFilter: "blur(12px)" }}>
+                            <div style={{ padding: "16px 20px", borderBottom: `1px solid ${C.line}`, display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12 }}>
+                                <div>
+                                    <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.16em", textTransform: "uppercase", color: C.green, marginBottom: 6 }}>Second Interview Setup</div>
+                                    <div style={{ fontSize: 17, fontWeight: 700, color: C.inkSoft, fontFamily: "'DM Serif Display',serif" }}>{setupCompany} {setupPosition} Second Interview</div>
+                                    <div style={{ fontSize: 12.5, color: C.inkMuted, marginTop: 5, lineHeight: 1.65, maxWidth: 560 }}>Set the interview information first. Then choose the timezone and period to generate one-hour interview slots starting at <span style={{ color: C.green, fontWeight: 600 }}>8:00 AM</span>.</div>
+                                </div>
+                                {setupSaved && (
+                                    <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12.5, color: C.green, background: C.greenDim, border: `1px solid ${C.greenBorder}`, borderRadius: 8, padding: "6px 12px" }}>
+                                        <Check size={13} /> Saved!
+                                    </div>
+                                )}
+                            </div>
+
+                            <div style={{ padding: "18px 20px", display: "flex", flexDirection: "column", gap: 16 }}>
+                                {/* Email section label */}
+                                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 10 }}>
+                                    <div>
+                                        <div style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: "0.13em", textTransform: "uppercase", color: C.inkFaint, marginBottom: 4 }}>Email Section</div>
+                                        <div style={{ fontSize: 12, color: C.inkMuted }}>This information will be used in the second interview invitation email.</div>
+                                    </div>
+                                    <button onClick={() => { setSetupSaved(true); setTimeout(() => setSetupSaved(false), 2000); }} style={{ height: 36, padding: "0 16px", borderRadius: 10, border: "none", background: C.inkWhite, color: "#fff", fontSize: 12.5, fontWeight: 700, cursor: "pointer", fontFamily: "'Sora',sans-serif", display: "flex", alignItems: "center", gap: 6, transition: "all 0.18s" }}>
+                                        <Save size={13} /> Save Setup Info
+                                    </button>
+                                </div>
+
+                                {/* Company + Position */}
+                                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+                                    <div>
+                                        <div style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: C.inkFaint, marginBottom: 6 }}>Company Name</div>
+                                        <input value={setupCompany} onChange={e => setSetupCompany(e.target.value)} style={{ width: "100%", height: 40, padding: "0 12px", background: C.bgInput, border: `1px solid ${C.line}`, borderRadius: 10, color: C.inkSoft, fontSize: 13, outline: "none", fontFamily: "'Sora',sans-serif", boxSizing: "border-box" }} onFocus={e => e.target.style.borderColor = C.goldBorder} onBlur={e => e.target.style.borderColor = C.line} />
+                                    </div>
+                                    <div>
+                                        <div style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: C.inkFaint, marginBottom: 6 }}>Position</div>
+                                        <input value={setupPosition} onChange={e => setSetupPosition(e.target.value)} style={{ width: "100%", height: 40, padding: "0 12px", background: C.bgInput, border: `1px solid ${C.line}`, borderRadius: 10, color: C.inkSoft, fontSize: 13, outline: "none", fontFamily: "'Sora',sans-serif", boxSizing: "border-box" }} onFocus={e => e.target.style.borderColor = C.goldBorder} onBlur={e => e.target.style.borderColor = C.line} />
+                                    </div>
+                                </div>
+
+                                {/* Interview Format */}
+                                <div>
+                                    <div style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: C.inkFaint, marginBottom: 8 }}>Interview Format</div>
+                                    <div style={{ display: "flex", gap: 8 }}>
+                                        {[{ id: "online", label: "Online" }, { id: "inperson", label: "In-Person" }].map(({ id, label }) => (
+                                            <button key={id} onClick={() => setSetupFormat(id)} style={{ height: 36, padding: "0 18px", borderRadius: 10, border: `1px solid ${setupFormat === id ? C.green : C.line}`, background: setupFormat === id ? C.green : "rgba(255,250,242,0.85)", color: setupFormat === id ? "#fff" : C.inkMuted, fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "'Sora',sans-serif", transition: "all 0.18s" }}>{label}</button>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {/* Location (in-person only) */}
+                                {setupFormat === "inperson" && (
+                                    <div>
+                                        <div style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: C.inkFaint, marginBottom: 6 }}>Location</div>
+                                        <div style={{ position: "relative" }}>
+                                            <MapPin size={14} color={C.inkFaint} style={{ position: "absolute", left: 11, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }} />
+                                            <input value={setupLocation} onChange={e => setSetupLocation(e.target.value)} placeholder="e.g. Office Tower, Floor 3, Riyadh" style={{ width: "100%", height: 40, paddingLeft: 32, paddingRight: 12, background: C.bgInput, border: `1px solid ${C.line}`, borderRadius: 10, color: C.inkSoft, fontSize: 13, outline: "none", fontFamily: "'Sora',sans-serif", boxSizing: "border-box" }} onFocus={e => e.target.style.borderColor = C.goldBorder} onBlur={e => e.target.style.borderColor = C.line} />
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Notes */}
+                                <div>
+                                    <div style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: C.inkFaint, marginBottom: 6 }}>Notes</div>
+                                    <textarea value={setupNotes} onChange={e => setSetupNotes(e.target.value)} rows={4} placeholder="Add any notes for candidates or interviewers…" style={{ width: "100%", padding: "10px 12px", background: C.bgInput, border: `1px solid ${C.line}`, borderRadius: 10, color: C.inkSoft, fontSize: 13, outline: "none", fontFamily: "'Sora',sans-serif", resize: "vertical", boxSizing: "border-box", lineHeight: 1.6 }} onFocus={e => e.target.style.borderColor = C.goldBorder} onBlur={e => e.target.style.borderColor = C.line} />
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Time Table card */}
+                        <div style={{ background: C.bgCard, border: `1px solid ${C.line}`, borderRadius: 18, overflow: "hidden", backdropFilter: "blur(12px)" }}>
+                            <div style={{ padding: "14px 20px", borderBottom: `1px solid ${C.line}` }}>
+                                <div style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: "0.13em", textTransform: "uppercase", color: C.inkFaint, marginBottom: 4 }}>Time Table Section</div>
+                                <div style={{ fontSize: 12.5, color: C.inkMuted, lineHeight: 1.6 }}>Pick the timezone and period. The table is generated only after you click <span style={{ color: C.green, fontWeight: 600 }}>Show Time Table</span>.</div>
+                            </div>
+                            <div style={{ padding: "18px 20px", display: "flex", flexDirection: "column", gap: 14 }}>
+                                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr auto", gap: 14, alignItems: "start" }}>
+                                    <div>
+                                        <div style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: C.inkFaint, marginBottom: 6 }}>Timezone</div>
+                                        <select value={setupTimezone} onChange={e => setSetupTimezone(e.target.value)} style={{ width: "100%", height: 40, padding: "0 12px", background: C.bgInput, border: `1px solid ${C.line}`, borderRadius: 10, color: C.inkSoft, fontSize: 13, outline: "none", fontFamily: "'Sora',sans-serif", cursor: "pointer" }}>
+                                            {["Amman","Riyadh","Dubai","Cairo","London","UTC"].map(tz => <option key={tz}>{tz}</option>)}
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <div style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: C.inkFaint, marginBottom: 6 }}>Period Start</div>
+                                        <input type="date" value={setupPeriodStart} onChange={e => setSetupPeriodStart(e.target.value)} style={{ width: "100%", height: 40, padding: "0 12px", background: C.bgInput, border: `1px solid ${C.line}`, borderRadius: 10, color: C.inkSoft, fontSize: 13, outline: "none", fontFamily: "'Sora',sans-serif", boxSizing: "border-box", cursor: "pointer" }} onFocus={e => e.target.style.borderColor = C.goldBorder} onBlur={e => e.target.style.borderColor = C.line} />
+                                    </div>
+                                    <div>
+                                        <div style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: C.inkFaint, marginBottom: 6 }}>Period End</div>
+                                        <input type="date" value={setupPeriodEnd} onChange={e => setSetupPeriodEnd(e.target.value)} style={{ width: "100%", height: 40, padding: "0 12px", background: C.bgInput, border: `1px solid ${C.line}`, borderRadius: 10, color: C.inkSoft, fontSize: 13, outline: "none", fontFamily: "'Sora',sans-serif", boxSizing: "border-box", cursor: "pointer" }} onFocus={e => e.target.style.borderColor = C.goldBorder} onBlur={e => e.target.style.borderColor = C.line} />
+                                    </div>
+                                    <div style={{ background: "rgba(255,250,242,0.80)", border: `1px solid ${C.line}`, borderRadius: 10, padding: "8px 14px", textAlign: "center", minWidth: 120 }}>
+                                        <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.13em", textTransform: "uppercase", color: C.inkFaint, marginBottom: 4 }}>Slot Rule</div>
+                                        <div style={{ fontSize: 13, fontWeight: 700, color: C.inkSoft }}>1 hour slots</div>
+                                        <div style={{ fontSize: 11.5, color: C.inkMuted, marginTop: 2 }}>Start at 8:00 AM daily</div>
+                                    </div>
+                                </div>
+                                <div style={{ display: "flex", justifyContent: "flex-end" }}>
+                                    <button onClick={() => setShowTimeTable(true)} style={{ height: 38, padding: "0 20px", borderRadius: 10, border: "none", background: C.green, color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "'Sora',sans-serif", display: "flex", alignItems: "center", gap: 7, boxShadow: "0 4px 14px rgba(45,158,117,0.25)", transition: "all 0.18s" }} onMouseEnter={e => e.currentTarget.style.opacity = "0.88"} onMouseLeave={e => e.currentTarget.style.opacity = "1"}>
+                                        <Clock size={14} /> Show Time Table
+                                    </button>
+                                </div>
+
+                                {/* Generated slots grid */}
+                                {showTimeTable && (() => {
+                                    const start = new Date(setupPeriodStart);
+                                    const end = new Date(setupPeriodEnd);
+                                    const days = [];
+                                    for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+                                        days.push(d.toISOString().slice(0, 10));
+                                    }
+                                    const hours = [8,9,10,11,12,13,14,15,16];
+                                    const fmt = (h) => `${h === 12 ? 12 : h % 12}:00 ${h < 12 ? "AM" : "PM"}`;
+                                    return (
+                                        <div style={{ overflowX: "auto", borderRadius: 12, border: `1px solid ${C.line}`, background: "rgba(255,250,242,0.75)" }}>
+                                            <div style={{ display: "grid", gridTemplateColumns: `120px repeat(${days.length}, minmax(100px,1fr))`, minWidth: days.length * 100 + 120 }}>
+                                                {/* Header */}
+                                                <div style={{ padding: "10px 14px", borderBottom: `1px solid ${C.line}`, borderRight: `1px solid ${C.line}`, fontSize: 10.5, fontWeight: 700, color: C.inkFaint, textTransform: "uppercase", letterSpacing: "0.1em" }}>Time</div>
+                                                {days.map(d => (
+                                                    <div key={d} style={{ padding: "10px 10px", borderBottom: `1px solid ${C.line}`, borderRight: `1px solid ${C.line}`, fontSize: 11, fontWeight: 700, color: C.inkSoft, textAlign: "center" }}>
+                                                        {new Date(d + "T12:00:00").toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })}
+                                                    </div>
+                                                ))}
+                                                {/* Slot rows */}
+                                                {hours.map(h => (
+                                                    <>
+                                                        <div key={`t-${h}`} style={{ padding: "9px 14px", borderBottom: `1px solid ${C.line}`, borderRight: `1px solid ${C.line}`, fontSize: 12, color: C.inkMuted, fontWeight: 600, display: "flex", alignItems: "center", gap: 5 }}>
+                                                            <Clock size={11} color={C.inkFaint} />{fmt(h)}
+                                                        </div>
+                                                        {days.map(d => {
+                                                            const key = `${d}-${h}`;
+                                                            const checked = !!slotSelections[key];
+                                                            return (
+                                                                <div key={key} onClick={() => setSlotSelections(prev => ({ ...prev, [key]: !prev[key] }))} style={{ padding: "8px 10px", borderBottom: `1px solid ${C.line}`, borderRight: `1px solid ${C.line}`, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", background: checked ? "rgba(45,158,117,0.10)" : "transparent", transition: "background 0.15s" }}>
+                                                                    <div style={{ width: 20, height: 20, borderRadius: 6, border: `2px solid ${checked ? C.green : C.line}`, background: checked ? C.green : "transparent", display: "grid", placeItems: "center", transition: "all 0.15s", flexShrink: 0 }}>
+                                                                        {checked && <Check size={11} color="#fff" strokeWidth={3} />}
+                                                                    </div>
+                                                                </div>
+                                                            );
+                                                        })}
+                                                    </>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    );
+                                })()}
+                            </div>
+                        </div>
+
+                        {/* Sessions list */}
+                        <div style={{ fontSize: 13, color: C.inkMuted, fontStyle: "italic", padding: "4px 2px" }}>
+                            {secondSessions.length === 0 ? "No Second Interview sessions yet." : `${secondSessions.length} session${secondSessions.length !== 1 ? "s" : ""} scheduled.`}
+                        </div>
+                    </div>
+                    )}
 
                 </div>
             </div>

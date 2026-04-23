@@ -72,6 +72,23 @@ const TAG_COLORS = {
 
 const CAMPAIGNS = [
   {
+    id: "sales-sec",
+    code: "1WAC000O",
+    title: "Sales",
+    company: "Mawahib Test",
+    created: "Apr 21, 2026",
+    status: "active",
+    focus: "Second Interview",
+    applicants: 15,
+    interviewed: 0,
+    shortlisted: 0,
+    intakeCode: "SALES-SEC",
+    cvEnd: "Not enabled",
+    interviewEnd: "Apr 30, 2026",
+    accessType: "Invite only",
+    language: "EN",
+  },
+  {
     id: "demo",
     code: "DEMO-073298",
     title: "B2B Sales Representative",
@@ -1341,7 +1358,7 @@ const CampaignTable = ({ onSelect, selected, onInterviewResults, isMobile = fals
               <div style={{ minWidth: 0 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
                   <div style={{ fontSize: 15, fontWeight: 700, color: C.inkWhite, fontFamily: "'DM Serif Display', serif" }}>{campaign.code}</div>
-                  <Tag label={campaign.status === "active" ? "General" : "Stage 2"} />
+                  <Tag label={CAMPAIGN_TYPES.find(t => t.label === campaign.focus)?.tag || "General"} />
                 </div>
                 <div style={{ fontSize: 11.5, color: C.inkFaint, marginTop: 4 }}>
                   Created {campaign.created}
@@ -1824,7 +1841,7 @@ const CampaignDetail = ({ campaign, onClose, modal = false, closeRef, isMobile =
         ) : tab === "cv" ? (
           <DashboardCVResultsPanel campaign={campaign} candidates={CV_RESULTS} theme={C} />
         ) : (
-          <InterviewResults inline />
+          <InterviewResults inline campaign={campaign} />
         )}
       </div>
     </aside>
@@ -2114,7 +2131,7 @@ export default function Dashboard() {
         </div>
 
         {/* Circular Dashboard Insights */}
-        <DashboardCircularInsights campaign={CAMPAIGNS[0]} onCreateCampaign={() => setShowModal(true)} isMobile={isMobile} isTablet={isTablet} />
+        <DashboardCircularInsights campaign={{ applicants: dashboardTotals.applicants, interviewed: dashboardTotals.interviewed, shortlisted: dashboardTotals.shortlisted }} onCreateCampaign={() => setShowModal(true)} isMobile={isMobile} isTablet={isTablet} />
       </main>
 
       {selectedCampaign && <CampaignDetailModal campaign={selectedCampaign} onClose={() => setSelectedId(null)} isMobile={isMobile} isTablet={isTablet} />}
