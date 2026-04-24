@@ -4,7 +4,7 @@ import {
     Check, Eye, RotateCcw, Trash2, AlertCircle, Users,
     BarChart2, CheckCircle2, XCircle, Filter,
     ChevronDown, Sparkles, Globe, MoreHorizontal, Captions, CaptionsOff,
-    Calendar, MapPin, Save, Clock, RefreshCw, Info,
+    Calendar, MapPin, Save, Clock, RefreshCw, Info, Layers,
 } from "lucide-react";
 import { getPaginationWindow, paginateItems } from "./tablePagination";
 
@@ -1352,16 +1352,24 @@ export default function InterviewResults({ onClose, inline = false, campaign = n
                                         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
                                             {/* Filters */}
                                             <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 4 }}>
-                                                {[
-                                                    { label: "Unavailable", count: 45, color: C.inkMuted, bg: "rgba(255,255,255,0.7)", border: C.line },
-                                                    { label: "All Campaigns", count: 0, color: C.blue, bg: C.blueDim, border: C.blueBorder },
-                                                    { label: "This Campaign", count: 0, color: C.green, bg: C.greenDim, border: C.greenBorder },
-                                                    { label: "Booked", count: 0, color: C.purple, bg: C.purpleDim, border: C.purpleBorder },
-                                                ].map(f => (
-                                                    <div key={f.label} style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "6px 12px", borderRadius: 999, border: `1px solid ${f.border}`, background: f.bg, fontSize: 11.5, fontWeight: 600, color: f.color, cursor: "pointer" }}>
-                                                        {f.label} <span style={{ background: f.border, color: f.color, padding: "2px 6px", borderRadius: 10, fontSize: 10, mixBlendMode: "multiply" }}>{f.count}</span>
-                                                    </div>
-                                                ))}
+                                                {(() => {
+                                                    const selValues = Object.values(slotSelections);
+                                                    const total = days.length * hours.length;
+                                                    const thisC = selValues.filter(v => v === "this").length;
+                                                    const allC = selValues.filter(v => v === "all").length;
+                                                    const unavC = total - thisC - allC;
+                                                    
+                                                    return [
+                                                        { label: "Unavailable", count: unavC, color: C.inkMuted, bg: "rgba(255,255,255,0.7)", border: C.line },
+                                                        { label: "All Campaigns", count: allC, color: C.blue, bg: C.blueDim, border: C.blueBorder },
+                                                        { label: "This Campaign", count: thisC, color: C.green, bg: C.greenDim, border: C.greenBorder },
+                                                        { label: "Booked", count: 0, color: C.purple, bg: C.purpleDim, border: C.purpleBorder },
+                                                    ].map(f => (
+                                                        <div key={f.label} style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "6px 12px", borderRadius: 999, border: `1px solid ${f.border}`, background: f.bg, fontSize: 11.5, fontWeight: 600, color: f.color, cursor: "pointer", transition: "all 0.2s" }}>
+                                                            {f.label} <span style={{ background: f.border, color: f.color, padding: "2px 6px", borderRadius: 10, fontSize: 10, mixBlendMode: "multiply" }}>{f.count}</span>
+                                                        </div>
+                                                    ));
+                                                })()}
                                             </div>
 
                                             {/* Grid of days */}
@@ -1381,7 +1389,27 @@ export default function InterviewResults({ onClose, inline = false, campaign = n
                                                                 </div>
                                                                 <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
                                                                     <span style={{ fontSize: 11, background: C.bgDark, color: C.inkMuted, padding: "4px 10px", borderRadius: 999, border: `1px solid ${C.line}`, fontWeight: 600 }}>{hours.length} slots</span>
-                                                                    <IconBtn small><RefreshCw size={13} /></IconBtn>
+                                                                    <IconBtn 
+                                                                        small
+                                                                        onClick={() => {
+                                                                            setSlotSelections(prev => {
+                                                                                const n = { ...prev };
+                                                                                const dayKeys = hours.map(h => `${d}-${h}`);
+                                                                                const currentStates = dayKeys.map(k => prev[k]);
+                                                                                
+                                                                                // Determine next state for the whole day
+                                                                                let next;
+                                                                                if (currentStates.every(s => s === "this")) next = "all";
+                                                                                else if (currentStates.every(s => s === "all")) next = undefined;
+                                                                                else next = "this";
+                                                                                
+                                                                                dayKeys.forEach(k => { n[k] = next; });
+                                                                                return n;
+                                                                            });
+                                                                        }}
+                                                                    >
+                                                                        <Layers size={13} />
+                                                                    </IconBtn>
                                                                     <IconBtn small><Trash2 size={13} /></IconBtn>
                                                                 </div>
                                                             </div>
@@ -1390,19 +1418,50 @@ export default function InterviewResults({ onClose, inline = false, campaign = n
                                                             <div style={{ padding: "0 20px 20px 20px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
                                                                 {hours.map(h => {
                                                                     const key = `${d}-${h}`;
-                                                                    const checked = !!slotSelections[key];
-                                                                    const status = isPast ? "Past" : (checked ? "Available" : "Unavailable");
-                                                                    const bg = isPast ? "rgba(240,240,240,0.4)" : (checked ? C.greenDim : "rgba(250,250,250,0.6)");
-                                                                    const border = isPast ? `1px solid rgba(0,0,0,0.04)` : `1px solid ${checked ? C.greenBorder : "rgba(184,149,90,0.08)"}`;
-                                                                    const textColor = isPast ? "rgba(0,0,0,0.3)" : (checked ? C.green : C.inkMuted);
-                                                                    const timeColor = isPast ? "rgba(0,0,0,0.5)" : (checked ? C.green : C.inkSoft);
+                                                                    const selection = slotSelections[key];
+                                                                    
+                                                                    let status = "Unavailable";
+                                                                    let bg = "rgba(250,250,250,0.6)";
+                                                                    let border = `1px solid rgba(184,149,90,0.08)`;
+                                                                    let textColor = C.inkMuted;
+                                                                    let timeColor = C.inkSoft;
+                                                                    let shadow = "none";
+
+                                                                    if (isPast) {
+                                                                        status = "Past";
+                                                                        bg = "rgba(240,240,240,0.4)";
+                                                                        border = `1px solid rgba(0,0,0,0.04)`;
+                                                                        textColor = "rgba(0,0,0,0.3)";
+                                                                        timeColor = "rgba(0,0,0,0.5)";
+                                                                    } else if (selection === "this") {
+                                                                        status = "Available for this campaign";
+                                                                        bg = C.greenDim;
+                                                                        border = `1px solid ${C.greenBorder}`;
+                                                                        textColor = C.green;
+                                                                        timeColor = C.green;
+                                                                        shadow = "0 2px 8px rgba(45,158,117,0.08)";
+                                                                    } else if (selection === "all") {
+                                                                        status = "Available for all active campaigns";
+                                                                        bg = C.blueDim;
+                                                                        border = `1px solid ${C.blueBorder}`;
+                                                                        textColor = C.blue;
+                                                                        timeColor = C.blue;
+                                                                        shadow = "0 2px 8px rgba(58,123,213,0.08)";
+                                                                    }
 
                                                                     return (
                                                                         <div 
                                                                             key={key} 
                                                                             onClick={() => {
                                                                                 if (!isPast) {
-                                                                                    setSlotSelections(prev => ({ ...prev, [key]: !prev[key] }));
+                                                                                    setSlotSelections(prev => {
+                                                                                        const curr = prev[key];
+                                                                                        let next;
+                                                                                        if (!curr) next = "this";
+                                                                                        else if (curr === "this") next = "all";
+                                                                                        else next = undefined;
+                                                                                        return { ...prev, [key]: next };
+                                                                                    });
                                                                                 }
                                                                             }}
                                                                             style={{ 
@@ -1413,16 +1472,16 @@ export default function InterviewResults({ onClose, inline = false, campaign = n
                                                                                 textAlign: "center",
                                                                                 cursor: isPast ? "not-allowed" : "pointer",
                                                                                 transition: "all 0.15s",
-                                                                                boxShadow: checked ? "0 2px 8px rgba(45,158,117,0.08)" : "none"
+                                                                                boxShadow: shadow
                                                                             }}
                                                                             onMouseEnter={e => {
-                                                                                if (!isPast && !checked) {
+                                                                                if (!isPast && !selection) {
                                                                                     e.currentTarget.style.borderColor = C.goldBorder;
                                                                                     e.currentTarget.style.background = C.goldDim;
                                                                                 }
                                                                             }}
                                                                             onMouseLeave={e => {
-                                                                                if (!isPast && !checked) {
+                                                                                if (!isPast && !selection) {
                                                                                     e.currentTarget.style.borderColor = "rgba(184,149,90,0.08)";
                                                                                     e.currentTarget.style.background = "rgba(250,250,250,0.6)";
                                                                                 }
@@ -1431,7 +1490,7 @@ export default function InterviewResults({ onClose, inline = false, campaign = n
                                                                             <div style={{ fontSize: 13.5, fontWeight: 700, color: timeColor, marginBottom: 6 }}>
                                                                                 {formatTime(h)} - {formatTime(h+1)}
                                                                             </div>
-                                                                            <div style={{ fontSize: 11.5, color: textColor, fontWeight: 600 }}>
+                                                                            <div style={{ fontSize: 11.5, color: textColor, fontWeight: 600, lineHeight: 1.4 }}>
                                                                                 {status}
                                                                             </div>
                                                                         </div>
