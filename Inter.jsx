@@ -1343,36 +1343,104 @@ export default function InterviewResults({ onClose, inline = false, campaign = n
                                         days.push(d.toISOString().slice(0, 10));
                                     }
                                     const hours = [8,9,10,11,12,13,14,15,16];
-                                    const fmt = (h) => `${h === 12 ? 12 : h % 12}:00 ${h < 12 ? "AM" : "PM"}`;
+                                    const formatTime = (h) => {
+                                        const hr = h.toString().padStart(2, '0');
+                                        return `${hr}:00`;
+                                    };
+
                                     return (
-                                        <div style={{ overflowX: "auto", borderRadius: 12, border: `1px solid ${C.line}`, background: "rgba(255,250,242,0.75)" }}>
-                                            <div style={{ display: "grid", gridTemplateColumns: `120px repeat(${days.length}, minmax(100px,1fr))`, minWidth: days.length * 100 + 120 }}>
-                                                {/* Header */}
-                                                <div style={{ padding: "10px 14px", borderBottom: `1px solid ${C.line}`, borderRight: `1px solid ${C.line}`, fontSize: 10.5, fontWeight: 700, color: C.inkFaint, textTransform: "uppercase", letterSpacing: "0.1em" }}>Time</div>
-                                                {days.map(d => (
-                                                    <div key={d} style={{ padding: "10px 10px", borderBottom: `1px solid ${C.line}`, borderRight: `1px solid ${C.line}`, fontSize: 11, fontWeight: 700, color: C.inkSoft, textAlign: "center" }}>
-                                                        {new Date(d + "T12:00:00").toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })}
+                                        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+                                            {/* Filters */}
+                                            <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 4 }}>
+                                                {[
+                                                    { label: "Unavailable", count: 45, color: C.inkMuted, bg: "rgba(255,255,255,0.7)", border: C.line },
+                                                    { label: "All Campaigns", count: 0, color: C.blue, bg: C.blueDim, border: C.blueBorder },
+                                                    { label: "This Campaign", count: 0, color: C.green, bg: C.greenDim, border: C.greenBorder },
+                                                    { label: "Booked", count: 0, color: C.purple, bg: C.purpleDim, border: C.purpleBorder },
+                                                ].map(f => (
+                                                    <div key={f.label} style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "6px 12px", borderRadius: 999, border: `1px solid ${f.border}`, background: f.bg, fontSize: 11.5, fontWeight: 600, color: f.color, cursor: "pointer" }}>
+                                                        {f.label} <span style={{ background: f.border, color: f.color, padding: "2px 6px", borderRadius: 10, fontSize: 10, mixBlendMode: "multiply" }}>{f.count}</span>
                                                     </div>
                                                 ))}
-                                                {/* Slot rows */}
-                                                {hours.map(h => (
-                                                    <>
-                                                        <div key={`t-${h}`} style={{ padding: "9px 14px", borderBottom: `1px solid ${C.line}`, borderRight: `1px solid ${C.line}`, fontSize: 12, color: C.inkMuted, fontWeight: 600, display: "flex", alignItems: "center", gap: 5 }}>
-                                                            <Clock size={11} color={C.inkFaint} />{fmt(h)}
-                                                        </div>
-                                                        {days.map(d => {
-                                                            const key = `${d}-${h}`;
-                                                            const checked = !!slotSelections[key];
-                                                            return (
-                                                                <div key={key} onClick={() => setSlotSelections(prev => ({ ...prev, [key]: !prev[key] }))} style={{ padding: "8px 10px", borderBottom: `1px solid ${C.line}`, borderRight: `1px solid ${C.line}`, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", background: checked ? "rgba(45,158,117,0.10)" : "transparent", transition: "background 0.15s" }}>
-                                                                    <div style={{ width: 20, height: 20, borderRadius: 6, border: `2px solid ${checked ? C.green : C.line}`, background: checked ? C.green : "transparent", display: "grid", placeItems: "center", transition: "all 0.15s", flexShrink: 0 }}>
-                                                                        {checked && <Check size={11} color="#fff" strokeWidth={3} />}
-                                                                    </div>
+                                            </div>
+
+                                            {/* Grid of days */}
+                                            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 20 }}>
+                                                {days.map(d => {
+                                                    const dateObj = new Date(d + "T12:00:00");
+                                                    const dateStr = dateObj.toLocaleDateString("en-US", { weekday: "long", month: "short", day: "numeric" });
+                                                    const isPast = dateObj < new Date(new Date().setHours(0,0,0,0));
+
+                                                    return (
+                                                        <div key={d} style={{ border: `1px solid rgba(184,149,90,0.18)`, borderRadius: 18, background: "rgba(255,255,255,0.85)", boxShadow: "0 4px 16px rgba(184,149,90,0.04)" }}>
+                                                            {/* Day Header */}
+                                                            <div style={{ padding: "16px 20px", display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+                                                                <div>
+                                                                    <div style={{ fontSize: 14.5, fontWeight: 700, color: C.inkSoft }}>{dateStr}</div>
+                                                                    <div style={{ fontSize: 12, color: C.inkMuted, marginTop: 4 }}>{setupTimezone}</div>
                                                                 </div>
-                                                            );
-                                                        })}
-                                                    </>
-                                                ))}
+                                                                <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+                                                                    <span style={{ fontSize: 11, background: C.bgDark, color: C.inkMuted, padding: "4px 10px", borderRadius: 999, border: `1px solid ${C.line}`, fontWeight: 600 }}>{hours.length} slots</span>
+                                                                    <IconBtn small><RefreshCw size={13} /></IconBtn>
+                                                                    <IconBtn small><Trash2 size={13} /></IconBtn>
+                                                                </div>
+                                                            </div>
+
+                                                            {/* Slots Grid */}
+                                                            <div style={{ padding: "0 20px 20px 20px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                                                                {hours.map(h => {
+                                                                    const key = `${d}-${h}`;
+                                                                    const checked = !!slotSelections[key];
+                                                                    const status = isPast ? "Past" : (checked ? "Available" : "Unavailable");
+                                                                    const bg = isPast ? "rgba(240,240,240,0.4)" : (checked ? C.greenDim : "rgba(250,250,250,0.6)");
+                                                                    const border = isPast ? `1px solid rgba(0,0,0,0.04)` : `1px solid ${checked ? C.greenBorder : "rgba(184,149,90,0.08)"}`;
+                                                                    const textColor = isPast ? "rgba(0,0,0,0.3)" : (checked ? C.green : C.inkMuted);
+                                                                    const timeColor = isPast ? "rgba(0,0,0,0.5)" : (checked ? C.green : C.inkSoft);
+
+                                                                    return (
+                                                                        <div 
+                                                                            key={key} 
+                                                                            onClick={() => {
+                                                                                if (!isPast) {
+                                                                                    setSlotSelections(prev => ({ ...prev, [key]: !prev[key] }));
+                                                                                }
+                                                                            }}
+                                                                            style={{ 
+                                                                                padding: "16px 12px", 
+                                                                                borderRadius: 14, 
+                                                                                border: border, 
+                                                                                background: bg, 
+                                                                                textAlign: "center",
+                                                                                cursor: isPast ? "not-allowed" : "pointer",
+                                                                                transition: "all 0.15s",
+                                                                                boxShadow: checked ? "0 2px 8px rgba(45,158,117,0.08)" : "none"
+                                                                            }}
+                                                                            onMouseEnter={e => {
+                                                                                if (!isPast && !checked) {
+                                                                                    e.currentTarget.style.borderColor = C.goldBorder;
+                                                                                    e.currentTarget.style.background = C.goldDim;
+                                                                                }
+                                                                            }}
+                                                                            onMouseLeave={e => {
+                                                                                if (!isPast && !checked) {
+                                                                                    e.currentTarget.style.borderColor = "rgba(184,149,90,0.08)";
+                                                                                    e.currentTarget.style.background = "rgba(250,250,250,0.6)";
+                                                                                }
+                                                                            }}
+                                                                        >
+                                                                            <div style={{ fontSize: 13.5, fontWeight: 700, color: timeColor, marginBottom: 6 }}>
+                                                                                {formatTime(h)} - {formatTime(h+1)}
+                                                                            </div>
+                                                                            <div style={{ fontSize: 11.5, color: textColor, fontWeight: 600 }}>
+                                                                                {status}
+                                                                            </div>
+                                                                        </div>
+                                                                    );
+                                                                })}
+                                                            </div>
+                                                        </div>
+                                                    );
+                                                })}
                                             </div>
                                         </div>
                                     );
